@@ -6,6 +6,14 @@ import copy
 import scipy
 import warnings
 
+def check_two_element_tuple(x, name):
+
+    if not isinstance(x, tuple):
+        raise ValueError("Parameter `" + name + "` has to of type 'tuple'.")
+
+    if len(x) != 2:
+        raise ValueError("Parameter `" + name + "` has to have two elements.")
+
 ########################################################################################################################
 ########################################################################################################################
 ####
@@ -46,6 +54,8 @@ class Particle:
                  seeding_mode='random',
                  random_seed=None):
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
         # Input parameter check:
         if type(n_images) != int:
             raise ValueError("Parameter `n_images` has to of type 'int'.")
@@ -53,23 +63,11 @@ class Particle:
         if n_images < 0:
             raise ValueError("Parameter `n_images` has to be positive.")
 
-        if type(size) != tuple:
-            raise ValueError("Parameter `size` has to of type 'tuple'.")
-
-        if len(size) != 2:
-            raise ValueError("Parameter `size` has to have two elements.")
-
-        if type(diameters) != tuple:
-            raise ValueError("Parameter `diameters` has to of type 'tuple'.")
-
-        if type(distances) != tuple:
-            raise ValueError("Parameter `distances` has to of type 'tuple'.")
-
-        if type(densities) != tuple:
-            raise ValueError("Parameter `densities` has to of type 'tuple'.")
-
-        if type(signal_to_noise) != tuple:
-            raise ValueError("Parameter `signal_to_noise` has to of type 'tuple'.")
+        check_two_element_tuple(size, 'size')
+        check_two_element_tuple(diameters, 'diameters')
+        check_two_element_tuple(distances, 'distances')
+        check_two_element_tuple(densities, 'densities')
+        check_two_element_tuple(signal_to_noise, 'signal_to_noise')
 
         __seeding_mode = ['random', 'poisson']
         if seeding_mode not in __seeding_mode:
@@ -80,6 +78,8 @@ class Particle:
                 raise ValueError("Parameter `random_seed` has to of type 'int'.")
             else:
                 np.random.seed(seed=random_seed)
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Class init:
         self.__n_images = n_images
@@ -115,6 +115,8 @@ class Particle:
         # Compute the total number of particles for a given particle density on each image:
         n_of_particles = self.__size[1] * self.__size[0] * self.__particle_density_per_image
         self.__n_of_particles = [int(i) for i in n_of_particles]
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
     @property
@@ -166,7 +168,7 @@ class Particle:
     def n_of_particles(self):
         return self.__n_of_particles
 
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def seed_particles(self):
         """
