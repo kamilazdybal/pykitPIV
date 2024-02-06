@@ -8,3 +8,5 @@
 *__pycache__
 *.DS_Store
 .idea/
+build/
+pypiv.egg-info/

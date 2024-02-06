@@ -8,5 +8,8 @@ __maintainer__ = ["Kamila Zdybal"]
 __email__ = ["kamilazdybal@gmail.com"]
 __status__ = "Production"
 
-from .flow import FlowField
-from .image import Image
+from .camera import *
+from .flowfield import *
+from .image import *
+from .motion import *
+from .particle import *

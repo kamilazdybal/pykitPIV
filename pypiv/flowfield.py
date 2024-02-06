@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import random
 import copy
 import scipy
@@ -20,7 +21,7 @@ class FlowField:
                  filter_size=(10,300),
                  sin_period=(30,300),
                  displacement=(0,10),
-                 lost_particles=(0,20),
+
                  n_gaussian_filter_iter=6):
 
         __flow_mode = ['random', 'random-sinusoidal', 'quadrant', 'checkerboard']
