@@ -18,30 +18,23 @@ class Image:
     """
 
     def __init__(self,
-                 size=(512,512),
+                 particles
                  ):
 
-        if type(size) != tuple:
-            raise ValueError("Parameter `size` has to of type 'tuple'.")
-
-        if len(size) != 2:
-            raise ValueError("Parameter `size` has to have two elements.")
-
-        # Class init:
-        self.__size = size
+        self.__particles = particles
 
         # Create empty image at class init:
-        self.image = np.zeros((size[0], size[1]))
+        self.__empty_image = np.zeros((particles.size[0], particles.size[1]))
 
     @property
-    def size(self):
-        return self.__size
+    def empty_image(self):
+        return self.__empty_image
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def add_particles(self, particles):
+    def add_particles(self):
 
-        self.image = particles
+        self.__image = self.__particles.seed_particles()
 
 
 
