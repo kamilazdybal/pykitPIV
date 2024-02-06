@@ -32,7 +32,9 @@ class Particle:
         ``tuple`` of two elements specifying the minimum and maximum signal-to-noise ratio for particle generation. [Kamila] I still wonder if this should rather be a property of Motion class. Maybe not, Motion can allways access this class attribute.
     :param seeding_mode:
         ``str`` specifying the seeding mode for initializing particles in the image domain. It can be one of the following: ``'random'``, ``'poisson'``.
-    """
+    :param random_seed:
+        ``int`` specifying the random seed for random number generation in ``numpy``.
+   """
 
     def __init__(self,
                  n_images,
@@ -41,7 +43,8 @@ class Particle:
                  distances=(0.5,2),
                  densities=(0.05,0.1),
                  signal_to_noise=(5,20),
-                 seeding_mode='random'):
+                 seeding_mode='random',
+                 random_seed=None):
 
         # Input parameter check:
         if type(n_images) != int:
@@ -72,6 +75,12 @@ class Particle:
         if seeding_mode not in __seeding_mode:
             raise ValueError("Parameter `seeding_mode` has to be 'random', or 'poisson'.")
 
+        if random_seed is not None:
+            if type(random_seed) != int:
+                raise ValueError("Parameter `random_seed` has to of type 'int'.")
+            else:
+                np.random.seed(seed=random_seed)
+
         # Class init:
         self.__n_images = n_images
         self.__size = size
@@ -79,6 +88,8 @@ class Particle:
         self.__distances = distances
         self.__densities = densities
         self.__signal_to_noise = signal_to_noise
+        self.__seeding_mode = seeding_mode
+        self.__random_seed = random_seed
 
         # Initialize parameters for particle generation:
         self.__particle_diameter_per_image = np.random.rand(self.__n_images) * (self.__diameters[0] - self.__diameters[1]) + self.__diameters[0]
@@ -130,6 +141,14 @@ class Particle:
     def signal_to_noise(self):
         return self.__signal_to_noise
 
+    @property
+    def seeding_mode(self):
+        return self.__seeding_mode
+
+    @property
+    def random_seed(self):
+        return self.__random_seed
+
     # Properties computed at class init:
     @property
     def diameter_per_image(self):
@@ -149,6 +168,27 @@ class Particle:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def seed_particles(self, particle_seeding_mode):
+    def seed_particles(self):
+        """
+        Initializes particle centroids on each image.
+        """
 
-        pass
+        np.random.seed(seed=self.random_seed)
+
+        images = []
+
+        for i in range(0,self.n_images):
+
+            if self.seeding_mode == 'random':
+
+                random_particle_positions = list(np.random.choice(self.size[0] * self.size[1], size=self.n_of_particles[i], replace=False))
+                seeded_array = np.zeros((self.size[0], self.size[1]))
+                seeded_array.ravel()[random_particle_positions] = 1
+                images.append(seeded_array)
+
+        return images
+
+
+
+
+

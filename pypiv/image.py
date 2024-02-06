@@ -48,8 +48,9 @@ class Image:
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-def plot_image(image, cmap='Greys'):
+def plot_image(image, cmap='Greys', figsize=(8,8)):
 
+    fig = plt.figure(figsize=figsize)
     plt.imshow(image, cmap=cmap)
 
     return plt
