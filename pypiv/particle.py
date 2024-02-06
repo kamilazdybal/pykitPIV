@@ -81,30 +81,28 @@ class Particle:
         self.__signal_to_noise = signal_to_noise
 
         # Initialize parameters for particle generation:
-        self.__particle_diameters_per_image = np.random.rand(self.__n_images) * (self.__diameter[0] - self.__diameter[1]) + self.__diameter[0]
-        self.__particle_distances_per_image = np.random.rand(self.__n_images) * (self.__distance[0] - self.__distance[1]) + self.__distance[0]
+        self.__particle_diameters_per_image = np.random.rand(self.__n_images) * (self.__diameters[0] - self.__diameters[1]) + self.__diameters[0]
+        self.__particle_distances_per_image = np.random.rand(self.__n_images) * (self.__distances[0] - self.__distances[1]) + self.__distances[0]
         self.__particle_SNR_per_image = np.random.rand(self.__n_images) * (self.__signal_to_noise[1] - self.__signal_to_noise[0]) + self.__signal_to_noise[0]
 
         # Compute the seeding density for each image:
         if particle_seeding_mode == 'random':
 
-            seeded_particle_density = np.random.rand(self.__n_images) * (self.particle_density[1] - self.particle_density[0]) + self.particle_density[0]
+            self.__particle_densities_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
 
         elif particle_seeding_mode == 'poisson':
 
             seeded_particle_density = np.zeros((self.n_images,))
 
             for i in range(0, self.n_images):
-                sx = np.arange(((self.D[i] + self.L[i]) / 2), (self.size[1] - (self.D[i] + self.L[i]) / 2),
-                               (self.D[i] + self.L[i]))
-                sy = np.arange(((self.D[i] + self.L[i]) / 2), (self.size[0] - (self.D[i] + self.L[i]) / 2),
-                               (self.D[i] + self.L[i]))
-                seeded_particle_density[i] = len(sx) * len(sy) / self.size[1] / self.size[0]
+                sx = np.arange(((self.D[i] + self.L[i]) / 2), (self.size[1] - (self.D[i] + self.L[i]) / 2),(self.D[i] + self.L[i]))
+                sy = np.arange(((self.D[i] + self.L[i]) / 2), (self.size[0] - (self.D[i] + self.L[i]) / 2),(self.D[i] + self.L[i]))
+                seeded_particle_density[i] = len(sx) * len(sy) / self.__size[1] / self.__size[0]
 
-        self.__seeded_particle_density = seeded_particle_density
+            self.__particle_densities_per_image = seeded_particle_density
 
         # Compute the total number of particles for a given particle density on each image:
-        n_of_particles = self.size[1] * self.size[0] * seeded_particle_density
+        n_of_particles = self.__size[1] * self.__size[0] * self.__particle_densities_per_image
         self.__n_of_particles = n_of_particles
 
     # Properties coming from user inputs:
