@@ -95,9 +95,9 @@ class Particle:
             seeded_particle_density = np.zeros((self.n_images,))
 
             for i in range(0, self.n_images):
-                sx = np.arange(((self.D[i] + self.L[i]) / 2), (self.size[1] - (self.D[i] + self.L[i]) / 2),(self.D[i] + self.L[i]))
-                sy = np.arange(((self.D[i] + self.L[i]) / 2), (self.size[0] - (self.D[i] + self.L[i]) / 2),(self.D[i] + self.L[i]))
-                seeded_particle_density[i] = len(sx) * len(sy) / self.__size[1] / self.__size[0]
+                sx = np.arange(((self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]) / 2), (self.size[0] - (self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]) / 2),(self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]))
+                sy = np.arange(((self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]) / 2), (self.size[1] - (self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]) / 2),(self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]))
+                seeded_particle_density[i] = len(sx) * len(sy) / self.__size[0] / self.__size[1]
 
             self.__particle_densities_per_image = seeded_particle_density
 
