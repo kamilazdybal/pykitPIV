@@ -26,24 +26,40 @@ class Image:
         # Create empty image at class init:
         self.__empty_image = np.zeros((particles.size[0], particles.size[1]))
 
+        self.__images = None
+
     @property
     def empty_image(self):
         return self.__empty_image
+
+    @property
+    def images(self):
+        return self.__images
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def add_particles(self):
 
-        self.__image = self.__particles.seed_particles()
+        self.__images = self.__particles.particle_positions
 
+        print('Particles added to the image.')
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def plot(self, idx, cmap='Greys_r', figsize=(5,5)):
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        if self.__images is None:
 
-def plot_image(image, cmap='Greys', figsize=(8,8)):
+            print('Note: Particles have not been added to the image yet!\n\n')
 
-    fig = plt.figure(figsize=figsize)
-    plt.imshow(image, cmap=cmap)
+            fig = plt.figure(figsize=figsize)
+            plt.imshow(self.empty_image, cmap=cmap)
 
-    return plt
+        else:
+
+            fig = plt.figure(figsize=figsize)
+            plt.imshow(self.__images[idx], cmap=cmap)
+
+        return plt
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

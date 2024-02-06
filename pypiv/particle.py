@@ -31,11 +31,11 @@ class Particle:
     :param size:
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, the second number is image width.
     :param diameters:
-        ``tuple`` of two ``int`` elements specifying the minimum and maximum particle diameter in pixels to randomly sample from.
+        ``tuple`` of two ``int`` elements specifying the minimum and maximum particle diameter in pixels to randomly sample from. Only used when ``seeding_mode`` is ``'poisson'``.
     :param distances:
-        ``tuple`` of two elements specifying the minimum and maximum particle distances to randomly sample from. [Kamila] Ask Claudio what is this.
+        ``tuple`` of two elements specifying the minimum and maximum particle distances to randomly sample from. Only used when ``seeding_mode`` is ``'poisson'``.
     :param densities:
-        ``tuple`` of two elements specifying the minimum and maximum particle density on an image to randomly sample from.
+        ``tuple`` of two elements specifying the minimum and maximum particle density on an image to randomly sample from. Only used when ``seeding_mode`` is ``'random'``.
     :param signal_to_noise:
         ``tuple`` of two elements specifying the minimum and maximum signal-to-noise ratio for particle generation. [Kamila] I still wonder if this should rather be a property of Motion class. Maybe not, Motion can allways access this class attribute.
     :param seeding_mode:
@@ -113,8 +113,11 @@ class Particle:
             self.__particle_density_per_image = particle_densities
 
         # Compute the total number of particles for a given particle density on each image:
-        n_of_particles = self.__size[1] * self.__size[0] * self.__particle_density_per_image
+        n_of_particles = self.__size[0] * self.__size[1] * self.__particle_density_per_image
         self.__n_of_particles = [int(i) for i in n_of_particles]
+
+        # Initialize particle positions:
+        self.__particle_positions = None
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -168,16 +171,20 @@ class Particle:
     def n_of_particles(self):
         return self.__n_of_particles
 
+    @property
+    def particle_positions(self):
+        return self.__particle_positions
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def seed_particles(self):
         """
-        Initializes particle centroids on each image.
+        Initializes particle positions on each image.
         """
 
         np.random.seed(seed=self.random_seed)
 
-        images = []
+        particle_positions = []
 
         for i in range(0,self.n_images):
 
@@ -186,11 +193,12 @@ class Particle:
                 random_particle_positions = list(np.random.choice(self.size[0] * self.size[1], size=self.n_of_particles[i], replace=False))
                 seeded_array = np.zeros((self.size[0], self.size[1]))
                 seeded_array.ravel()[random_particle_positions] = 1
-                images.append(seeded_array)
+                particle_positions.append(seeded_array)
 
-        return images
+            elif self.seeding_mode == 'poisson':
 
+                print('Poisson sampling is not supported yet.')
 
+        self.__particle_positions = particle_positions
 
-
-
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
