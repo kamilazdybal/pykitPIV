@@ -6,13 +6,13 @@ import copy
 import scipy
 import warnings
 
-################################################################################
-################################################################################
+########################################################################################################################
+########################################################################################################################
 ####
 ####    Class: Particle
 ####
-################################################################################
-################################################################################
+########################################################################################################################
+########################################################################################################################
 
 class Particle:
     """
@@ -47,7 +47,7 @@ class Particle:
         if type(n_images) != int:
             raise ValueError("Parameter `n_images` has to of type 'int'.")
 
-        if n_images > 0:
+        if n_images < 0:
             raise ValueError("Parameter `n_images` has to be positive.")
 
         if type(size) != tuple:
@@ -81,29 +81,29 @@ class Particle:
         self.__signal_to_noise = signal_to_noise
 
         # Initialize parameters for particle generation:
-        self.__particle_diameters_per_image = np.random.rand(self.__n_images) * (self.__diameters[0] - self.__diameters[1]) + self.__diameters[0]
-        self.__particle_distances_per_image = np.random.rand(self.__n_images) * (self.__distances[0] - self.__distances[1]) + self.__distances[0]
+        self.__particle_diameter_per_image = np.random.rand(self.__n_images) * (self.__diameters[0] - self.__diameters[1]) + self.__diameters[0]
+        self.__particle_distance_per_image = np.random.rand(self.__n_images) * (self.__distances[0] - self.__distances[1]) + self.__distances[0]
         self.__particle_SNR_per_image = np.random.rand(self.__n_images) * (self.__signal_to_noise[1] - self.__signal_to_noise[0]) + self.__signal_to_noise[0]
 
         # Compute the seeding density for each image:
-        if particle_seeding_mode == 'random':
+        if seeding_mode == 'random':
 
-            self.__particle_densities_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
+            self.__particle_density_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
 
-        elif particle_seeding_mode == 'poisson':
+        elif seeding_mode == 'poisson':
 
-            seeded_particle_density = np.zeros((self.n_images,))
+            particle_densities = np.zeros((self.n_images,))
 
             for i in range(0, self.n_images):
-                sx = np.arange(((self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]) / 2), (self.size[0] - (self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]) / 2),(self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]))
-                sy = np.arange(((self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]) / 2), (self.size[1] - (self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]) / 2),(self.__particle_diameters_per_image[i] + self.__particle_distances_per_image[i]))
-                seeded_particle_density[i] = len(sx) * len(sy) / self.__size[0] / self.__size[1]
+                sx = np.arange(((self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]) / 2), (self.size[0] - (self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]) / 2),(self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]))
+                sy = np.arange(((self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]) / 2), (self.size[1] - (self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]) / 2),(self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]))
+                particle_densities[i] = len(sx) * len(sy) / self.__size[0] / self.__size[1]
 
-            self.__particle_densities_per_image = seeded_particle_density
+            self.__particle_density_per_image = particle_densities
 
         # Compute the total number of particles for a given particle density on each image:
-        n_of_particles = self.__size[1] * self.__size[0] * self.__particle_densities_per_image
-        self.__n_of_particles = n_of_particles
+        n_of_particles = self.__size[1] * self.__size[0] * self.__particle_density_per_image
+        self.__n_of_particles = [int(i) for i in n_of_particles]
 
     # Properties coming from user inputs:
     @property
@@ -127,22 +127,28 @@ class Particle:
         return self.__densities
 
     @property
-    def std(self):
-        return self.__std
-
-    @property
     def signal_to_noise(self):
         return self.__signal_to_noise
 
     # Properties computed at class init:
     @property
-    def particle_density(self):
-        return self.__particle_density
+    def diameter_per_image(self):
+        return self.__particle_diameter_per_image
 
     @property
-    def seeded_particle_density(self):
-        return self.__seeded_particle_density
+    def distance_per_image(self):
+        return self.__particle_distance_per_image
+
+    @property
+    def density_per_image(self):
+        return self.__particle_density_per_image
+
+    @property
+    def n_of_particles(self):
+        return self.__n_of_particles
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def seed_particles(self, particle_seeding_mode):
+
+        pass
