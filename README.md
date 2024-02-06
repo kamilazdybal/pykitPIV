@@ -9,7 +9,7 @@ python -m pip install .
 
 Minimal working example:
 
-```
+```python
 from pypiv import Particle, Image
 
 particles = Particle(4, 
