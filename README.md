@@ -29,3 +29,7 @@ image.plot(0,
            figsize=(8,8));
 
 ```
+
+To obtain:
+
+![Screenshot](jupyter-notebooks/image.png)

@@ -46,7 +46,7 @@ class Image:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def plot(self, idx, cmap='Greys_r', figsize=(5,5)):
+    def plot(self, idx, cmap='Greys_r', figsize=(5,5), filename=None):
 
         if self.__images is None:
 
@@ -59,6 +59,10 @@ class Image:
 
             fig = plt.figure(figsize=figsize)
             plt.imshow(self.__images[idx], cmap=cmap)
+
+        if filename is not None:
+
+            plt.savefig(filename, dpi=300, bbox_inches='tight')
 
         return plt
 
