@@ -31,5 +31,3 @@ print('Python==' + python_version())
 print()
 print('numpy==' + np.__version__)
 print('pandas==' + pd.__version__)
-
-import pypiv

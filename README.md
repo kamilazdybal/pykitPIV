@@ -12,21 +12,29 @@ Minimal working example:
 ```python
 from pypiv import Particle, Image
 
-particles = Particle(4, 
+particles = Particle(1, 
                      size=(512,512), 
                      densities=(0.05,0.1),
-                     diameters=(10,10),
+                     diameters=(3,6),
                      distances=(1,1),
                      seeding_mode='random', 
                      random_seed=100)
 
 image = Image(particles)
 
+particles.seed_particles()
+
 image.add_particles()
+
+image.add_gaussian_light_distribution(exposures=(0.02,0.8),
+                                      maximum_intensity=2**16-1,
+                                      laser_beam_thickness=2,
+                                      laser_over_exposure=1,
+                                      laser_beam_shape=0.85)
 
 image.plot(0, 
            cmap='Greys_r',
-           figsize=(8,8));
+           figsize=(6,6));
 
 ```
 
