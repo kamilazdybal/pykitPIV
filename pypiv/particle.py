@@ -31,7 +31,7 @@ class Particle:
     :param size:
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, the second number is image width.
     :param diameters:
-        ``tuple`` of two ``int`` elements specifying the minimum and maximum particle diameter in pixels to randomly sample from. Only used when ``seeding_mode`` is ``'poisson'``.
+        ``tuple`` of two ``int`` elements specifying the minimum and maximum particle diameter in pixels to randomly sample from.
     :param distances:
         ``tuple`` of two elements specifying the minimum and maximum particle distances to randomly sample from. Only used when ``seeding_mode`` is ``'poisson'``.
     :param densities:
@@ -51,6 +51,7 @@ class Particle:
                  distances=(0.5,2),
                  densities=(0.05,0.1),
                  signal_to_noise=(5,20),
+                 diameter_std=0.1,
                  seeding_mode='random',
                  random_seed=None):
 
@@ -68,6 +69,9 @@ class Particle:
         check_two_element_tuple(distances, 'distances')
         check_two_element_tuple(densities, 'densities')
         check_two_element_tuple(signal_to_noise, 'signal_to_noise')
+
+        if type(diameter_std) != float:
+            raise ValueError("Parameter `diameter_std` has to of type 'float'.")
 
         __seeding_mode = ['random', 'poisson']
         if seeding_mode not in __seeding_mode:
@@ -88,6 +92,7 @@ class Particle:
         self.__distances = distances
         self.__densities = densities
         self.__signal_to_noise = signal_to_noise
+        self.__diameter_std = diameter_std
         self.__seeding_mode = seeding_mode
         self.__random_seed = random_seed
 
@@ -119,6 +124,9 @@ class Particle:
         # Initialize particle positions:
         self.__particle_positions = None
 
+        # Initialize particle radii:
+        self.__particle_radii = None
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
@@ -145,6 +153,10 @@ class Particle:
     @property
     def signal_to_noise(self):
         return self.__signal_to_noise
+
+    @property
+    def diameter_std(self):
+        return self.__diameter_std
 
     @property
     def seeding_mode(self):
@@ -175,6 +187,10 @@ class Particle:
     def particle_positions(self):
         return self.__particle_positions
 
+    @property
+    def particle_radii(self):
+        return self.__particle_radii
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def seed_particles(self):
@@ -185,6 +201,7 @@ class Particle:
         np.random.seed(seed=self.random_seed)
 
         particle_positions = []
+        particle_radii = []
 
         for i in range(0,self.n_images):
 
@@ -199,6 +216,9 @@ class Particle:
 
                 print('Poisson sampling is not supported yet.')
 
+            particle_radii.append(np.random.rand(self.n_of_particles[i]) * self.diameter_std/2/3 + self.diameters[i]/2)
+
         self.__particle_positions = particle_positions
+        self.__particle_radii = particle_radii
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
