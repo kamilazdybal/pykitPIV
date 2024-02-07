@@ -12,6 +12,7 @@ Minimal working example:
 ```python
 from pypiv import Particle, Image
 
+# Create particles with specific properties:
 particles = Particle(1, 
                      size=(512,512), 
                      densities=(0.05,0.1),
@@ -19,10 +20,11 @@ particles = Particle(1,
                      distances=(1,1),
                      seeding_mode='random', 
                      random_seed=100)
-
-image = Image(particles)
-
+                     
 particles.seed_particles()
+
+# Add particles to the image:
+image = Image(particles)
 
 image.add_particles()
 
