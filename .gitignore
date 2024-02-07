@@ -10,3 +10,4 @@
 .idea/
 build/
 pypiv.egg-info/
+docs/builddir/
