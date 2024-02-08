@@ -5,14 +5,7 @@ import random
 import copy
 import scipy
 import warnings
-
-def check_two_element_tuple(x, name):
-
-    if not isinstance(x, tuple):
-        raise ValueError("Parameter `" + name + "` has to of type 'tuple'.")
-
-    if len(x) != 2:
-        raise ValueError("Parameter `" + name + "` has to have two elements.")
+from pypiv.checks import *
 
 ########################################################################################################################
 ########################################################################################################################
@@ -24,23 +17,25 @@ def check_two_element_tuple(x, name):
 
 class Particle:
     """
-    Generates particles for a set of ``n_images`` number of image pairs.
+    Generates particles with specified properties for a set of ``n_images`` number of image pairs.
 
     :param n_images:
         ``int`` specifying the number of image pairs to create.
-    :param size:
+    :param size: (optional)
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, the second number is image width.
-    :param diameters:
+    :param diameters: (optional)
         ``tuple`` of two ``int`` elements specifying the minimum and maximum particle diameter in pixels to randomly sample from.
-    :param distances:
-        ``tuple`` of two elements specifying the minimum and maximum particle distances to randomly sample from. Only used when ``seeding_mode`` is ``'poisson'``.
-    :param densities:
-        ``tuple`` of two elements specifying the minimum and maximum particle density on an image to randomly sample from. Only used when ``seeding_mode`` is ``'random'``.
-    :param signal_to_noise:
-        ``tuple`` of two elements specifying the minimum and maximum signal-to-noise ratio for particle generation. [Kamila] I still wonder if this should rather be a property of Motion class. Maybe not, Motion can allways access this class attribute.
-    :param seeding_mode:
+    :param distances: (optional)
+        ``tuple`` of two numerical elements specifying the minimum and maximum particle distances to randomly sample from. Only used when ``seeding_mode`` is ``'poisson'``.
+    :param densities: (optional)
+        ``tuple`` of two numerical elements specifying the minimum and maximum particle density on an image to randomly sample from. Only used when ``seeding_mode`` is ``'random'``.
+    :param diameter_std: (optional)
+        ``float`` specifying the standard deviation for the particle diameters distribution.
+    :param signal_to_noise: (optional)
+        ``tuple`` of two numerical elements specifying the minimum and maximum signal-to-noise ratio for particle generation. [Kamila] I still wonder if this should rather be a property of Motion class. Maybe not, Motion can always access this class attribute.
+    :param seeding_mode: (optional)
         ``str`` specifying the seeding mode for initializing particles in the image domain. It can be one of the following: ``'random'``, ``'poisson'``.
-    :param random_seed:
+    :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
    """
 
@@ -71,7 +66,7 @@ class Particle:
         check_two_element_tuple(signal_to_noise, 'signal_to_noise')
 
         if type(diameter_std) != float:
-            raise ValueError("Parameter `diameter_std` has to of type 'float'.")
+            raise ValueError("Parameter `diameter_std` has to be of type 'float'.")
 
         __seeding_mode = ['random', 'poisson']
         if seeding_mode not in __seeding_mode:
@@ -79,7 +74,7 @@ class Particle:
 
         if random_seed is not None:
             if type(random_seed) != int:
-                raise ValueError("Parameter `random_seed` has to of type 'int'.")
+                raise ValueError("Parameter `random_seed` has to be of type 'int'.")
             else:
                 np.random.seed(seed=random_seed)
 
@@ -195,7 +190,7 @@ class Particle:
 
     def seed_particles(self):
         """
-        Initializes particle positions on each image.
+        Initializes particle positions on each of the ``n_image`` images.
         """
 
         np.random.seed(seed=self.random_seed)

@@ -15,6 +15,9 @@ import warnings
 ################################################################################
 
 class FlowField:
+    """
+    Generates velocity field to advect the particles between two consecutive images.
+    """
 
     def __init__(self, 
                  flow_mode='random',

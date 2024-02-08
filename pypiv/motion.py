@@ -15,6 +15,12 @@ import warnings
 ################################################################################
 
 class Motion:
+    """
+    Applies movement to particles defined by the velocity field.
+
+    :param warp_images:
+        ``str`` specifying the method to warp PIV images.
+    """
 
     def __init__(self,
                  lost_particles=(0, 20),
