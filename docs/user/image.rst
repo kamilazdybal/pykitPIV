@@ -8,8 +8,8 @@ Class: ``Image``
 
 .. autofunction:: pypiv.image.Image.add_particles
 
-.. autofunction:: pypiv.image.Image.light_intensity_distribution
+.. autofunction:: pypiv.image.Image.add_reflected_light
 
-.. autofunction:: pypiv.image.Image.add_gaussian_light_distribution
+.. autofunction:: pypiv.image.Image.compute_light_intensity_at_pixel
 
 .. autofunction:: pypiv.image.Image.plot

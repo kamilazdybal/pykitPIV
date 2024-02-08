@@ -81,6 +81,12 @@ class Image:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def add_particles(self, particles):
+        """
+        Adds particles to the image. Particles should be defined using the ``Particle`` class.
+
+        :param particles:
+            ``Particle`` class instance specifying the properties and positions of particles.
+        """
 
         if not isinstance(particles, Particle):
             raise ValueError("Parameter `particles` has to be an instance of `Particle` class.")
@@ -96,29 +102,60 @@ class Image:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def light_intensity_distribution(self,
-                                     peak_intensity,
-                                     particle_radius,
-                                     coordinate_height,
-                                     coordinate_width):
+    def compute_light_intensity_at_pixel(self,
+                                         peak_intensity,
+                                         particle_radius,
+                                         coordinate_height,
+                                         coordinate_width,
+                                         alpha=1/8):
+        """
+        Computes the intensity of light reflected from a particle at a requested pixel at position relative to the particle centroid.
+        The reflected light follows a Gaussian distribution, i.e., the light intensity value, :math:`i_p`, at the request pixel, :math:`p`, is computed as:
 
-        bandwidth = particle_radius/3
+        .. math::
 
-        pixel_value = peak_intensity * np.exp(-0.5 * (coordinate_height**2 + coordinate_width**2) / bandwidth**2)
+            i_p =  i_{\\text{peak}} \\cdot \\exp \Big(- \\frac{h_p^2 + w_p^2}{\\alpha \\cdot r_p^2} \Big)
+
+        where:
+
+        - :math:`i_{\\text{peak}}` is the peak intensity applied at the particle centroid.
+        - :math:`h_p` is the pixel coordinate in the image height direction relative to the particle centroid.
+        - :math:`w_p` is the pixel coordinate in the image width direction relative to the particle centroid.
+        - :math:`\\alpha` is a custom multiplier, :math:`\\alpha`, for the squared particle radius.
+        - :math:`r_p` is the particle radius.
+
+        :param peak_intensity:
+            ``float`` specifying the peak intensity, :math:`i_{\\text{peak}}`, to apply at the particle centroid.
+        :param particle_radius:
+            ``float`` specifying the particle radius, :math:`r_p`.
+        :param coordinate_height:
+            ``float`` specifying the pixel coordinate in the image height direction, :math:`h_p`, relative to the particle centroid.
+        :param coordinate_width:
+            ``float`` specifying the pixel coordinate in the image width direction, :math:`w_p`, relative to the particle centroid.
+        :param alpha: (optional):
+            ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius. The default value is :math:`1/8` as per Rabault et al. (2017) and Manickathan et al. (2022).
+
+        :return:
+            - **pixel_value** - ``float`` specifying the light intensity value at the requested pixel.
+        """
+
+        pixel_value = peak_intensity * np.exp(-(coordinate_height**2 + coordinate_width**2) / (alpha * particle_radius**2))
 
         return pixel_value
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def add_gaussian_light_distribution(self,
-                                        exposures=(0.02,0.8),
-                                        maximum_intensity=2**16-1,
-                                        laser_beam_thickness=2,
-                                        laser_over_exposure=1,
-                                        laser_beam_shape=0.85):
+    def add_reflected_light(self,
+                            exposures=(0.02,0.8),
+                            maximum_intensity=2**16-1,
+                            laser_beam_thickness=2,
+                            laser_over_exposure=1,
+                            laser_beam_shape=0.85,
+                            alpha=1/8):
 
         """
-        Creates particle sizes and adds laser light reflected from particles. The reflected light follows a Gaussian distribution.
+        Creates particle sizes and adds laser light reflected from particles.
+        The reflected light follows a Gaussian distribution and is computed using the ``Image.compute_light_intensity_at_pixel()`` method.
 
         :param exposures: (optional)
             ``tuple`` of two numerical elements specifying the light exposure.
@@ -130,6 +167,8 @@ class Image:
             ``int`` or ``float`` specifying the overexposure of the laser beam.
         :param laser_beam_shape: (optional)
             ``int`` or ``float`` specifying the shape of the laser beam.
+        :param alpha: (optional):
+            ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius as per the ``Particle.compute_light_intensity_at_pixel()`` method.
         """
 
         # Input parameter check:
@@ -137,6 +176,9 @@ class Image:
 
         if self.__particles is None:
             raise NameError("Particles have not been added to the image yet! Use the `Image.add_particles()` method first.")
+
+        if self.random_seed is not None:
+            np.random.seed(seed=self.random_seed)
 
         # Randomize image exposure:
         image_exposure = np.random.rand(self.__particles.n_images) * (exposures[1] - exposures[0]) + exposures[0]
@@ -169,17 +211,40 @@ class Image:
 
                             coordinate_height = h + 0.5 - particle_height_coordinate[p]
                             coordinate_width = w + 0.5 - particle_width_coordinate[p]
-                            particles_with_gaussian_light[h,w] = particles_with_gaussian_light[h,w] + self.light_intensity_distribution(particle_peak_intensities[p], self.__particles.particle_radii[i][p], coordinate_height, coordinate_width)
+                            particles_with_gaussian_light[h,w] = particles_with_gaussian_light[h,w] + self.compute_light_intensity_at_pixel(particle_peak_intensities[p],
+                                                                                                                                            self.__particles.particle_radii[i][p],
+                                                                                                                                            coordinate_height,
+                                                                                                                                            coordinate_width,
+                                                                                                                                            alpha=alpha)
 
             images.append(particles_with_gaussian_light)
 
         self.__images = images
 
-        print('Gaussian light added to the image.')
+        print('Reflected light added to the image.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def plot(self, idx, cmap='Greys_r', figsize=(5,5), filename=None):
+    def plot(self,
+             idx,
+             cmap='Greys_r',
+             figsize=(5,5),
+             dpi=300,
+             filename=None):
+        """
+        Plots a single, static PIV image.
+
+        :param idx:
+            ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
+        :param cmap: (optional)
+            ``str`` specifying the color map to use.
+        :param figsize: (optional)
+            ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
+        :param dpi: (optional)
+            ``int`` specifying the dpi for the image.
+        :param filename: (optional)
+            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+        """
 
         if self.__images is None:
 
@@ -195,7 +260,7 @@ class Image:
 
         if filename is not None:
 
-            plt.savefig(filename, dpi=300, bbox_inches='tight')
+            plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
         return plt
 
