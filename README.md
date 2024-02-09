@@ -4,48 +4,32 @@
     <img src="docs/images/pypiv-logo.png" width="200">
 </p>
 
-To install:
+## Introduction
+
+**pypiv** is a Python package for synthetic PIV image generation.
+The goal of this library is to give the user (or a reinforcement learning agent) a lot of flexibility in setting-up image generation.
+
+The graph below shows the possible workflows constructed from the four main classes.
+The class **Particle** can be used to initialize particle properties and particle positions on an image.
+The class **FlowField** can be used to create velocity field to advect the particles.
+The class **Motion** takes and objects of class **Particle** and applies an object of class **FlowField** on top of it.
+The class **Image** is the endpoint of the workflow and can be used to apply laser and camera properties on any standalone image,
+as well as on the series of images of advected particles. At each stage, we enforce reproducible image generation through fixing random seeds.
+
+<p align="center">
+    <img src="docs/images/pypiv-workflow.png" width="400">
+</p>
+
+## Installation
+
+To install, run the following in the main ``pypiv/`` location:
 
 ```
 python -m pip install .
 ```
 
-
-Minimal working example:
-
-```python
-from pypiv import Particle, Image
-
-# Create particles with specific properties:
-particles = Particle(1, 
-                     size=(512,512), 
-                     densities=(0.05,0.1),
-                     diameters=(3,6),
-                     distances=(1,1),
-                     seeding_mode='random', 
-                     random_seed=100)
-                     
-particles.seed_particles()
-
-# Add particles to the image:
-image = Image(particles)
-
-image.add_particles()
-
-image.add_gaussian_light_distribution(exposures=(0.02,0.8),
-                                      maximum_intensity=2**16-1,
-                                      laser_beam_thickness=2,
-                                      laser_over_exposure=1,
-                                      laser_beam_shape=0.85)
-
-image.plot(0, 
-           cmap='Greys_r',
-           figsize=(6,6));
-
-```
-
-To obtain:
+## Example PIV image
 
 <p align="center">
-    <img src="jupyter-notebooks/image.png" width="300">
+    <img src="docs/images/example-image.png" width="300">
 </p>

@@ -146,7 +146,7 @@ class Image:
         :param coordinate_width:
             ``float`` specifying the pixel coordinate in the image width direction, :math:`w_p`, relative to the particle centroid.
         :param alpha: (optional):
-            ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius. The default value is :math:`1/8` as per Rabault et al. (2017) and Manickathan et al. (2022).
+            ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius. The default value is :math:`1/8` as per `Rabault et al. (2017) <https://iopscience.iop.org/article/10.1088/1361-6501/aa8b87/meta>`_ and `Manickathan et al. (2022) <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae>`_.
 
         :return:
             - **pixel_value** - ``float`` specifying the light intensity value at the requested pixel.
@@ -177,7 +177,7 @@ class Image:
         The reflected light follows a Gaussian distribution and is computed using the ``Image.compute_light_intensity_at_pixel()`` method.
 
         :param exposures: (optional)
-            ``tuple`` of two numerical elements specifying the light exposure.
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) light exposure.
         :param maximum_intensity: (optional)
             ``int`` specifying the maximum light intensity.
         :param laser_beam_thickness: (optional)
@@ -195,6 +195,7 @@ class Image:
         # Input parameter check:
 
         check_two_element_tuple(exposures, 'exposures')
+        check_min_max_tuple(exposures, 'exposures')
 
         if self.__particles is None:
             raise NameError("Particles have not been added to the image yet! Use the `Image.add_particles()` method first.")
@@ -270,7 +271,7 @@ class Image:
         :param title: (optional)
             ``str`` specifying figure title.
         :param cmap: (optional)
-            ``str`` specifying the color map to use.
+            ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
         :param figsize: (optional)
             ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
         :param dpi: (optional)
