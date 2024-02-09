@@ -53,6 +53,7 @@ class Particle:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Input parameter check:
+
         if type(n_images) != int:
             raise ValueError("Parameter `n_images` has to of type 'int'.")
 

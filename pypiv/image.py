@@ -30,12 +30,17 @@ class Image:
         ``int`` specifying the random seed for random number generation in ``numpy``.
     """
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def __init__(self,
                  size=(512,512),
                  random_seed=None,
                  ):
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
         # Input parameter check:
+
         check_two_element_tuple(size, 'size')
 
         if random_seed is not None:
@@ -45,6 +50,7 @@ class Image:
                 np.random.seed(seed=random_seed)
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
         # Class init:
         self.__size = size
         self.__random_seed = random_seed
@@ -80,7 +86,8 @@ class Image:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def add_particles(self, particles):
+    def add_particles(self,
+                      particles):
         """
         Adds particles to the image. Particles should be defined using the ``Particle`` class.
 
@@ -88,12 +95,18 @@ class Image:
             ``Particle`` class instance specifying the properties and positions of particles.
         """
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
         if not isinstance(particles, Particle):
             raise ValueError("Parameter `particles` has to be an instance of `Particle` class.")
 
         # Check that the size of images are consistent between the Image and Particle objects:
         if particles.size != self.size:
             raise ValueError("Inconsistent image sizes between the current `Image` object and the `Particle` object.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__particles = particles
         self.__images = self.__particles.particle_positions
@@ -139,6 +152,13 @@ class Image:
             - **pixel_value** - ``float`` specifying the light intensity value at the requested pixel.
         """
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
         pixel_value = peak_intensity * np.exp(-(coordinate_height**2 + coordinate_width**2) / (alpha * particle_radius**2))
 
         return pixel_value
@@ -152,7 +172,6 @@ class Image:
                             laser_over_exposure=1,
                             laser_beam_shape=0.85,
                             alpha=1/8):
-
         """
         Creates particle sizes and adds laser light reflected from particles.
         The reflected light follows a Gaussian distribution and is computed using the ``Image.compute_light_intensity_at_pixel()`` method.
@@ -171,7 +190,10 @@ class Image:
             ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius as per the ``Particle.compute_light_intensity_at_pixel()`` method.
         """
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
         # Input parameter check:
+
         check_two_element_tuple(exposures, 'exposures')
 
         if self.__particles is None:
@@ -179,6 +201,8 @@ class Image:
 
         if self.random_seed is not None:
             np.random.seed(seed=self.random_seed)
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Randomize image exposure:
         image_exposure = np.random.rand(self.__particles.n_images) * (exposures[1] - exposures[0]) + exposures[0]
@@ -227,6 +251,9 @@ class Image:
 
     def plot(self,
              idx,
+             xlabel=None,
+             ylabel=None,
+             title=None,
              cmap='Greys_r',
              figsize=(5,5),
              dpi=300,
@@ -236,6 +263,12 @@ class Image:
 
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
+        :param xlabel: (optional)
+            ``str`` specifying :math:`x`-label.
+        :param ylabel: (optional)
+            ``str`` specifying :math:`y`-label.
+        :param title: (optional)
+            ``str`` specifying figure title.
         :param cmap: (optional)
             ``str`` specifying the color map to use.
         :param figsize: (optional)
@@ -245,6 +278,34 @@ class Image:
         :param filename: (optional)
             ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
         """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(idx, int):
+            raise ValueError("Parameter `idx` has to be of type 'int'.")
+        if idx < 0:
+            raise ValueError("Parameter `idx` has to be non-negative.")
+
+        if (xlabel is not None) and (not isinstance(xlabel, str)):
+            raise ValueError("Parameter `xlabel` has to be of type 'str'.")
+
+        if (ylabel is not None) and (not isinstance(ylabel, str)):
+            raise ValueError("Parameter `ylabel` has to be of type 'str'.")
+
+        if (title is not None) and (not isinstance(title, str)):
+            raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        check_two_element_tuple(figsize, 'figsize')
+
+        if not isinstance(dpi, int):
+            raise ValueError("Parameter `dpi` has to be of type 'int'.")
+
+        if (filename is not None) and (not isinstance(filename, str)):
+            raise ValueError("Parameter `filename` has to be of type 'str'.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         if self.__images is None:
 
@@ -257,6 +318,15 @@ class Image:
 
             fig = plt.figure(figsize=figsize)
             plt.imshow(self.__images[idx], cmap=cmap)
+
+        if xlabel is not None:
+            plt.xlabel(xlabel)
+
+        if ylabel is not None:
+            plt.ylabel(ylabel)
+
+        if title is not None:
+            plt.title(title)
 
         if filename is not None:
 

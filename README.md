@@ -1,5 +1,9 @@
 # Synthetic PIV image generation in Python
 
+<p align="center">
+    <img src="docs/images/pypiv-logo.png" width="200">
+</p>
+
 To install:
 
 ```
@@ -42,4 +46,6 @@ image.plot(0,
 
 To obtain:
 
-![Screenshot](jupyter-notebooks/image.png)
+<p align="center">
+    <img src="jupyter-notebooks/image.png" width="300">
+</p>
