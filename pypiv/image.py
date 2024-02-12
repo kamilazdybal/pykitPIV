@@ -117,7 +117,7 @@ class Image:
 
     def compute_light_intensity_at_pixel(self,
                                          peak_intensity,
-                                         particle_radius,
+                                         particle_diameter,
                                          coordinate_height,
                                          coordinate_width,
                                          alpha=1/8):
@@ -127,20 +127,20 @@ class Image:
 
         .. math::
 
-            i_p =  i_{\\text{peak}} \\cdot \\exp \Big(- \\frac{h_p^2 + w_p^2}{\\alpha \\cdot r_p^2} \Big)
+            i_p =  i_{\\text{peak}} \\cdot \\exp \Big(- \\frac{h_p^2 + w_p^2}{\\alpha \\cdot d_p^2} \Big)
 
         where:
 
         - :math:`i_{\\text{peak}}` is the peak intensity applied at the particle centroid.
         - :math:`h_p` is the pixel coordinate in the image height direction relative to the particle centroid.
         - :math:`w_p` is the pixel coordinate in the image width direction relative to the particle centroid.
-        - :math:`\\alpha` is a custom multiplier, :math:`\\alpha`, for the squared particle radius.
-        - :math:`r_p` is the particle radius.
+        - :math:`\\alpha` is a custom multiplier, :math:`\\alpha`. The default value is :math:`\\alpha = 1/8`.
+        - :math:`d_p` is the particle diameter.
 
         :param peak_intensity:
             ``float`` specifying the peak intensity, :math:`i_{\\text{peak}}`, to apply at the particle centroid.
-        :param particle_radius:
-            ``float`` specifying the particle radius, :math:`r_p`.
+        :param particle_diameter:
+            ``float`` specifying the particle diameter :math:`d_p`.
         :param coordinate_height:
             ``float`` specifying the pixel coordinate in the image height direction, :math:`h_p`, relative to the particle centroid.
         :param coordinate_width:
@@ -159,7 +159,7 @@ class Image:
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        pixel_value = peak_intensity * np.exp(-(coordinate_height**2 + coordinate_width**2) / (alpha * particle_radius**2))
+        pixel_value = peak_intensity * np.exp(-(coordinate_height**2 + coordinate_width**2) / (alpha * particle_diameter**2))
 
         return pixel_value
 
@@ -228,7 +228,7 @@ class Image:
 
                 px_c_height = int(np.floor(particle_height_coordinate[p]))
                 px_c_width = int(np.floor(particle_width_coordinate[p]))
-                ceil_of_particle_radius = int(np.ceil(self.__particles.particle_radii[i][p]))
+                ceil_of_particle_radius = int(np.ceil(self.__particles.particle_diameters[i][p]/2))
 
                 for h in range(px_c_height-ceil_of_particle_radius, px_c_height+ceil_of_particle_radius):
                     for w in range(px_c_width-ceil_of_particle_radius, px_c_width+ceil_of_particle_radius):
@@ -237,7 +237,7 @@ class Image:
                             coordinate_height = h + 0.5 - particle_height_coordinate[p]
                             coordinate_width = w + 0.5 - particle_width_coordinate[p]
                             particles_with_gaussian_light[h,w] = particles_with_gaussian_light[h,w] + self.compute_light_intensity_at_pixel(particle_peak_intensities[p],
-                                                                                                                                            self.__particles.particle_radii[i][p],
+                                                                                                                                            self.__particles.particle_diameters[i][p],
                                                                                                                                             coordinate_height,
                                                                                                                                             coordinate_width,
                                                                                                                                             alpha=alpha)

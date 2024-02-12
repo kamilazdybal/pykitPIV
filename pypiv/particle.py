@@ -30,7 +30,7 @@ class Particle:
     :param densities: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle density on an image to randomly sample from. Only used when ``seeding_mode`` is ``'random'``.
     :param diameter_std: (optional)
-        ``float`` specifying the standard deviation for the particle diameters distribution.
+        ``float`` or ``int`` specifying the standard deviation for the particle diameters distribution.
     :param signal_to_noise: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) signal-to-noise ratio for particle generation. [Kamila] I still wonder if this should rather be a property of Motion class. Maybe not, Motion can always access this class attribute.
     :param seeding_mode: (optional)
@@ -70,8 +70,8 @@ class Particle:
         check_two_element_tuple(signal_to_noise, 'signal_to_noise')
         check_min_max_tuple(signal_to_noise, 'signal_to_noise')
 
-        if type(diameter_std) != float:
-            raise ValueError("Parameter `diameter_std` has to be of type 'float'.")
+        if (not isinstance(diameter_std, float)) and (not isinstance(diameter_std, int)):
+            raise ValueError("Parameter `diameter_std` has to be of type 'float' or 'int'.")
 
         __seeding_mode = ['random', 'poisson']
         if seeding_mode not in __seeding_mode:
@@ -97,8 +97,8 @@ class Particle:
         self.__random_seed = random_seed
 
         # Initialize parameters for particle generation:
-        self.__particle_diameter_per_image = np.random.rand(self.__n_images) * (self.__diameters[0] - self.__diameters[1]) + self.__diameters[0]
-        self.__particle_distance_per_image = np.random.rand(self.__n_images) * (self.__distances[0] - self.__distances[1]) + self.__distances[0]
+        self.__particle_diameter_per_image = np.random.rand(self.__n_images) * (self.__diameters[1] - self.__diameters[0]) + self.__diameters[0]
+        self.__particle_distance_per_image = np.random.rand(self.__n_images) * (self.__distances[1] - self.__distances[0]) + self.__distances[0]
         self.__particle_SNR_per_image = np.random.rand(self.__n_images) * (self.__signal_to_noise[1] - self.__signal_to_noise[0]) + self.__signal_to_noise[0]
 
         # Compute the seeding density for each image:
@@ -124,7 +124,7 @@ class Particle:
         # Initialize particle positions and particle diameters on each of the ``n_image`` images:
 
         particle_positions = []
-        particle_radii = []
+        particle_diameters = []
 
         for i in range(0,self.n_images):
 
@@ -139,13 +139,13 @@ class Particle:
 
                 print('Poisson sampling is not supported yet.')
 
-            particle_radii.append(np.random.rand(self.n_of_particles[i]) * self.diameter_std/2/3 + self.diameters[i]/2)
+            particle_diameters.append(np.random.rand(self.n_of_particles[i]) * self.diameter_std/2/3 + self.diameter_per_image[i])
 
         # Initialize particle positions:
         self.__particle_positions = particle_positions
 
-        # Initialize particle radii:
-        self.__particle_radii = particle_radii
+        # Initialize particle diameters:
+        self.__particle_diameters = particle_diameters
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -208,7 +208,7 @@ class Particle:
         return self.__particle_positions
 
     @property
-    def particle_radii(self):
-        return self.__particle_radii
+    def particle_diameters(self):
+        return self.__particle_diameters
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
