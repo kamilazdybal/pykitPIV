@@ -64,6 +64,9 @@ class Image:
         # Initialize particles:
         self.__particles = None
 
+        # Initialize exposures per image:
+        self.__exposures_per_image = None
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
@@ -83,6 +86,10 @@ class Image:
     @property
     def images(self):
         return self.__images
+
+    @property
+    def exposures_per_image(self):
+        return self.__exposures_per_image
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -206,7 +213,7 @@ class Image:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Randomize image exposure:
-        image_exposure = np.random.rand(self.__particles.n_images) * (exposures[1] - exposures[0]) + exposures[0]
+        self.__exposures_per_image = np.random.rand(self.__particles.n_images) * (exposures[1] - exposures[0]) + exposures[0]
 
         images = []
 
@@ -221,7 +228,7 @@ class Image:
             # Establish the peak intensity for each particle depending on its position with respect to the laser beam plane:
             particle_positions_off_laser_plane = laser_beam_thickness * np.random.rand(self.__particles.n_of_particles[i]) - laser_beam_thickness/2
             particle_position_relative_to_laser_centerline = np.abs(particle_positions_off_laser_plane) / (laser_beam_thickness/2)
-            particle_peak_intensities = image_exposure[i] * maximum_intensity * np.exp(-0.5 * (particle_position_relative_to_laser_centerline**2 / laser_beam_shape**2))
+            particle_peak_intensities = self.exposures_per_image[i] * maximum_intensity * np.exp(-0.5 * (particle_position_relative_to_laser_centerline**2 / laser_beam_shape**2))
 
             # Add Gaussian blur to each particle location that mimics the particle size:
             for p in range(0,self.__particles.n_of_particles[i]):

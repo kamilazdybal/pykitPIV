@@ -139,7 +139,7 @@ class Particle:
 
                 print('Poisson sampling is not supported yet.')
 
-            particle_diameters.append(np.random.rand(self.n_of_particles[i]) * self.diameter_std/2/3 + self.diameter_per_image[i])
+            particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i]))
 
         # Initialize particle positions:
         self.__particle_positions = particle_positions
