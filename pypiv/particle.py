@@ -200,6 +200,10 @@ class Particle:
         return self.__particle_density_per_image
 
     @property
+    def SNR_per_image(self):
+        return self.__particle_SNR_per_image
+
+    @property
     def n_of_particles(self):
         return self.__n_of_particles
 

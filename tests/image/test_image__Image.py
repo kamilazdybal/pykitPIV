@@ -5,7 +5,7 @@ import random
 import copy
 from pypiv import Image
 
-class Image(unittest.TestCase):
+class TestImageClass(unittest.TestCase):
 
     def test_image__Image__allowed_calls(self):
 
