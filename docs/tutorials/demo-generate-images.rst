@@ -12,7 +12,7 @@ Define image sizes in pixels:
 
 .. code:: python
 
-    image_size = (128,128)
+    image_size = (128,512)
 
 Instantiate an object of the ``Particle`` class that defines particles with specific properties, and seed the particles randomly:
 
@@ -21,8 +21,9 @@ Instantiate an object of the ``Particle`` class that defines particles with spec
     particles = Particle(1,
                          size=image_size,
                          densities=(0.01,0.05),
-                         diameters=(3,6),
+                         diameters=(6,10),
                          distances=(1,1),
+                         diameter_std=1,
                          seeding_mode='random',
                          random_seed=100)
 
@@ -48,11 +49,11 @@ If we plot the image at this stage, we will only see the particle positions (cen
                ylabel='Height [px]',
                title='Particle positions',
                cmap='Reds',
-               figsize=(6,6),
+               figsize=(8,8),
                filename='particle-positions.png');
 
 .. image:: ../images/particle-positions.png
-    :width: 500
+    :width: 700
     :align: center
 
 We can now add laser light reflected from the particles:
@@ -61,10 +62,10 @@ We can now add laser light reflected from the particles:
 
     image.add_reflected_light(exposures=(0.02,0.8),
                               maximum_intensity=2**16-1,
-                              laser_beam_thickness=2,
+                              laser_beam_thickness=1,
                               laser_over_exposure=1,
                               laser_beam_shape=0.15,
-                              alpha=1)
+                              alpha=1/20)
 
 Which produces the PIV image:
 
@@ -75,9 +76,9 @@ Which produces the PIV image:
                ylabel='Height [px]',
                title='Example PIV image',
                cmap='Greys_r',
-               figsize=(5,4),
+               figsize=(8,8),
                filename='example-image.png');
 
 .. image:: ../images/example-image.png
-    :width: 500
+    :width: 700
     :align: center
