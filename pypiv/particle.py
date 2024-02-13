@@ -75,7 +75,7 @@ class Particle:
     :param seeding_mode: (optional)
         ``str`` specifying the seeding mode for initializing particles in the image domain. It can be one of the following: ``'random'``, ``'poisson'``.
     :param random_seed: (optional)
-        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation will be reproducible.
+        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
 
     **Attributes:**
 

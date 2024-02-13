@@ -27,7 +27,7 @@ class Image:
     :param size: (optional)
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, the second number is image width.
     :param random_seed: (optional)
-        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation will be reproducible.
+        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
 
     **Attributes:**
 
