@@ -27,7 +27,16 @@ class Image:
     :param size: (optional)
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, the second number is image width.
     :param random_seed: (optional)
-        ``int`` specifying the random seed for random number generation in ``numpy``.
+        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation will be reproducible.
+
+    **Attributes:**
+
+    - **size** - (read-only) as per user input.
+    - **random_seed** - (read-only) as per user input.
+    - **empty_image** - (read-only) ``numpy.ndarray`` with an empty image of a given size.
+    - **images** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image of a given size.
+    - **particles** - (read-only) object of ``pypiv.Particle`` class.
+    - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image.
     """
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

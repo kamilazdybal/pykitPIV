@@ -17,7 +17,46 @@ from pypiv.checks import *
 
 class Particle:
     """
-    Generates particles with specified properties for a set of ``n_images`` number of image pairs.
+    Generates particles with specified properties for a set of ``n_images`` number of PIV image pairs.
+
+    **Example:**
+
+    .. code:: python
+
+        import numpy as np
+        from pypiv import Particle
+
+        # We are going to generate 10 PIV image pairs:
+        n_images = 10
+
+        # Specify size in pixels for each image:
+        image_size = (128,512)
+
+        particles = Particle(n_images=n_images,
+                             size=image_size,
+                             diameters=(6,10),
+                             distances=(1,2),
+                             densities=(0.01,0.05),
+                             signal_to_noise=(5,20),
+                             diameter_std=1,
+                             seeding_mode='random',
+                             random_seed=1)
+
+        # Check the number of particles on the first image pair:
+        print(particles.n_of_particles[0])
+
+    .. code-block:: text
+
+        913
+
+    .. code:: python
+
+        # Check the standard deviation for particle diameters on the first image pair:
+        print(np.std(particles.particle_diameters[0]))
+
+    .. code-block:: text
+
+        0.9914647019217923
 
     :param n_images:
         ``int`` specifying the number of image pairs to create.
@@ -36,7 +75,26 @@ class Particle:
     :param seeding_mode: (optional)
         ``str`` specifying the seeding mode for initializing particles in the image domain. It can be one of the following: ``'random'``, ``'poisson'``.
     :param random_seed: (optional)
-        ``int`` specifying the random seed for random number generation in ``numpy``.
+        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation will be reproducible.
+
+    **Attributes:**
+
+    - **n_images** - (read-only) as per user input.
+    - **size** - (read-only) as per user input.
+    - **diameters** - (read-only) as per user input.
+    - **distances** - (read-only) as per user input.
+    - **densities** - (read-only) as per user input.
+    - **diameter_std** - (read-only) as per user input.
+    - **signal_to_noise** - (read-only) as per user input.
+    - **seeding_mode** - (read-only) as per user input.
+    - **random_seed** - (read-only) as per user input.
+    - **diameter_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle diameters for each image. Template diameters are random numbers between ``diameters[0]`` and ``diameters[1]``.
+    - **distance_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle distances for each image. Template distances are random numbers between ``distances[0]`` and ``distances[1]``.
+    - **density_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle densities for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
+    - **SNR_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the signal-to-noise ratio for each image. Template signal-to-noise are random numbers between ``signal_to_noise[0]`` and ``signal_to_noise[1]``.
+    - **n_of_particles** - (read-only) ``list`` specifying the number of particles created for each image based on each template density.
+    - **particle_positions** - (read-only) ``list`` specifying the position of all particle centers for each image. The posititions are computed based on the ``seeding_mode``.
+    - **particle_diameters** - (read-only) ``list`` specifying the diameters of all seeded particles for each image based on each template diameter.
    """
 
     def __init__(self,

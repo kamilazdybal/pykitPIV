@@ -54,12 +54,19 @@ class TestParticleClass(unittest.TestCase):
             particles.diameter_per_image
             particles.distance_per_image
             particles.density_per_image
+            particles.SNR_per_image
             particles.n_of_particles
             particles.particle_positions
             particles.particle_diameters
         except Exception:
             self.assertTrue(False)
 
+        self.assertTrue(isinstance(particles.diameter_per_image, np.ndarray))
+        self.assertTrue(isinstance(particles.distance_per_image, np.ndarray))
+        self.assertTrue(isinstance(particles.density_per_image, np.ndarray))
+        self.assertTrue(isinstance(particles.SNR_per_image, np.ndarray))
+
+        self.assertTrue(isinstance(particles.n_of_particles, list))
         self.assertTrue(isinstance(particles.particle_positions, list))
         self.assertTrue(isinstance(particles.particle_diameters, list))
 
