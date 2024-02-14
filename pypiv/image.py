@@ -380,6 +380,7 @@ class Image:
                             ylabel=None,
                             title=None,
                             cmap='viridis',
+                            vmin_vmax=None,
                             figsize=(5,5),
                             dpi=300,
                             filename=None):
@@ -396,6 +397,8 @@ class Image:
             ``str`` specifying figure title.
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param vmin_vmax: (optional)
+            ``tuple`` of two numerical elements specifying the fixed minimum (first element) and maximum (second element) bounds for the colorbar.
         :param figsize: (optional)
             ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
         :param dpi: (optional)
@@ -441,7 +444,10 @@ class Image:
             # Plot u-component of velocity:
 
             fig1 = plt.figure(figsize=figsize)
-            plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap)
+            if vmin_vmax is not None:
+                plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1])
+            else:
+                plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap)
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
@@ -461,7 +467,10 @@ class Image:
             # Plot v-component of velocity:
 
             fig2 = plt.figure(figsize=figsize)
-            plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap)
+            if vmin_vmax is not None:
+                plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1])
+            else:
+                plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap)
 
             if xlabel is not None:
                 plt.xlabel(xlabel)

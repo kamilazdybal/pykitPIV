@@ -13,3 +13,5 @@ Class: ``Image``
 .. autofunction:: pypiv.image.Image.compute_light_intensity_at_pixel
 
 .. autofunction:: pypiv.image.Image.plot
+
+.. autofunction:: pypiv.image.Image.plot_velocity_field

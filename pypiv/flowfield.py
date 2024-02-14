@@ -91,15 +91,14 @@ class FlowField:
                     velocity_field_u = scipy.ndimage.gaussian_filter(velocity_field_u, self.__gaussian_filter_per_image[i])
                     velocity_field_v = scipy.ndimage.gaussian_filter(velocity_field_v, self.__gaussian_filter_per_image[i])
 
-                velocity_magnitude = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+                velocity_field_u = velocity_field_u - np.mean(velocity_field_u)
+                velocity_field_v = velocity_field_v - np.mean(velocity_field_v)
 
+                velocity_magnitude = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
                 velocity_magnitude_scale = self.__displacement_per_image[i] / np.max(velocity_magnitude)
 
                 velocity_field_u = velocity_magnitude_scale * velocity_field_u
                 velocity_field_v = velocity_magnitude_scale * velocity_field_v
-
-                velocity_field_u = velocity_field_u - np.mean(velocity_field_u)
-                velocity_field_v = velocity_field_v - np.mean(velocity_field_v)
 
                 self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u**2 + velocity_field_v**2))
                 self.__velocity_field.append((velocity_field_u, velocity_field_v))
