@@ -16,36 +16,112 @@ import warnings
 
 class FlowField:
     """
-    Generates velocity field to advect the particles between two consecutive images.
+    Generates velocity fields to advect the particles between two consecutive images.
+
+    :param n_images:
+        ``int`` specifying the number of image pairs to create.
+    :param size: (optional)
+        ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, the second number is image width.
+    :param flow_mode: (optional)
+        ``str`` specifying the mode for the velocity field generation. It can be one of the following: ``'random'``, ``'random-sinusoidal'``, ``'quadrant'``, or ``'checkerboard'``.
+    :param gaussian_filters: (optional)
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) Gaussian filter size (bandwidth) for smoothing out the random velocity fields to randomly sample from.
+    :param n_gaussian_filter_iter: (optional)
+        ``int`` specifying the number of iterations applying a Gaussian filter to the random velocity field to eventually arrive at a smoothed velocity map. With no iterations, each pixel attains a random velocity component value.
+    :param percentage_of_lost_particles: (optional)
+        ``float`` or ``int`` specifying the percentage of particles that will be lost between two consecutive PIV images due to movement of particles off laser plane.
+    :param random_seed: (optional)
+        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
     """
 
-    def __init__(self, 
+    def __init__(self,
+                 n_images,
+                 size=(512, 512),
                  flow_mode='random',
-                 filter_size=(10,300),
+                 displacement=(0, 10),
+                 gaussian_filters=(10,30),
+                 n_gaussian_filter_iter=6,
+                 percentage_of_lost_particles=10,
                  sin_period=(30,300),
-                 displacement=(0,10),
+                 random_seed=None):
 
-                 n_gaussian_filter_iter=6):
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
 
         __flow_mode = ['random', 'random-sinusoidal', 'quadrant', 'checkerboard']
 
         if flow_mode not in __flow_mode:
             raise ValueError("Parameter `flow_mode` has to be 'random', 'random-sinusoidal', 'quadrant', or 'checkerboard'.")
-        
+
+        if random_seed is not None:
+            if type(random_seed) != int:
+                raise ValueError("Parameter `random_seed` has to be of type 'int'.")
+            else:
+                np.random.seed(seed=random_seed)
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Class init:
+        self.__n_images = n_images
+        self.__size = size
         self.__flow_mode = flow_mode
-        self.__filter_size = filter_size, 
-        self.__sin_period = sin_period, 
-        self.__displacement = displacement, 
-        self.__lost_particles = lost_particles, 
+        self.__sin_period = sin_period
+        self.__displacement = displacement
+        self.__gaussian_filters = gaussian_filters
         self.__n_gaussian_filter_iter = n_gaussian_filter_iter
+        self.__percentage_of_lost_particles = percentage_of_lost_particles
+
+        # Generate random velocity field:
+        if flow_mode == 'random':
+
+            self.__velocity_field = []
+            self.__velocity_field_magnitude = []
+
+            self.__gaussian_filter_per_image = np.random.rand(self.__n_images) * (self.__gaussian_filters[1] - self.__gaussian_filters[0]) + self.__gaussian_filters[0]
+            self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+
+            for i in range(0, self.n_images):
+
+                velocity_field_u = np.random.rand(self.__size[0], self.__size[1])
+                velocity_field_v = np.random.rand(self.__size[0], self.__size[1])
+
+                # Smooth out the random velocity field `n_gaussian_filter_iter` times:
+                for _ in range(0,n_gaussian_filter_iter):
+                    velocity_field_u = scipy.ndimage.gaussian_filter(velocity_field_u, self.__gaussian_filter_per_image[i])
+                    velocity_field_v = scipy.ndimage.gaussian_filter(velocity_field_v, self.__gaussian_filter_per_image[i])
+
+                velocity_magnitude = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+
+                velocity_magnitude_scale = self.__displacement_per_image[i] / np.max(velocity_magnitude)
+
+                velocity_field_u = velocity_magnitude_scale * velocity_field_u
+                velocity_field_v = velocity_magnitude_scale * velocity_field_v
+
+                velocity_field_u = velocity_field_u - np.mean(velocity_field_u)
+                velocity_field_v = velocity_field_v - np.mean(velocity_field_v)
+
+                self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u**2 + velocity_field_v**2))
+                self.__velocity_field.append((velocity_field_u, velocity_field_v))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    # Properties coming from user inputs:
+    @property
+    def n_images(self):
+        return self.__n_images
 
     @property
     def flow_mode(self):
         return self.__flow_mode
         
     @property
-    def filter_size(self):
-        return self.__filter_size
+    def gaussian_filters(self):
+        return self.__gaussian_filters
+
+    @property
+    def n_gaussian_filter_iter(self):
+        return self.__n_gaussian_filter_iter
 
     @property
     def sin_period(self):
@@ -59,12 +135,16 @@ class FlowField:
     def lost_particles(self):
         return self.__lost_particles
 
+    # Properties computed at class init:
+
     @property
-    def n_gaussian_filter_iter(self):
-        return self.__n_gaussian_filter_iter
+    def gaussian_filter_per_image(self):
+        return self.__gaussian_filter_per_image
 
+    @property
+    def velocity_field(self):
+        return self.__velocity_field
 
-    def generate_field(self, ):
-
-
-        pass
+    @property
+    def velocity_field_magnitude(self):
+        return self.__velocity_field_magnitude
