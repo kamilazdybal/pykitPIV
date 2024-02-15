@@ -18,6 +18,52 @@ class FlowField:
     """
     Generates velocity fields to advect the particles between two consecutive images.
 
+    **Example:**
+
+    .. code:: python
+
+        import numpy as np
+        import cmcrameri.cm as cmc
+        from pypiv import FlowField, Image
+
+        image_size = (128,512)
+
+        flowfield = FlowField(1,
+                              size=image_size,
+                              flow_mode='random',
+                              gaussian_filters=(8,10),
+                              n_gaussian_filter_iter=10,
+                              sin_period=(30,300),
+                              displacement=(0,10),
+                              lost_particles_percentage=10,
+                              random_seed=100)
+
+        # Initialize an image object:
+        image = Image(size=image_size,
+                      random_seed=100)
+
+        # Add the velocity field to the image:
+        image.add_velocity_field(flowfield)
+
+        # Visualize the velocity field:
+        image.plot_velocity_field(0,
+                                  xlabel='Width [px]',
+                                  ylabel='Height [px]',
+                                  title=('Example random velocity component $u$', 'Example random velocity component $v$'),
+                                  cmap=cmc.oslo_r,
+                                  figsize=(10,2),
+                                  filename='example-random-velocity-field.png');
+
+    The code above will return two figures showing the random velocity field components, :math:`u` and :math:`v`:
+
+    .. image:: ../images/example-random-velocity-field-u.png
+      :width: 700
+      :align: center
+
+    .. image:: ../images/example-random-velocity-field-v.png
+      :width: 700
+      :align: center
+
     :param n_images:
         ``int`` specifying the number of image pairs to create.
     :param size: (optional)
@@ -28,8 +74,8 @@ class FlowField:
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) Gaussian filter size (bandwidth) for smoothing out the random velocity fields to randomly sample from.
     :param n_gaussian_filter_iter: (optional)
         ``int`` specifying the number of iterations applying a Gaussian filter to the random velocity field to eventually arrive at a smoothed velocity map. With no iterations, each pixel attains a random velocity component value.
-    :param percentage_of_lost_particles: (optional)
-        ``float`` or ``int`` specifying the percentage of particles that will be lost between two consecutive PIV images due to movement of particles off laser plane.
+    :param lost_particles_percentage: (optional)
+        ``float`` or ``int`` specifying the percentage of particles that will be lost on an image between two consecutive PIV images due to movement of particles off the laser plane.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
     """
@@ -41,7 +87,7 @@ class FlowField:
                  displacement=(0, 10),
                  gaussian_filters=(10,30),
                  n_gaussian_filter_iter=6,
-                 percentage_of_lost_particles=10,
+                 lost_particles_percentage=10,
                  sin_period=(30,300),
                  random_seed=None):
 
@@ -70,7 +116,7 @@ class FlowField:
         self.__displacement = displacement
         self.__gaussian_filters = gaussian_filters
         self.__n_gaussian_filter_iter = n_gaussian_filter_iter
-        self.__percentage_of_lost_particles = percentage_of_lost_particles
+        self.__lost_particles_percentage = lost_particles_percentage
 
         # Generate random velocity field:
         if flow_mode == 'random':
