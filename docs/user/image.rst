@@ -15,3 +15,5 @@ Class: ``Image``
 .. autofunction:: pypiv.image.Image.plot
 
 .. autofunction:: pypiv.image.Image.plot_velocity_field
+
+.. autofunction:: pypiv.image.Image.plot_velocity_field_magnitude

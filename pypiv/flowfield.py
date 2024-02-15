@@ -26,8 +26,10 @@ class FlowField:
         import cmcrameri.cm as cmc
         from pypiv import FlowField, Image
 
+        # Specify size in pixels for each image:
         image_size = (128,512)
 
+        # Initialize a flow field object that generates a random velocity field for one image pair:
         flowfield = FlowField(1,
                               size=image_size,
                               flow_mode='random',
@@ -37,6 +39,10 @@ class FlowField:
                               displacement=(0,10),
                               lost_particles_percentage=10,
                               random_seed=100)
+
+    We can now visualize the generated random velocity field using the ``Image`` class.
+
+    .. code:: python
 
         # Initialize an image object:
         image = Image(size=image_size,

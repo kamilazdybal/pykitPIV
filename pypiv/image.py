@@ -385,7 +385,7 @@ class Image:
                             dpi=300,
                             filename=None):
         """
-        Plots a velocity field.
+        Plots each component of a velocity field.
 
         :param idx:
             ``int`` specifying the index of the velocity field to plot out of ``n_images`` number of images.
@@ -394,7 +394,7 @@ class Image:
         :param ylabel: (optional)
             ``str`` specifying :math:`y`-label.
         :param title: (optional)
-            ``str`` specifying figure title.
+            ``tuple`` of two ``str`` elements specifying figure titles for each velocity field component.
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
         :param vmin_vmax: (optional)
@@ -404,7 +404,7 @@ class Image:
         :param dpi: (optional)
             ``int`` specifying the dpi for the image.
         :param filename: (optional)
-            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved. An appendix ``-u`` or ``-v`` will be added to each filename to differentiate between velocity field components.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -487,5 +487,97 @@ class Image:
                 plt.savefig(filename.split('.')[0] + '-v.' + filename.split('.')[1], dpi=dpi, bbox_inches='tight')
 
         return fig1, fig2
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def plot_velocity_field_magnitude(self,
+                                      idx,
+                                      xlabel=None,
+                                      ylabel=None,
+                                      title=None,
+                                      cmap='viridis',
+                                      vmin_vmax=None,
+                                      figsize=(5,5),
+                                      dpi=300,
+                                      filename=None):
+        """
+        Plots a velocity field magnitude.
+
+        :param idx:
+            ``int`` specifying the index of the velocity field to plot out of ``n_images`` number of images.
+        :param xlabel: (optional)
+            ``str`` specifying :math:`x`-label.
+        :param ylabel: (optional)
+            ``str`` specifying :math:`y`-label.
+        :param title: (optional)
+            ``str`` specifying figure title.
+        :param cmap: (optional)
+            ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param vmin_vmax: (optional)
+            ``tuple`` of two numerical elements specifying the fixed minimum (first element) and maximum (second element) bounds for the colorbar.
+        :param figsize: (optional)
+            ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
+        :param dpi: (optional)
+            ``int`` specifying the dpi for the image.
+        :param filename: (optional)
+            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(idx, int):
+            raise ValueError("Parameter `idx` has to be of type 'int'.")
+        if idx < 0:
+            raise ValueError("Parameter `idx` has to be non-negative.")
+
+        if (xlabel is not None) and (not isinstance(xlabel, str)):
+            raise ValueError("Parameter `xlabel` has to be of type 'str'.")
+
+        if (ylabel is not None) and (not isinstance(ylabel, str)):
+            raise ValueError("Parameter `ylabel` has to be of type 'str'.")
+
+        if (title is not None) and (not isinstance(title, str)):
+            raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        check_two_element_tuple(figsize, 'figsize')
+
+        if not isinstance(dpi, int):
+            raise ValueError("Parameter `dpi` has to be of type 'int'.")
+
+        if (filename is not None) and (not isinstance(filename, str)):
+            raise ValueError("Parameter `filename` has to be of type 'str'.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        if self.__flowfield is None:
+
+            print('Note: Flow field has not been added to the image yet!\n\n')
+
+        else:
+
+            fig = plt.figure(figsize=figsize)
+            if vmin_vmax is not None:
+                plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1])
+            else:
+                plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap)
+
+            if xlabel is not None:
+                plt.xlabel(xlabel)
+
+            if ylabel is not None:
+                plt.ylabel(ylabel)
+
+            if title is not None:
+                plt.title(title)
+
+            plt.colorbar()
+
+            if filename is not None:
+
+                plt.savefig(filename.split('.')[0] + '-u.' + filename.split('.')[1], dpi=dpi, bbox_inches='tight')
+
+        return plt
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -32,6 +32,7 @@ class Particle:
         # Specify size in pixels for each image:
         image_size = (128,512)
 
+        # Initialize a particle object:
         particles = Particle(n_images=n_images,
                              size=image_size,
                              diameters=(6,10),
@@ -57,6 +58,59 @@ class Particle:
     .. code-block:: text
 
         0.9914647019217923
+
+    We can now visualize the generated particles using the ``Image`` class.
+
+    .. code:: python
+
+        # Initialize an image object:
+        image = Image(size=image_size,
+                      random_seed=100)
+
+        # Add particles to the image:
+        image.add_particles(particles)
+
+        # Plot the first out of 10 images:
+        image.plot(0,
+                   xlabel='Width [px]',
+                   ylabel='Height [px]',
+                   title='Particle positions',
+                   cmap='Blues',
+                   figsize=(8,8),
+                   filename='particle-positions.png');
+
+    The code above will return a figure showing the random positions of the generated particles:
+
+    .. image:: ../images/particle-positions.png
+      :width: 700
+      :align: center
+
+    We can now add the laser light conditions and generate the entire PIV image:
+
+    .. code:: python
+
+        # Add laser light reflected from the generated particles:
+        image.add_reflected_light(exposures=(0.02,0.8),
+                                  maximum_intensity=2**16-1,
+                                  laser_beam_thickness=1,
+                                  laser_over_exposure=1,
+                                  laser_beam_shape=0.3,
+                                  alpha=1/20)
+
+        # Plot the first out of 10 images:
+        image.plot(0,
+                   xlabel='Width [px]',
+                   ylabel='Height [px]',
+                   title='Example PIV image',
+                   cmap='Greys_r',
+                   figsize=(10,8),
+                   filename='example-image.png');
+
+    The code above will return a figure showing the example PIV image constructed from the generated particles:
+
+    .. image:: ../images/example-image.png
+      :width: 700
+      :align: center
 
     :param n_images:
         ``int`` specifying the number of image pairs to create.
