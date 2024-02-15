@@ -99,9 +99,9 @@ class Particle:
 
         # Plot the first out of 10 images:
         image.plot(0,
-                   xlabel='Width [px]',
                    ylabel='Height [px]',
                    title='Example PIV image',
+                   xlabel='Width [px]',
                    cmap='Greys_r',
                    figsize=(10,8),
                    filename='example-image.png');

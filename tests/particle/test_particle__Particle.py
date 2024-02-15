@@ -1,8 +1,5 @@
 import unittest
 import numpy as np
-import pandas as pd
-import random
-import copy
 from pypiv import Particle
 
 class TestParticleClass(unittest.TestCase):
@@ -125,6 +122,10 @@ class TestParticleClass(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             particles = Particle(1, signal_to_noise=(10, 1))
+
+        # Not allowed string:
+        with self.assertRaises(ValueError):
+            particles = Particle(1, seeding_mode='Test')
 
     def test_particle__Particle__diameter_per_image(self):
 

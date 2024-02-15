@@ -5,6 +5,7 @@ import random
 import copy
 import scipy
 import warnings
+from pypiv.checks import *
 
 ################################################################################
 ################################################################################
@@ -101,10 +102,34 @@ class FlowField:
 
         # Input parameter check:
 
-        __flow_mode = ['random', 'random-sinusoidal', 'quadrant', 'checkerboard']
+        if type(n_images) != int:
+            raise ValueError("Parameter `n_images` has to of type 'int'.")
 
+        if n_images < 0:
+            raise ValueError("Parameter `n_images` has to be positive.")
+
+        check_two_element_tuple(size, 'size')
+
+        __flow_mode = ['random', 'random-sinusoidal', 'quadrant', 'checkerboard']
         if flow_mode not in __flow_mode:
             raise ValueError("Parameter `flow_mode` has to be 'random', 'random-sinusoidal', 'quadrant', or 'checkerboard'.")
+
+        check_two_element_tuple(displacement, 'displacement')
+        check_min_max_tuple(displacement, 'displacement')
+        check_two_element_tuple(gaussian_filters, 'gaussian_filters')
+        check_min_max_tuple(gaussian_filters, 'gaussian_filters')
+
+        if type(n_gaussian_filter_iter) != int:
+            raise ValueError("Parameter `n_gaussian_filter_iter` has to of type 'int'.")
+
+        if n_gaussian_filter_iter < 0:
+            raise ValueError("Parameter `n_gaussian_filter_iter` has to be positive.")
+
+        if (not isinstance(lost_particles_percentage, float)) and (not isinstance(lost_particles_percentage, int)):
+            raise ValueError("Parameter `lost_particles_percentage` has to be of type 'float' or 'int'.")
+
+        check_two_element_tuple(sin_period, 'sin_period')
+        check_min_max_tuple(sin_period, 'sin_period')
 
         if random_seed is not None:
             if type(random_seed) != int:
@@ -118,11 +143,12 @@ class FlowField:
         self.__n_images = n_images
         self.__size = size
         self.__flow_mode = flow_mode
-        self.__sin_period = sin_period
         self.__displacement = displacement
         self.__gaussian_filters = gaussian_filters
         self.__n_gaussian_filter_iter = n_gaussian_filter_iter
         self.__lost_particles_percentage = lost_particles_percentage
+        self.__sin_period = sin_period
+        self.__random_seed = random_seed
 
         # Generate random velocity field:
         if flow_mode == 'random':
@@ -155,6 +181,14 @@ class FlowField:
                 self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u**2 + velocity_field_v**2))
                 self.__velocity_field.append((velocity_field_u, velocity_field_v))
 
+        else:
+
+            # Set to None for the moment for any other flow_mode:
+            self.__velocity_field = None
+            self.__velocity_field_magnitude = None
+            self.__gaussian_filter_per_image = None
+            self.__displacement_per_image = None
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
@@ -163,9 +197,17 @@ class FlowField:
         return self.__n_images
 
     @property
+    def size(self):
+        return self.__size
+
+    @property
     def flow_mode(self):
         return self.__flow_mode
-        
+
+    @property
+    def displacement(self):
+        return self.__displacement
+
     @property
     def gaussian_filters(self):
         return self.__gaussian_filters
@@ -173,24 +215,28 @@ class FlowField:
     @property
     def n_gaussian_filter_iter(self):
         return self.__n_gaussian_filter_iter
+        
+    @property
+    def lost_particles_percentage(self):
+        return self.__lost_particles_percentage
 
     @property
     def sin_period(self):
         return self.__sin_period
 
     @property
-    def displacement(self):
-        return self.__displacement
-        
-    @property
-    def lost_particles(self):
-        return self.__lost_particles
+    def random_seed(self):
+        return self.__random_seed
 
     # Properties computed at class init:
 
     @property
     def gaussian_filter_per_image(self):
         return self.__gaussian_filter_per_image
+
+    @property
+    def displacement_per_image(self):
+        return self.__displacement_per_image
 
     @property
     def velocity_field(self):
