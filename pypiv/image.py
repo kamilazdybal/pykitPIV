@@ -558,7 +558,8 @@ class Image:
                                       filename=None):
         """
         Plots a velocity field magnitude.
-        Velocity vectors can be visualized by setting ``add_quiver=True``, or velocity streamlines can be visualized by setting ``add_streamplot=True``.
+        In addition, velocity vectors can be visualized by setting ``add_quiver=True``,
+        and velocity streamlines can be visualized by setting ``add_streamplot=True``.
 
         :param idx:
             ``int`` specifying the index of the velocity field to plot out of ``n_images`` number of images.
@@ -613,8 +614,20 @@ class Image:
         if not isinstance(add_quiver, bool):
             raise ValueError("Parameter `add_quiver` has to be of type 'bool'.")
 
+        if not isinstance(quiver_step, int):
+            raise ValueError("Parameter `quiver_step` has to be of type 'int'.")
+
+        if not isinstance(quiver_color, str):
+            raise ValueError("Parameter `quiver_color` has to be of type 'str'.")
+
         if not isinstance(add_streamplot, bool):
             raise ValueError("Parameter `add_streamplot` has to be of type 'bool'.")
+
+        if (not isinstance(streamplot_density, float)) and (not isinstance(streamplot_density, int)):
+            raise ValueError("Parameter `streamplot_density` has to be of type 'float' or 'int'.")
+
+        if not isinstance(streamplot_color, str):
+            raise ValueError("Parameter `streamplot_color` has to be of type 'str'.")
 
         check_two_element_tuple(figsize, 'figsize')
 
@@ -661,7 +674,7 @@ class Image:
 
             if filename is not None:
 
-                plt.savefig(filename.split('.')[0] + '-u.' + filename.split('.')[1], dpi=dpi, bbox_inches='tight')
+                plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
         return plt
 
