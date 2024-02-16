@@ -38,7 +38,7 @@ python -m pip install .
 To run unit tests, run the following in the main ``pypiv/`` location:
 
 ```
-python -m unittests discover -v
+python -m unittest discover -v
 ```
 
 ## Example PIV image
