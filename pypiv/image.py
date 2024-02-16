@@ -362,12 +362,12 @@ class Image:
             print('Note: Particles have not been added to the image yet!\n\n')
 
             fig = plt.figure(figsize=figsize)
-            plt.imshow(self.empty_image, cmap=cmap)
+            plt.imshow(self.empty_image, cmap=cmap, origin='lower')
 
         else:
 
             fig = plt.figure(figsize=figsize)
-            plt.imshow(self.__images[idx], cmap=cmap)
+            plt.imshow(self.__images[idx], cmap=cmap, origin='lower')
 
         if xlabel is not None:
             plt.xlabel(xlabel)
@@ -495,9 +495,9 @@ class Image:
 
             fig1 = plt.figure(figsize=figsize)
             if vmin_vmax is not None:
-                plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1])
+                plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
             else:
-                plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap)
+                plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, origin='lower')
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
@@ -518,9 +518,9 @@ class Image:
 
             fig2 = plt.figure(figsize=figsize)
             if vmin_vmax is not None:
-                plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1])
+                plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
             else:
-                plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap)
+                plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, origin='lower')
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
@@ -634,9 +634,9 @@ class Image:
 
             fig = plt.figure(figsize=figsize)
             if vmin_vmax is not None:
-                plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1])
+                plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
             else:
-                plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap)
+                plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, origin='lower')
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
