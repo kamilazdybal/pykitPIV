@@ -6,14 +6,19 @@ Introduction
   :width: 300
 
 **pypiv** is a Python package for synthetic PIV image generation.
-The goal of this library is to give the user (or a reinforcement learning agent) a lot of flexibility in setting-up image generation.
+The goal of this library is to give the user or a reinforcement learning (RL) agent a lot of flexibility in setting-up image generation.
 
-The graph below shows the possible workflows constructed from the four main classes.
-The class **Particle** can be used to initialize particle properties and particle positions on an image.
-The class **FlowField** can be used to create velocity field to advect the particles.
-The class **Motion** takes and objects of class **Particle** and applies an object of class **FlowField** on top of it.
-The class **Image** is the endpoint of the workflow and can be used to apply laser and camera properties on any standalone image,
-as well as on the series of images of advected particles. At each stage, we enforce reproducible image generation through fixing random seeds.
+The graph below shows the possible workflows constructed from the four main classes:
+
+- The class **Particle** can be used to initialize particle properties and particle positions on an image.
+
+- The class **FlowField** can be used to create velocity field to advect the particles.
+
+- The class **Motion** takes an object of class **Particle** and applies an object of class **FlowField** on to it to advect the particles and generate an image pair at time :math:`t` and :math:`t + \Delta t`.
+
+- The class **Image** is the endpoint of the workflow and can be used to apply laser and camera properties on any standalone image, as well as on a series of images of advected particles.
+
+At each stage, the user can enforce reproducible image generation through fixing random seeds.
 
 .. image:: images/pypiv-workflow.png
   :width: 500
