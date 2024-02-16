@@ -76,6 +76,9 @@ class Image:
         # Initialize flow field:
         self.__flowfield = None
 
+        # Initialize motion:
+        self.__motion = None
+
         # Initialize exposures per image:
         self.__exposures_per_image = None
 
@@ -280,10 +283,19 @@ class Image:
 
         self.__flowfield = flowfield
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def add_motion(self,
+                   motion):
+        """
+        Adds particle movement to the image. The movement should be defined using the ``Motion`` class.
 
+        :param motion:
+            ``Motion`` class instance specifying the movement of particles from one instance in time to the next.
+            In general, the movement is defined by the ``FlowField`` class applied to particles defined by the ``Particle`` class.
+        """
 
-
+        self.__motion = motion
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -297,7 +309,7 @@ class Image:
              dpi=300,
              filename=None):
         """
-        Plots a single, static PIV image.
+        Plots a single, static PIV image, :math:`I_1`, at time :math:`t`.
 
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
@@ -371,6 +383,44 @@ class Image:
             plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
         return plt
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def plot_image_pair(self,
+                        idx,
+                        xlabel=None,
+                        ylabel=None,
+                        title=None,
+                        cmap='Greys_r',
+                        figsize=(5,5),
+                        dpi=300,
+                        filename=None):
+        """
+        Plots a PIV image pair, :math:`\mathbf{I} = (I_1, I_2)^{\\top}`, at time :math:`t` and :math:`t + \\Delta t` respectively.
+
+        :param idx:
+            ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
+        :param xlabel: (optional)
+            ``str`` specifying :math:`x`-label.
+        :param ylabel: (optional)
+            ``str`` specifying :math:`y`-label.
+        :param title: (optional)
+            ``str`` specifying figure title.
+        :param cmap: (optional)
+            ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param figsize: (optional)
+            ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
+        :param dpi: (optional)
+            ``int`` specifying the dpi for the image.
+        :param filename: (optional)
+            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        if self.__motion is None:
+
+            print('Note: Movement of particles has not been added to the image yet!\n\n')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -497,11 +547,18 @@ class Image:
                                       title=None,
                                       cmap='viridis',
                                       vmin_vmax=None,
+                                      add_quiver=False,
+                                      quiver_step=10,
+                                      quiver_color='k',
+                                      add_streamplot=False,
+                                      streamplot_density=1,
+                                      streamplot_color='k',
                                       figsize=(5,5),
                                       dpi=300,
                                       filename=None):
         """
         Plots a velocity field magnitude.
+        Velocity vectors can be visualized by setting ``add_quiver=True``, or velocity streamlines can be visualized by setting ``add_streamplot=True``.
 
         :param idx:
             ``int`` specifying the index of the velocity field to plot out of ``n_images`` number of images.
@@ -515,6 +572,18 @@ class Image:
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
         :param vmin_vmax: (optional)
             ``tuple`` of two numerical elements specifying the fixed minimum (first element) and maximum (second element) bounds for the colorbar.
+        :param add_quiver: (optional)
+            ``bool`` specifying if vector field should be plotted on top of the scalar magnitude field.
+        :param quiver_step: (optional)
+            ``int`` specifying the step on the pixel grid to attach a vector to. The higher this number is, the less dense the vector field is.
+        :param quiver_color: (optional)
+            ``str`` specifying the color of velocity vectors.
+        :param add_streamplot: (optional)
+            ``bool`` specifying if streamlines should be plotted on top of the scalar magnitude field.
+        :param streamplot_density: (optional)
+            ``float`` or ``int`` specifying the streamplot density.
+        :param streamplot_color: (optional)
+            ``str`` specifying the streamlines color.
         :param figsize: (optional)
             ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
         :param dpi: (optional)
@@ -540,6 +609,12 @@ class Image:
 
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        if not isinstance(add_quiver, bool):
+            raise ValueError("Parameter `add_quiver` has to be of type 'bool'.")
+
+        if not isinstance(add_streamplot, bool):
+            raise ValueError("Parameter `add_streamplot` has to be of type 'bool'.")
 
         check_two_element_tuple(figsize, 'figsize')
 
@@ -573,6 +648,16 @@ class Image:
                 plt.title(title)
 
             plt.colorbar()
+
+            if add_quiver:
+                X = np.arange(0,self.size[1],quiver_step)
+                Y = np.arange(0,self.size[0],quiver_step)
+                plt.quiver(X, Y, self.__flowfield.velocity_field[idx][0][::quiver_step,::quiver_step], self.__flowfield.velocity_field[idx][1][::quiver_step,::quiver_step], color=quiver_color)
+
+            if add_streamplot:
+                X = np.arange(0,self.size[1],1)
+                Y = np.arange(0,self.size[0],1)
+                plt.streamplot(X, Y, self.__flowfield.velocity_field[idx][0], self.__flowfield.velocity_field[idx][1], density=streamplot_density, color=streamplot_color)
 
             if filename is not None:
 

@@ -121,7 +121,7 @@ class Particle:
     :param distances: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle distances to randomly sample from. Only used when ``seeding_mode`` is ``'poisson'``.
     :param densities: (optional)
-        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle density on an image to randomly sample from. Only used when ``seeding_mode`` is ``'random'``.
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle seeding density on an image to randomly sample from. Only used when ``seeding_mode`` is ``'random'``.
     :param diameter_std: (optional)
         ``float`` or ``int`` specifying the standard deviation for the particle diameters distribution.
     :param signal_to_noise: (optional)

@@ -15,7 +15,7 @@ The graph below shows the possible workflows constructed from the four main clas
 
 - The class **FlowField** can be used to create velocity field to advect the particles.
 
-- The class **Motion** takes an object of class **Particle** and applies an object of class **FlowField** on to it to advect the particles and generate an image pair at time $t$ and $t + \Delta t$.
+- The class **Motion** takes an object of class **Particle** and applies an object of class **FlowField** to it to advect the particles and generate an image pair at time $t$ and $t + \Delta t$.
 
 - The class **Image** is the endpoint of the workflow and can be used to apply laser and camera properties on any standalone image, as well as on a series of images of advected particles.
 
