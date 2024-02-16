@@ -71,6 +71,25 @@ class FlowField:
       :width: 700
       :align: center
 
+    We can also visualize velocity magnitude field with or without a vector field:
+
+    .. code:: python
+
+        image.plot_velocity_field_magnitude(0,
+                                            add_quiver=True,
+                                            quiver_step=10,
+                                            quiver_color='r',
+                                            xlabel='Width [px]',
+                                            ylabel='Height [px]',
+                                            title='Example random velocity field magnitude',
+                                            cmap=cmc.oslo_r,
+                                            figsize=(10,2),
+                                            filename='example-random-velocity-field-magnitude.png');
+
+    .. image:: ../images/example-random-velocity-field-magnitude.png
+      :width: 700
+      :align: center
+
     :param n_images:
         ``int`` specifying the number of image pairs to create.
     :param size: (optional)

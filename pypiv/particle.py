@@ -24,7 +24,7 @@ class Particle:
     .. code:: python
 
         import numpy as np
-        from pypiv import Particle
+        from pypiv import Particle, Image
 
         # We are going to generate 10 PIV image pairs:
         n_images = 10
