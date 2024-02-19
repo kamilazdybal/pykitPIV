@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pypiv import Particle
+from pykitPIV import Particle
 
 class TestParticleClass(unittest.TestCase):
 

@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pypiv import FlowField
+from pykitPIV import FlowField
 
 class TestFlowFieldClass(unittest.TestCase):
 

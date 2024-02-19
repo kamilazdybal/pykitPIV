@@ -115,15 +115,15 @@ class Particle:
     :param n_images:
         ``int`` specifying the number of image pairs to create.
     :param size: (optional)
-        ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, the second number is image width.
+        ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`. The first number is image height, the second number is image width.
     :param diameters: (optional)
-        ``tuple`` of two ``int`` elements specifying the minimum (first element) and maximum (second element) particle diameter in pixels to randomly sample from.
+        ``tuple`` of two ``int`` elements specifying the minimum (first element) and maximum (second element) particle diameter in pixels :math:`[\\text{px}]` to randomly sample from.
     :param distances: (optional)
-        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle distances to randomly sample from. Only used when ``seeding_mode`` is ``'poisson'``.
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle distances in pixels :math:`[\\text{px}]` to randomly sample from. Only used when ``seeding_mode`` is ``'poisson'``.
     :param densities: (optional)
-        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle seeding density on an image to randomly sample from. Only used when ``seeding_mode`` is ``'random'``.
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle seeding density on an image in particle per pixel :math:`[\\text{ppp}]` to randomly sample from. Only used when ``seeding_mode`` is ``'random'``.
     :param diameter_std: (optional)
-        ``float`` or ``int`` specifying the standard deviation for the particle diameters distribution.
+        ``float`` or ``int`` specifying the standard deviation in pixels :math:`[\\text{px}]` for the distribution of particle diameters.
     :param signal_to_noise: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) signal-to-noise ratio for particle generation. [Kamila] I still wonder if this should rather be a property of Motion class. Maybe not, Motion can always access this class attribute.
     :param seeding_mode: (optional)
@@ -142,13 +142,13 @@ class Particle:
     - **signal_to_noise** - (read-only) as per user input.
     - **seeding_mode** - (read-only) as per user input.
     - **random_seed** - (read-only) as per user input.
-    - **diameter_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle diameters for each image. Template diameters are random numbers between ``diameters[0]`` and ``diameters[1]``.
-    - **distance_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle distances for each image. Template distances are random numbers between ``distances[0]`` and ``distances[1]``.
-    - **density_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle densities for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
+    - **diameter_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle diameters in pixels :math:`[\\text{px}]` for each image. Template diameters are random numbers between ``diameters[0]`` and ``diameters[1]``.
+    - **distance_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle distances in pixels :math:`[\\text{px}]` for each image. Template distances are random numbers between ``distances[0]`` and ``distances[1]``.
+    - **density_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle densities in particle per pixel :math:`[\\text{ppp}]` for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
     - **SNR_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the signal-to-noise ratio for each image. Template signal-to-noise are random numbers between ``signal_to_noise[0]`` and ``signal_to_noise[1]``.
     - **n_of_particles** - (read-only) ``list`` specifying the number of particles created for each image based on each template density.
     - **particle_positions** - (read-only) ``list`` specifying the position of all particle centers for each image. The posititions are computed based on the ``seeding_mode``.
-    - **particle_diameters** - (read-only) ``list`` specifying the diameters of all seeded particles for each image based on each template diameter.
+    - **particle_diameters** - (read-only) ``list`` specifying the diameters of all seeded particles in pixels :math:`[\\text{px}]` for each image based on each template diameter.
    """
 
     def __init__(self,
@@ -328,3 +328,19 @@ class Particle:
         return self.__particle_diameters
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def plot_properties_per_image(self):
+        """
+        Plots statistical properties of the generated particles on one selected image out of all ``n_images`` images.
+        """
+
+        pass
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def plot_properties_across_images(self):
+        """
+        Plots statistical properties of the generated particles across all ``n_images`` images.
+        """
+
+        pass
