@@ -350,7 +350,6 @@ class Image:
             fig = plt.figure(figsize=figsize)
 
             # Check if particles were generated with a buffer:
-
             if self.__particles.size_buffer == 0:
 
                 plt.imshow(self.__images[idx], cmap=cmap, origin='lower')
@@ -431,6 +430,7 @@ class Image:
 
     def plot_velocity_field(self,
                             idx,
+                            with_buffer=False,
                             xlabel=None,
                             ylabel=None,
                             title=None,
@@ -444,6 +444,8 @@ class Image:
 
         :param idx:
             ``int`` specifying the index of the velocity field to plot out of ``n_images`` number of images.
+        :param with_buffer:
+            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is visualized with a red rectangle.
         :param xlabel: (optional)
             ``str`` specifying :math:`x`-label.
         :param ylabel: (optional)
@@ -470,6 +472,9 @@ class Image:
             raise ValueError("Parameter `idx` has to be of type 'int'.")
         if idx < 0:
             raise ValueError("Parameter `idx` has to be non-negative.")
+
+        if not isinstance(with_buffer, bool):
+            raise ValueError("Parameter `with_buffer` has to be of type 'bool'.")
 
         if (xlabel is not None) and (not isinstance(xlabel, str)):
             raise ValueError("Parameter `xlabel` has to be of type 'str'.")
@@ -499,10 +504,40 @@ class Image:
             # Plot u-component of velocity:
 
             fig1 = plt.figure(figsize=figsize)
-            if vmin_vmax is not None:
-                plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+
+            # Check if flowfield has been generated with a buffer:
+            if self.__flowfield.size_buffer == 0:
+
+                if vmin_vmax is not None:
+                    plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                else:
+                    plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, origin='lower')
+
             else:
-                plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, origin='lower')
+
+                if with_buffer:
+
+                    if vmin_vmax is not None:
+                        im = plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, vmin=vmin_vmax[0],
+                                   vmax=vmin_vmax[1], origin='lower')
+                    else:
+                        im = plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, origin='lower')
+
+                    # Extend the imshow area with the buffer:
+                    f = lambda pixel: pixel - self.__flowfield.size_buffer
+                    im.set_extent([f(x) for x in im.get_extent()])
+
+                    # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
+                    rect = patches.Rectangle((0, 0), self.__flowfield.size[1], self.__flowfield.size[0], linewidth=1, edgecolor='r', facecolor='none')
+                    ax = plt.gca()
+                    ax.add_patch(rect)
+
+                else:
+
+                    if vmin_vmax is not None:
+                        plt.imshow(self.__flowfield.velocity_field[idx][0][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                    else:
+                        plt.imshow(self.__flowfield.velocity_field[idx][0][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin='lower')
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
@@ -522,10 +557,40 @@ class Image:
             # Plot v-component of velocity:
 
             fig2 = plt.figure(figsize=figsize)
-            if vmin_vmax is not None:
-                plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+
+            # Check if flowfield has been generated with a buffer:
+            if self.__flowfield.size_buffer == 0:
+
+                if vmin_vmax is not None:
+                    plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                else:
+                    plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, origin='lower')
+
             else:
-                plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, origin='lower')
+
+                if with_buffer:
+
+                    if vmin_vmax is not None:
+                        im = plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0],
+                                   vmax=vmin_vmax[1], origin='lower')
+                    else:
+                        im = plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, origin='lower')
+
+                    # Extend the imshow area with the buffer:
+                    f = lambda pixel: pixel - self.__flowfield.size_buffer
+                    im.set_extent([f(x) for x in im.get_extent()])
+
+                    # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
+                    rect = patches.Rectangle((0, 0), self.__flowfield.size[1], self.__flowfield.size[0], linewidth=1, edgecolor='r', facecolor='none')
+                    ax = plt.gca()
+                    ax.add_patch(rect)
+
+                else:
+
+                    if vmin_vmax is not None:
+                        plt.imshow(self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                    else:
+                        plt.imshow(self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin='lower')
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
@@ -547,6 +612,7 @@ class Image:
 
     def plot_velocity_field_magnitude(self,
                                       idx,
+                                      with_buffer=False,
                                       xlabel=None,
                                       ylabel=None,
                                       title=None,
@@ -568,6 +634,8 @@ class Image:
 
         :param idx:
             ``int`` specifying the index of the velocity field to plot out of ``n_images`` number of images.
+        :param with_buffer:
+            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is visualized with a red rectangle.
         :param xlabel: (optional)
             ``str`` specifying :math:`x`-label.
         :param ylabel: (optional)
@@ -606,6 +674,9 @@ class Image:
             raise ValueError("Parameter `idx` has to be of type 'int'.")
         if idx < 0:
             raise ValueError("Parameter `idx` has to be non-negative.")
+
+        if not isinstance(with_buffer, bool):
+            raise ValueError("Parameter `with_buffer` has to be of type 'bool'.")
 
         if (xlabel is not None) and (not isinstance(xlabel, str)):
             raise ValueError("Parameter `xlabel` has to be of type 'str'.")
