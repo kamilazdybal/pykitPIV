@@ -1,12 +1,14 @@
-# Synthetic PIV image generation in Python
+# Python PIV toolkit
 
 <p align="center">
     <img src="docs/images/pypiv-logo.png" width="200">
 </p>
 
+**Py**thon **ki**nematic **t**raining for particle image velocimetry (**PIV**)
+
 ## Introduction
 
-**pypiv** is a Python package for synthetic PIV image generation.
+**pykitPIV** is a Python package for synthetic PIV image generation.
 The goal of this library is to give the user or a reinforcement learning (RL) agent a lot of flexibility in setting-up image generation.
 
 The graph below shows the possible workflows constructed from the four main classes:
@@ -27,7 +29,7 @@ At each stage, the user can enforce reproducible image generation through fixing
 
 ## Installation
 
-To install, run the following in the main ``pypiv/`` location:
+To install, run the following in the main ``pykitPIV`` directory:
 
 ```
 python -m pip install .
@@ -35,7 +37,7 @@ python -m pip install .
 
 ## Unit tests
 
-To run unit tests, run the following in the main ``pypiv/`` location:
+To run unit tests, run the following in the main ``pykitPIV`` directory:
 
 ```
 python -m unittest discover -v
