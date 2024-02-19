@@ -12,3 +12,4 @@ build/
 pypiv.egg-info/
 docs/builddir/
 docs/_build/
+pykitPIV.egg-info/
