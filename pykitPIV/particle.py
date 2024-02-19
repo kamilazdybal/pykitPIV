@@ -35,6 +35,7 @@ class Particle:
         # Initialize a particle object:
         particles = Particle(n_images=n_images,
                              size=image_size,
+                             size_buffer=10,
                              diameters=(6,10),
                              distances=(1,2),
                              densities=(0.01,0.05),
@@ -116,6 +117,9 @@ class Particle:
         ``int`` specifying the number of image pairs to create.
     :param size: (optional)
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`. The first number is image height, the second number is image width.
+    :param size_buffer: (optional)
+        ``int`` specifying the buffer in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
+        This number should be approximately equal to the maximum displacement that particles will be subject to to allow for new particles to arrive into the image area.
     :param diameters: (optional)
         ``tuple`` of two ``int`` elements specifying the minimum (first element) and maximum (second element) particle diameter in pixels :math:`[\\text{px}]` to randomly sample from.
     :param distances: (optional)
@@ -154,6 +158,7 @@ class Particle:
     def __init__(self,
                  n_images,
                  size=(512,512),
+                 size_buffer=10,
                  diameters=(3,6),
                  distances=(0.5,2),
                  densities=(0.05,0.1),
@@ -173,6 +178,13 @@ class Particle:
             raise ValueError("Parameter `n_images` has to be positive.")
 
         check_two_element_tuple(size, 'size')
+
+        if not isinstance(size_buffer, int):
+            raise ValueError("Parameter `size_buffer` has to be of type 'int'.")
+
+        if size_buffer < 0:
+            raise ValueError("Parameter `size_buffer` has to non-negative.")
+
         check_two_element_tuple(diameters, 'diameters')
         check_min_max_tuple(diameters, 'diameters')
         check_two_element_tuple(distances, 'distances')
@@ -200,6 +212,7 @@ class Particle:
         # Class init:
         self.__n_images = n_images
         self.__size = size
+        self.__size_buffer = size_buffer
         self.__diameters = diameters
         self.__distances = distances
         self.__densities = densities
@@ -207,6 +220,10 @@ class Particle:
         self.__diameter_std = diameter_std
         self.__seeding_mode = seeding_mode
         self.__random_seed = random_seed
+
+        # Compute the image outline that serves as a buffer:
+        self.__height_with_buffer = self.size[0] + 2 * self.size_buffer
+        self.__width_with_buffer = self.size[1] + 2 * self.size_buffer
 
         # Initialize parameters for particle generation:
         self.__particle_diameter_per_image = np.random.rand(self.__n_images) * (self.__diameters[1] - self.__diameters[0]) + self.__diameters[0]
@@ -220,14 +237,7 @@ class Particle:
 
         elif seeding_mode == 'poisson':
 
-            particle_densities = np.zeros((self.n_images,))
-
-            for i in range(0, self.n_images):
-                sx = np.arange(((self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]) / 2), (self.size[0] - (self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]) / 2),(self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]))
-                sy = np.arange(((self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]) / 2), (self.size[1] - (self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]) / 2),(self.__particle_diameter_per_image[i] + self.__particle_distance_per_image[i]))
-                particle_densities[i] = len(sx) * len(sy) / self.__size[0] / self.__size[1]
-
-            self.__particle_density_per_image = particle_densities
+            print('Poisson sampling is not supported yet.')
 
         # Compute the total number of particles for a given particle density on each image:
         n_of_particles = self.__size[0] * self.__size[1] * self.__particle_density_per_image
@@ -242,8 +252,8 @@ class Particle:
 
             if seeding_mode == 'random':
 
-                random_particle_positions = list(np.random.choice(self.size[0] * self.size[1], size=self.n_of_particles[i], replace=False))
-                seeded_array = np.zeros((self.size[0], self.size[1]))
+                random_particle_positions = list(np.random.choice(self.__height_with_buffer * self.__width_with_buffer, size=self.n_of_particles[i], replace=False))
+                seeded_array = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
                 seeded_array.ravel()[random_particle_positions] = 1
                 particle_positions.append(seeded_array)
 
@@ -269,6 +279,10 @@ class Particle:
     @property
     def size(self):
         return self.__size
+
+    @property
+    def size_buffer(self):
+        return self.__size_buffer
 
     @property
     def diameters(self):
