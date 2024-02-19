@@ -236,7 +236,7 @@ class Image:
         for i in range(0,self.__particles.n_images):
 
             # Initialize an empty image:
-            particles_with_gaussian_light = np.zeros((self.__particles.size[0], self.__particles.size[1]))
+            particles_with_gaussian_light = np.zeros((self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
 
             # Compute particle coordinates on the current image:
             (particle_height_coordinate, particle_width_coordinate) = np.where(self.__particles.particle_positions[i]==1)
@@ -255,7 +255,7 @@ class Image:
 
                 for h in range(px_c_height-ceil_of_particle_radius, px_c_height+ceil_of_particle_radius):
                     for w in range(px_c_width-ceil_of_particle_radius, px_c_width+ceil_of_particle_radius):
-                        if (h >= 0 and h < self.__particles.size[0]) and (w >= 0 and w < self.__particles.size[1]):
+                        if (h >= 0 and h < self.__particles.size_with_buffer[0]) and (w >= 0 and w < self.__particles.size_with_buffer[1]):
 
                             coordinate_height = h + 0.5 - particle_height_coordinate[p]
                             coordinate_width = w + 0.5 - particle_width_coordinate[p]

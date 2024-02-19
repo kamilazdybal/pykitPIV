@@ -224,6 +224,7 @@ class Particle:
         # Compute the image outline that serves as a buffer:
         self.__height_with_buffer = self.size[0] + 2 * self.size_buffer
         self.__width_with_buffer = self.size[1] + 2 * self.size_buffer
+        self.__size_with_buffer = (self.__height_with_buffer, self.__width_with_buffer)
 
         # Initialize parameters for particle generation:
         self.__particle_diameter_per_image = np.random.rand(self.__n_images) * (self.__diameters[1] - self.__diameters[0]) + self.__diameters[0]
@@ -313,6 +314,10 @@ class Particle:
         return self.__random_seed
 
     # Properties computed at class init:
+    @property
+    def size_with_buffer(self):
+        return self.__size_with_buffer
+
     @property
     def diameter_per_image(self):
         return self.__particle_diameter_per_image
