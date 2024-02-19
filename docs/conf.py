@@ -16,11 +16,11 @@ import sys
 # from Cython.Build import cythonize
 # from numpy import get_include as numpy_include
 # import platform
-sys.path.insert(0, os.path.abspath('../pypiv/'))
+sys.path.insert(0, os.path.abspath('../pykitPIV/'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'pypiv'
+project = 'pykitPIV'
 copyright = '2024, Claudio Mucignat, Kamila Zdybał'
 author = 'Claudio Mucignat, Kamila Zdybał'
 release = '1.0'
@@ -121,7 +121,7 @@ html_static_path = []
 
 html_theme = "furo"
 
-html_logo = "images/pypiv-logo.png"
+html_logo = "images/pykitPIV-logo.png"
 
 html_theme_options = {
     "dark_css_variables": {

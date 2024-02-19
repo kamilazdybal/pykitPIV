@@ -1,10 +1,10 @@
-# Python PIV toolkit
-
-<p align="center">
-    <img src="docs/images/pypiv-logo.png" width="200">
-</p>
+# Welcome to `pykitPIV`!
 
 **Py**thon **ki**nematic **t**raining for particle image velocimetry (**PIV**)
+
+<p align="center">
+    <img src="docs/images/pykitPIV-logo.png" width="200">
+</p>
 
 ## Introduction
 
@@ -24,7 +24,7 @@ The graph below shows the possible workflows constructed from the four main clas
 At each stage, the user can enforce reproducible image generation through fixing random seeds.
 
 <p align="center">
-    <img src="docs/images/pypiv-workflow.png" width="400">
+    <img src="docs/images/pykitPIV-workflow.png" width="400">
 </p>
 
 ## Installation

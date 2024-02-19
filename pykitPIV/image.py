@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 import copy
 import scipy
 import warnings
-from pypiv.checks import *
-from pypiv.particle import Particle
-from pypiv.flowfield import FlowField
-from pypiv.motion import Motion
+from pykitPIV.checks import *
+from pykitPIV.particle import Particle
+from pykitPIV.flowfield import FlowField
+from pykitPIV.motion import Motion
 
 # self.__LEF = self.__light_enhancement_factor[0] + np.random.rand(self.__n_images) * (
 #             self.__light_enhancement_factor[1] - self.__light_enhancement_factor[0])

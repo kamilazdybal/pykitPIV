@@ -4,22 +4,22 @@
 Class: ``Image``
 ####################
 
-.. autoclass:: pypiv.image.Image
+.. autoclass:: pykitPIV.image.Image
 
-.. autofunction:: pypiv.image.Image.add_particles
+.. autofunction:: pykitPIV.image.Image.add_particles
 
-.. autofunction:: pypiv.image.Image.add_velocity_field
+.. autofunction:: pykitPIV.image.Image.add_velocity_field
 
-.. autofunction:: pypiv.image.Image.add_motion
+.. autofunction:: pykitPIV.image.Image.add_motion
 
-.. autofunction:: pypiv.image.Image.add_reflected_light
+.. autofunction:: pykitPIV.image.Image.add_reflected_light
 
-.. autofunction:: pypiv.image.Image.compute_light_intensity_at_pixel
+.. autofunction:: pykitPIV.image.Image.compute_light_intensity_at_pixel
 
-.. autofunction:: pypiv.image.Image.plot
+.. autofunction:: pykitPIV.image.Image.plot
 
-.. autofunction:: pypiv.image.Image.plot_image_pair
+.. autofunction:: pykitPIV.image.Image.plot_image_pair
 
-.. autofunction:: pypiv.image.Image.plot_velocity_field
+.. autofunction:: pykitPIV.image.Image.plot_velocity_field
 
-.. autofunction:: pypiv.image.Image.plot_velocity_field_magnitude
+.. autofunction:: pykitPIV.image.Image.plot_velocity_field_magnitude

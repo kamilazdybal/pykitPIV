@@ -4,4 +4,4 @@
 Class: ``Particle``
 ###################
 
-.. autoclass:: pypiv.particle.Particle
+.. autoclass:: pykitPIV.particle.Particle

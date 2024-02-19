@@ -4,5 +4,5 @@
 Class: ``FlowField``
 ####################
 
-.. autoclass:: pypiv.flowfield.FlowField
+.. autoclass:: pykitPIV.flowfield.FlowField
 

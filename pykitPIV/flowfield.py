@@ -5,7 +5,7 @@ import random
 import copy
 import scipy
 import warnings
-from pypiv.checks import *
+from pykitPIV.checks import *
 
 ################################################################################
 ################################################################################

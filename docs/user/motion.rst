@@ -4,5 +4,5 @@
 Class: ``Motion``
 ####################
 
-.. autoclass:: pypiv.motion.Motion
+.. autoclass:: pykitPIV.motion.Motion
 
