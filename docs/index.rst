@@ -2,7 +2,7 @@
 Welcome to ``pykitPIV``!
 ##############################
 
-**Py** thon **ki** nematic **t** raining for particle image velocimetry (**PIV**)
+**Py**\ thon **ki**\ nematic **t**\ raining for particle image velocimetry (**PIV**)
 
 .. image:: images/pykitPIV-logo.png
   :width: 300
