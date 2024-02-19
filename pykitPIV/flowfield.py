@@ -33,12 +33,12 @@ class FlowField:
         # Initialize a flow field object that generates a random velocity field for one image pair:
         flowfield = FlowField(1,
                               size=image_size,
+                              size_buffer=10,
                               flow_mode='random',
                               gaussian_filters=(8,10),
                               n_gaussian_filter_iter=10,
                               sin_period=(30,300),
                               displacement=(0,10),
-                              lost_particles_percentage=10,
                               random_seed=100)
 
     We can now visualize the generated random velocity field using the ``Image`` class.
@@ -94,14 +94,15 @@ class FlowField:
         ``int`` specifying the number of image pairs to create.
     :param size: (optional)
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, the second number is image width.
+    :param size_buffer: (optional)
+        ``int`` specifying the buffer in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
+        This number should be approximately equal to the maximum displacement that particles are subject to in order to allow for new particles to arrive into the image area.
     :param flow_mode: (optional)
         ``str`` specifying the mode for the velocity field generation. It can be one of the following: ``'random'``, ``'random-sinusoidal'``, ``'quadrant'``, or ``'checkerboard'``.
     :param gaussian_filters: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) Gaussian filter size (bandwidth) for smoothing out the random velocity fields to randomly sample from.
     :param n_gaussian_filter_iter: (optional)
         ``int`` specifying the number of iterations applying a Gaussian filter to the random velocity field to eventually arrive at a smoothed velocity map. With no iterations, each pixel attains a random velocity component value.
-    :param lost_particles_percentage: (optional)
-        ``float`` or ``int`` specifying the percentage of particles that will be lost on an image between two consecutive PIV images due to movement of particles off the laser plane.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
     """
@@ -109,11 +110,11 @@ class FlowField:
     def __init__(self,
                  n_images,
                  size=(512, 512),
+                 size_buffer=10,
                  flow_mode='random',
                  displacement=(0, 10),
                  gaussian_filters=(10,30),
                  n_gaussian_filter_iter=6,
-                 lost_particles_percentage=10,
                  sin_period=(30,300),
                  random_seed=None):
 
@@ -128,6 +129,12 @@ class FlowField:
             raise ValueError("Parameter `n_images` has to be positive.")
 
         check_two_element_tuple(size, 'size')
+
+        if not isinstance(size_buffer, int):
+            raise ValueError("Parameter `size_buffer` has to be of type 'int'.")
+
+        if size_buffer < 0:
+            raise ValueError("Parameter `size_buffer` has to non-negative.")
 
         __flow_mode = ['random', 'random-sinusoidal', 'quadrant', 'checkerboard']
         if flow_mode not in __flow_mode:
@@ -144,9 +151,6 @@ class FlowField:
         if n_gaussian_filter_iter < 0:
             raise ValueError("Parameter `n_gaussian_filter_iter` has to be positive.")
 
-        if (not isinstance(lost_particles_percentage, float)) and (not isinstance(lost_particles_percentage, int)):
-            raise ValueError("Parameter `lost_particles_percentage` has to be of type 'float' or 'int'.")
-
         check_two_element_tuple(sin_period, 'sin_period')
         check_min_max_tuple(sin_period, 'sin_period')
 
@@ -161,13 +165,18 @@ class FlowField:
         # Class init:
         self.__n_images = n_images
         self.__size = size
+        self.__size_buffer = size_buffer
         self.__flow_mode = flow_mode
         self.__displacement = displacement
         self.__gaussian_filters = gaussian_filters
         self.__n_gaussian_filter_iter = n_gaussian_filter_iter
-        self.__lost_particles_percentage = lost_particles_percentage
         self.__sin_period = sin_period
         self.__random_seed = random_seed
+
+        # Compute the image outline that serves as a buffer:
+        self.__height_with_buffer = self.size[0] + 2 * self.size_buffer
+        self.__width_with_buffer = self.size[1] + 2 * self.size_buffer
+        self.__size_with_buffer = (self.__height_with_buffer, self.__width_with_buffer)
 
         # Generate random velocity field:
         if flow_mode == 'random':
@@ -180,8 +189,8 @@ class FlowField:
 
             for i in range(0, self.n_images):
 
-                velocity_field_u = np.random.rand(self.__size[0], self.__size[1])
-                velocity_field_v = np.random.rand(self.__size[0], self.__size[1])
+                velocity_field_u = np.random.rand(self.size_with_buffer[0], self.size_with_buffer[1])
+                velocity_field_v = np.random.rand(self.size_with_buffer[0], self.size_with_buffer[1])
 
                 # Smooth out the random velocity field `n_gaussian_filter_iter` times:
                 for _ in range(0,n_gaussian_filter_iter):
@@ -220,6 +229,10 @@ class FlowField:
         return self.__size
 
     @property
+    def size_buffer(self):
+        return self.__size_buffer
+
+    @property
     def flow_mode(self):
         return self.__flow_mode
 
@@ -234,10 +247,6 @@ class FlowField:
     @property
     def n_gaussian_filter_iter(self):
         return self.__n_gaussian_filter_iter
-        
-    @property
-    def lost_particles_percentage(self):
-        return self.__lost_particles_percentage
 
     @property
     def sin_period(self):
@@ -248,6 +257,9 @@ class FlowField:
         return self.__random_seed
 
     # Properties computed at class init:
+    @property
+    def size_with_buffer(self):
+        return self.__size_with_buffer
 
     @property
     def gaussian_filter_per_image(self):

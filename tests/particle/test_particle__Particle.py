@@ -19,6 +19,7 @@ class TestParticleClass(unittest.TestCase):
         try:
             particles = Particle(1,
                                  size=(20, 20),
+                                 size_buffer=10,
                                  densities=(0.1, 0.11),
                                  diameters=(6, 10),
                                  distances=(1, 1),
@@ -36,6 +37,7 @@ class TestParticleClass(unittest.TestCase):
         try:
             particles.n_images
             particles.size
+            particles.size_buffer
             particles.diameters
             particles.distances
             particles.densities
@@ -48,6 +50,7 @@ class TestParticleClass(unittest.TestCase):
 
         # Attributes computed at class init:
         try:
+            particles.size_with_buffer
             particles.diameter_per_image
             particles.distance_per_image
             particles.density_per_image
@@ -58,6 +61,7 @@ class TestParticleClass(unittest.TestCase):
         except Exception:
             self.assertTrue(False)
 
+        self.assertTrue(isinstance(particles.size_with_buffer, tuple))
         self.assertTrue(isinstance(particles.diameter_per_image, np.ndarray))
         self.assertTrue(isinstance(particles.distance_per_image, np.ndarray))
         self.assertTrue(isinstance(particles.density_per_image, np.ndarray))
@@ -71,7 +75,13 @@ class TestParticleClass(unittest.TestCase):
 
         # Wrong type:
         with self.assertRaises(ValueError):
+            particles = Particle([])
+
+        with self.assertRaises(ValueError):
             particles = Particle(1, size=[])
+
+        with self.assertRaises(ValueError):
+            particles = Particle(1, size_buffer=[])
 
         with self.assertRaises(ValueError):
             particles = Particle(1, diameters=[])
@@ -281,3 +291,40 @@ class TestParticleClass(unittest.TestCase):
                              seeding_mode='random')
 
         self.assertTrue(particles_1.n_of_particles < particles_2.n_of_particles)
+
+    def test_particle__Particle__adding_image_buffers(self):
+
+        particles = Particle(1,
+                             size=(100, 200),
+                             size_buffer=10,
+                             densities=(0.1, 0.11),
+                             seeding_mode='random')
+
+        self.assertTrue(particles.size_with_buffer[0] == 120)
+        self.assertTrue(particles.size_with_buffer[1] == 220)
+        self.assertTrue(particles.particle_positions[0].shape[0] == 120)
+        self.assertTrue(particles.particle_positions[0].shape[1] == 220)
+
+        particles = Particle(1,
+                             size=(100, 200),
+                             size_buffer=0,
+                             densities=(0.1, 0.11),
+                             seeding_mode='random')
+
+        self.assertTrue(particles.size_with_buffer[0] == 100)
+        self.assertTrue(particles.size_with_buffer[1] == 200)
+        self.assertTrue(particles.particle_positions[0].shape[0] == 100)
+        self.assertTrue(particles.particle_positions[0].shape[1] == 200)
+
+        particles = Particle(1,
+                             size=(100, 200),
+                             size_buffer=2,
+                             densities=(0.1, 0.11),
+                             seeding_mode='random')
+
+        self.assertTrue(particles.size_with_buffer[0] == 104)
+        self.assertTrue(particles.size_with_buffer[1] == 204)
+        self.assertTrue(particles.particle_positions[0].shape[0] == 104)
+        self.assertTrue(particles.particle_positions[0].shape[1] == 204)
+
+

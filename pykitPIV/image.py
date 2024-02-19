@@ -25,16 +25,12 @@ class Image:
     """
     Stores and plots synthetic PIV images and/or the associated flow fields at any stage of particle generation and movement.
 
-    :param size: (optional)
-        ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, the second number is image width.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
 
     **Attributes:**
 
-    - **size** - (read-only) as per user input.
     - **random_seed** - (read-only) as per user input.
-    - **empty_image** - (read-only) ``numpy.ndarray`` with an empty image of a given size.
     - **images** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image of a given size.
     - **particles** - (read-only) object of ``pypiv.Particle`` class.
     - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image.
@@ -43,15 +39,12 @@ class Image:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def __init__(self,
-                 size=(512,512),
                  random_seed=None,
                  ):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Input parameter check:
-
-        check_two_element_tuple(size, 'size')
 
         if random_seed is not None:
             if type(random_seed) != int:
@@ -62,11 +55,7 @@ class Image:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Class init:
-        self.__size = size
         self.__random_seed = random_seed
-
-        # Create empty image at class init:
-        self.__empty_image = np.zeros((size[0], size[1]))
 
         # Initialize images:
         self.__images = None
@@ -87,18 +76,10 @@ class Image:
 
     # Properties coming from user inputs:
     @property
-    def size(self):
-        return self.__size
-
-    @property
     def random_seed(self):
         return self.__random_seed
 
     # Properties computed at class init:
-    @property
-    def empty_image(self):
-        return self.__empty_image
-
     @property
     def images(self):
         return self.__images
@@ -125,16 +106,39 @@ class Image:
         if not isinstance(particles, Particle):
             raise ValueError("Parameter `particles` has to be an instance of `Particle` class.")
 
-        # Check that the size of images are consistent between the Image and Particle objects:
-        if particles.size != self.size:
-            raise ValueError("Inconsistent image sizes between the current `Image` object and the `Particle` object.")
-
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__particles = particles
         self.__images = self.__particles.particle_positions
 
         print('Particles added to the image.')
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def add_velocity_field(self,
+                           flowfield):
+        """
+        Adds velocity field to the image. The velocity field should be defined using the ``FlowField`` class.
+
+        :param flowfield:
+            ``FlowField`` class instance specifying the flow field.
+        """
+
+        self.__flowfield = flowfield
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def add_motion(self,
+                   motion):
+        """
+        Adds particle movement to the image. The movement should be defined using the ``Motion`` class.
+
+        :param motion:
+            ``Motion`` class instance specifying the movement of particles from one instance in time to the next.
+            In general, the movement is defined by the ``FlowField`` class applied to particles defined by the ``Particle`` class.
+        """
+
+        self.__motion = motion
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -273,33 +277,6 @@ class Image:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def add_velocity_field(self,
-                           flowfield):
-        """
-        Adds velocity field to the image. The velocity field should be defined using the ``FlowField`` class.
-
-        :param flowfield:
-            ``FlowField`` class instance specifying the flow field.
-        """
-
-        self.__flowfield = flowfield
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    def add_motion(self,
-                   motion):
-        """
-        Adds particle movement to the image. The movement should be defined using the ``Motion`` class.
-
-        :param motion:
-            ``Motion`` class instance specifying the movement of particles from one instance in time to the next.
-            In general, the movement is defined by the ``FlowField`` class applied to particles defined by the ``Particle`` class.
-        """
-
-        self.__motion = motion
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
     def plot(self,
              idx,
              with_buffer=False,
@@ -316,7 +293,7 @@ class Image:
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
         :param with_buffer:
-            ``bool`` specifying whether the buffer for the image size should be plotted. If set to ``False``, the true image size is visualized. If set to ``True``, the image size with an outline that represents the buffer is visualized.
+            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is visualized with a red rectangle.
         :param xlabel: (optional)
             ``str`` specifying :math:`x`-label.
         :param ylabel: (optional)
@@ -368,9 +345,6 @@ class Image:
 
             print('Note: Particles have not been added to the image yet!\n\n')
 
-            fig = plt.figure(figsize=figsize)
-            plt.imshow(self.empty_image, cmap=cmap, origin='lower')
-
         else:
 
             fig = plt.figure(figsize=figsize)
@@ -392,7 +366,7 @@ class Image:
                     im.set_extent([f(x) for x in im.get_extent()])
 
                     # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
-                    rect = patches.Rectangle((0, 0), self.__size[1], self.__size[0], linewidth=1, edgecolor='r', facecolor='none')
+                    rect = patches.Rectangle((0, 0), self.__particles.size[1], self.__particles.size[0], linewidth=1, edgecolor='r', facecolor='none')
                     ax = plt.gca()
                     ax.add_patch(rect)
 
@@ -694,13 +668,13 @@ class Image:
             plt.colorbar()
 
             if add_quiver:
-                X = np.arange(0,self.size[1],quiver_step)
-                Y = np.arange(0,self.size[0],quiver_step)
+                X = np.arange(0,self.__flowfield.size[1],quiver_step)
+                Y = np.arange(0,self.__flowfield.size[0],quiver_step)
                 plt.quiver(X, Y, self.__flowfield.velocity_field[idx][0][::quiver_step,::quiver_step], self.__flowfield.velocity_field[idx][1][::quiver_step,::quiver_step], color=quiver_color)
 
             if add_streamplot:
-                X = np.arange(0,self.size[1],1)
-                Y = np.arange(0,self.size[0],1)
+                X = np.arange(0,self.__flowfield.size[1],1)
+                Y = np.arange(0,self.__flowfield.size[0],1)
                 plt.streamplot(X, Y, self.__flowfield.velocity_field[idx][0], self.__flowfield.velocity_field[idx][1], density=streamplot_density, color=streamplot_color)
 
             if filename is not None:

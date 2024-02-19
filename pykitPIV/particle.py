@@ -119,7 +119,7 @@ class Particle:
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`. The first number is image height, the second number is image width.
     :param size_buffer: (optional)
         ``int`` specifying the buffer in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
-        This number should be approximately equal to the maximum displacement that particles will be subject to to allow for new particles to arrive into the image area.
+        This number should be approximately equal to the maximum displacement that particles are subject to in order to allow for new particles to arrive into the image area.
     :param diameters: (optional)
         ``tuple`` of two ``int`` elements specifying the minimum (first element) and maximum (second element) particle diameter in pixels :math:`[\\text{px}]` to randomly sample from.
     :param distances: (optional)
