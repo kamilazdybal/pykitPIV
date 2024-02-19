@@ -13,3 +13,4 @@ pypiv.egg-info/
 docs/builddir/
 docs/_build/
 pykitPIV.egg-info/
+jupyter-notebooks/*.png
