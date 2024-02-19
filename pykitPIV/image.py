@@ -293,7 +293,7 @@ class Image:
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
         :param with_buffer:
-            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is visualized with a red rectangle.
+            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is marked with a red rectangle.
         :param xlabel: (optional)
             ``str`` specifying :math:`x`-label.
         :param ylabel: (optional)
@@ -445,7 +445,7 @@ class Image:
         :param idx:
             ``int`` specifying the index of the velocity field to plot out of ``n_images`` number of images.
         :param with_buffer:
-            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is visualized with a red rectangle.
+            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is marked with a red rectangle.
         :param xlabel: (optional)
             ``str`` specifying :math:`x`-label.
         :param ylabel: (optional)
@@ -635,7 +635,7 @@ class Image:
         :param idx:
             ``int`` specifying the index of the velocity field to plot out of ``n_images`` number of images.
         :param with_buffer:
-            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is visualized with a red rectangle.
+            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is marked with a red rectangle.
         :param xlabel: (optional)
             ``str`` specifying :math:`x`-label.
         :param ylabel: (optional)
@@ -787,12 +787,19 @@ class Image:
                     if add_quiver:
                         X = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer, quiver_step)
                         Y = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer, quiver_step)
+
                         plt.quiver(X, Y, self.__flowfield.velocity_field[idx][0][::quiver_step, ::quiver_step], self.__flowfield.velocity_field[idx][1][::quiver_step, ::quiver_step], color=quiver_color)
+
+                        plt.xlim([-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer])
+                        plt.ylim([-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer])
 
                     if add_streamplot:
                         X = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer, 1)
                         Y = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer, 1)
                         plt.streamplot(X, Y, self.__flowfield.velocity_field[idx][0], self.__flowfield.velocity_field[idx][1], density=streamplot_density, color=streamplot_color)
+
+                        plt.xlim([-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer])
+                        plt.ylim([-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer])
 
                 else:
 
