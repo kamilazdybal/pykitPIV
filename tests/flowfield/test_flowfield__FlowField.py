@@ -24,7 +24,6 @@ class TestFlowFieldClass(unittest.TestCase):
                                   n_gaussian_filter_iter=10,
                                   sin_period=(30, 300),
                                   displacement=(0, 10),
-                                  lost_particles_percentage=10,
                                   random_seed=100)
         except Exception:
             self.assertTrue(False)
@@ -49,9 +48,6 @@ class TestFlowFieldClass(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             flowfield = FlowField(1, displacement=[])
-
-        with self.assertRaises(ValueError):
-            flowfield = FlowField(1, lost_particles_percentage=[])
 
         with self.assertRaises(ValueError):
             flowfield = FlowField(1, random_seed=[])
@@ -95,7 +91,6 @@ class TestFlowFieldClass(unittest.TestCase):
             flowfield.displacement
             flowfield.gaussian_filters
             flowfield.n_gaussian_filter_iter
-            flowfield.lost_particles_percentage
             flowfield.sin_period
             flowfield.random_seed
         except Exception:
