@@ -151,7 +151,8 @@ class Particle:
     - **density_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle densities in particle per pixel :math:`[\\text{ppp}]` for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
     - **SNR_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the signal-to-noise ratio for each image. Template signal-to-noise are random numbers between ``signal_to_noise[0]`` and ``signal_to_noise[1]``.
     - **n_of_particles** - (read-only) ``list`` specifying the number of particles created for each image based on each template density.
-    - **particle_positions** - (read-only) ``list`` specifying the position of all particle centers for each image. The posititions are computed based on the ``seeding_mode``.
+    - **particle_coordinates** - (read-only) ``list`` specifying the absolute coordinates of all particle centers for each image. The posititions are computed based on the ``seeding_mode``.
+    - **particle_positions** - (read-only) ``list`` specifying the position per pixel of all particle centers for each image. The posititions are computed based on the ``seeding_mode``.
     - **particle_diameters** - (read-only) ``list`` specifying the diameters of all seeded particles in pixels :math:`[\\text{px}]` for each image based on each template diameter.
    """
 
@@ -246,6 +247,7 @@ class Particle:
 
         # Initialize particle positions and particle diameters on each of the ``n_image`` images:
 
+        particle_coordinates = []
         particle_positions = []
         particle_diameters = []
 
@@ -253,9 +255,17 @@ class Particle:
 
             if seeding_mode == 'random':
 
-                random_particle_positions = list(np.random.choice(self.__height_with_buffer * self.__width_with_buffer, size=self.n_of_particles[i], replace=False))
+                # Generate absolute coordinates for particles' centers within the total available image area (drawn from random uniform distribution):
+                self.__y_coordinates = self.__height_with_buffer * np.random.rand(self.n_of_particles[i])
+                self.__x_coordinates = self.__width_with_buffer * np.random.rand(self.n_of_particles[i])
+
+                particle_coordinates.append((self.__y_coordinates, self.__x_coordinates))
+
+                # Populate a matrix that shows particle locations per pixel of the image area:
                 seeded_array = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
-                seeded_array.ravel()[random_particle_positions] = 1
+                for x, y in zip(np.floor(self.__x_coordinates).astype(int), np.floor(self.__y_coordinates).astype(int)):
+                    seeded_array[self.__height_with_buffer - 1 - y, x] += 1
+
                 particle_positions.append(seeded_array)
 
             elif seeding_mode == 'poisson':
@@ -263,6 +273,9 @@ class Particle:
                 print('Poisson sampling is not supported yet.')
 
             particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i]))
+
+        # Initialize particle coordinates:
+        self.__particle_coordinates = particle_coordinates
 
         # Initialize particle positions:
         self.__particle_positions = particle_positions
@@ -337,6 +350,10 @@ class Particle:
     @property
     def n_of_particles(self):
         return self.__n_of_particles
+
+    @property
+    def particle_coordinates(self):
+        return self.__particle_coordinates
 
     @property
     def particle_positions(self):
