@@ -264,6 +264,7 @@ class Particle:
                 # Populate a matrix that shows particle locations per pixel of the image area:
                 seeded_array = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
                 for x, y in zip(np.floor(self.__x_coordinates).astype(int), np.floor(self.__y_coordinates).astype(int)):
+
                     seeded_array[y, x] += 1
 
                 particle_positions.append(seeded_array)
