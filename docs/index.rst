@@ -36,6 +36,8 @@ For more information on kinematic training of convolutional neural networks (CNN
 
 - `A lightweight convolutional neural network to reconstruct deformation in BOS recordings <https://link.springer.com/article/10.1007/s00348-023-03618-7>`_
 
+.. image:: images/example-image-I1-I2.gif
+  :width: 1100
 
 .. toctree::
    :maxdepth: 5
