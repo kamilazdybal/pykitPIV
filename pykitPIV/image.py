@@ -32,7 +32,7 @@ class Image:
 
     - **random_seed** - (read-only) as per user input.
     - **images** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image of a given size.
-    - **particles** - (read-only) object of ``pypiv.Particle`` class.
+    - **particles** - (read-only) object of ``pykitPIV.Particle`` class.
     - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image.
     """
 
@@ -258,7 +258,7 @@ class Image:
                 px_c_width = np.floor(particle_width_coordinate[p]).astype(int)
                 ceil_of_particle_radius = np.ceil(self.__particles.particle_diameters[i][p]/2).astype(int)
 
-                # We only apply the Gaussian filter in the square neighborhood of the particle center:
+                # We only apply the Gaussian blur in the square neighborhood of the particle center:
                 for h in range(px_c_height - ceil_of_particle_radius, px_c_height + ceil_of_particle_radius + 1):
                     for w in range(px_c_width - ceil_of_particle_radius, px_c_width + ceil_of_particle_radius + 1):
 

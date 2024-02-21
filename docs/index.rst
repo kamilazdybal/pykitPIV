@@ -26,6 +26,17 @@ At each stage, the user can enforce reproducible image generation through fixing
   :width: 500
   :align: center
 
+**pykitPIV** exploits the idea that if time separation between two PIV image pairs is small,
+kinematic relationship between particles is sufficient to determine particle displacement fields.
+For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please check the following references:
+
+- `Kinematic training of convolutional neural networks for particle image velocimetry <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae/meta>`_
+
+- `A lightweight neural network designed for fluid velocimetry <https://link.springer.com/article/10.1007/s00348-023-03695-8>`_
+
+- `A lightweight convolutional neural network to reconstruct deformation in BOS recordings <https://link.springer.com/article/10.1007/s00348-023-03618-7>`_
+
+
 .. toctree::
    :maxdepth: 5
    :caption: User Guide

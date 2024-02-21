@@ -25,7 +25,7 @@ class FlowField:
 
         import numpy as np
         import cmcrameri.cm as cmc
-        from pypiv import FlowField, Image
+        from pykitPIV import FlowField, Image
 
         # Specify size in pixels for each image:
         image_size = (128,512)
@@ -46,14 +46,14 @@ class FlowField:
     .. code:: python
 
         # Initialize an image object:
-        image = Image(size=image_size,
-                      random_seed=100)
+        image = Image(random_seed=100)
 
         # Add the velocity field to the image:
         image.add_velocity_field(flowfield)
 
         # Visualize the velocity field:
         image.plot_velocity_field(0,
+                                  with_buffer=True,
                                   xlabel='Width [px]',
                                   ylabel='Height [px]',
                                   title=('Example random velocity component $u$', 'Example random velocity component $v$'),
@@ -71,7 +71,7 @@ class FlowField:
       :width: 700
       :align: center
 
-    We can also visualize velocity magnitude field with or without a vector field:
+    We can also visualize velocity magnitude field. Optionally, a stream plot or a quiver plot can be added on top to visualize the velocity vector field:
 
     .. code:: python
 
@@ -86,7 +86,24 @@ class FlowField:
                                             figsize=(10,2),
                                             filename='example-random-velocity-field-magnitude.png');
 
-    .. image:: ../images/example-random-velocity-field-magnitude.png
+    .. image:: ../images/example-random-velocity-field-magnitude-with-quiver.png
+      :width: 700
+      :align: center
+
+    .. code:: python
+
+        image.plot_velocity_field_magnitude(0,
+                                            add_streamplot=True,
+                                            streamplot_density=1,
+                                            streamplot_color='r',
+                                            xlabel='Width [px]',
+                                            ylabel='Height [px]',
+                                            title='Example random velocity field magnitude',
+                                            cmap=cmc.oslo_r,
+                                            figsize=(10,2),
+                                            filename='example-random-velocity-field-magnitude-with-streamplot.png');
+
+    .. image:: ../images/example-random-velocity-field-magnitude-with-streamplot.png
       :width: 700
       :align: center
 

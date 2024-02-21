@@ -24,7 +24,7 @@ class Particle:
     .. code:: python
 
         import numpy as np
-        from pypiv import Particle, Image
+        from pykitPIV import Particle, Image
 
         # We are going to generate 10 PIV image pairs:
         n_images = 10
@@ -36,7 +36,7 @@ class Particle:
         particles = Particle(n_images=n_images,
                              size=image_size,
                              size_buffer=10,
-                             diameters=(6,10),
+                             diameters=(2,4),
                              distances=(1,2),
                              densities=(0.01,0.05),
                              signal_to_noise=(5,20),
@@ -58,26 +58,26 @@ class Particle:
 
     .. code-block:: text
 
-        0.9914647019217923
+        1.0292466988328535
 
     We can now visualize the generated particles using the ``Image`` class.
 
     .. code:: python
 
         # Initialize an image object:
-        image = Image(size=image_size,
-                      random_seed=100)
+        image = Image(random_seed=100)
 
         # Add particles to the image:
         image.add_particles(particles)
 
         # Plot the first out of 10 images:
         image.plot(0,
+                   with_buffer=True,
                    xlabel='Width [px]',
                    ylabel='Height [px]',
                    title='Particle positions',
                    cmap='Blues',
-                   figsize=(8,8),
+                   figsize=(10,3),
                    filename='particle-positions.png');
 
     The code above will return a figure showing the random positions of the generated particles:
@@ -95,16 +95,17 @@ class Particle:
                                   maximum_intensity=2**16-1,
                                   laser_beam_thickness=1,
                                   laser_over_exposure=1,
-                                  laser_beam_shape=0.3,
-                                  alpha=1/20)
+                                  laser_beam_shape=0.85,
+                                  alpha=1/8)
 
         # Plot the first out of 10 images:
         image.plot(0,
+                   with_buffer=True,
                    ylabel='Height [px]',
                    title='Example PIV image',
                    xlabel='Width [px]',
                    cmap='Greys_r',
-                   figsize=(10,8),
+                   figsize=(10,3),
                    filename='example-image.png');
 
     The code above will return a figure showing the example PIV image constructed from the generated particles:
@@ -119,7 +120,8 @@ class Particle:
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`. The first number is image height, the second number is image width.
     :param size_buffer: (optional)
         ``int`` specifying the buffer in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
-        This number should be approximately equal to the maximum displacement that particles are subject to in order to allow for new particles to arrive into the image area.
+        This number should be approximately equal to the maximum displacement that particles are subject to in order to allow new particles to arrive into the image area
+        and old particles to exit the image area.
     :param diameters: (optional)
         ``tuple`` of two ``int`` elements specifying the minimum (first element) and maximum (second element) particle diameter in pixels :math:`[\\text{px}]` to randomly sample from.
     :param distances: (optional)
