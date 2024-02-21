@@ -58,7 +58,8 @@ class Image:
         self.__random_seed = random_seed
 
         # Initialize images:
-        self.__images = None
+        self.__images_I1 = None
+        self.__images_I2 = None
 
         # Initialize particles:
         self.__particles = None
@@ -81,8 +82,12 @@ class Image:
 
     # Properties computed at class init:
     @property
-    def images(self):
-        return self.__images
+    def images_I1(self):
+        return self.__images_I1
+
+    @property
+    def images_I2(self):
+        return self.__images_I2
 
     @property
     def exposures_per_image(self):
@@ -109,7 +114,7 @@ class Image:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__particles = particles
-        self.__images = self.__particles.particle_positions
+        self.__images_I1 = self.__particles.particle_positions
 
         print('Particles added to the image.')
 
@@ -295,14 +300,80 @@ class Image:
 
             images.append(particles_with_gaussian_light)
 
-        self.__images = images
+        self.__images_I1 = images
 
         print('Reflected light added to the image.')
+
+
+
+
+
+
+
+
+
+
+        # This needs to be smarter!
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        if self.__motion is not None:
+
+            images = []
+
+            for i in range(0, self.__particles.n_images):
+
+                # Initialize an empty image:
+                particles_with_gaussian_light = np.zeros((self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
+
+                # Compute particle coordinates on the current image:
+                particle_height_coordinate = self.__motion.particle_coordinates_I2[i][0]
+                particle_width_coordinate = self.__motion.particle_coordinates_I2[i][1]
+
+                number_of_particles = particle_height_coordinate.shape[0]
+
+                # Establish the peak intensity for each particle depending on its position with respect to the laser beam plane:
+                particle_positions_off_laser_plane = laser_beam_thickness * np.random.rand(self.__particles.n_of_particles[i]) - laser_beam_thickness / 2
+                particle_position_relative_to_laser_centerline = np.abs(particle_positions_off_laser_plane) / (laser_beam_thickness / 2)
+                particle_peak_intensities = self.exposures_per_image[i] * maximum_intensity * np.exp(-0.5 * (particle_position_relative_to_laser_centerline ** 2 / laser_beam_shape ** 2))
+
+                # Add Gaussian blur to each particle location that mimics the light reflect from a particle of a given size:
+                for p in range(0, number_of_particles):
+
+                    px_c_height = np.floor(particle_height_coordinate[p]).astype(int)
+                    px_c_width = np.floor(particle_width_coordinate[p]).astype(int)
+                    ceil_of_particle_radius = np.ceil(self.__particles.particle_diameters[i][p] / 2).astype(int)
+
+                    # We only apply the Gaussian blur in the square neighborhood of the particle center:
+                    for h in range(px_c_height - ceil_of_particle_radius, px_c_height + ceil_of_particle_radius + 1):
+                        for w in range(px_c_width - ceil_of_particle_radius, px_c_width + ceil_of_particle_radius + 1):
+
+                            # Only change the value of pixels that are within the image area:
+                            if (h >= 0 and h < self.__particles.size_with_buffer[0]) and (
+                                    w >= 0 and w < self.__particles.size_with_buffer[1]):
+                                # 0.5 is added because we are computing the distance from particle center to the center of each considered pixel:
+                                coordinate_height = particle_height_coordinate[p] - (h + 0.5)
+                                coordinate_width = particle_width_coordinate[p] - (w + 0.5)
+
+                                particles_with_gaussian_light[h, w] = particles_with_gaussian_light[
+                                                                          h, w] + self.compute_light_intensity_at_pixel(
+                                    particle_peak_intensities[p],
+                                    self.__particles.particle_diameters[i][p],
+                                    coordinate_height,
+                                    coordinate_width,
+                                    alpha=alpha)
+
+                images.append(particles_with_gaussian_light)
+
+            self.__images_I2 = images
+
+            print('Reflected light added to the image.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def plot(self,
              idx,
+             instance=1,
              with_buffer=False,
              xlabel=None,
              ylabel=None,
@@ -312,11 +383,13 @@ class Image:
              dpi=300,
              filename=None):
         """
-        Plots a single, static PIV image, :math:`I_1`, at time :math:`t`.
+        Plots a single, static PIV image, :math:`I_1` or :math:`I_2`.
 
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
-        :param with_buffer:
+        :param instance: (optional)
+            ``int`` specifying whether :math:`I_1` (``instance=1``) or :math:`I_2` (``instance=2``) should be plotted.
+        :param with_buffer: (optional)
             ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is marked with a red rectangle.
         :param xlabel: (optional)
             ``str`` specifying :math:`x`-label.
@@ -365,24 +438,36 @@ class Image:
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        if self.__images is None:
+        if self.__images_I1 is None:
 
             print('Note: Particles have not been added to the image yet!\n\n')
 
+        elif instance==2 and self.__images_I2 is None:
+
+            print('Note: Particles have not been advected yet!\n\n')
+
         else:
+
+            if instance==1:
+
+                image_to_plot = self.__images_I1[idx]
+
+            elif instance==2:
+
+                image_to_plot = self.__images_I2[idx]
 
             fig = plt.figure(figsize=figsize)
 
             # Check if particles were generated with a buffer:
             if self.__particles.size_buffer == 0:
 
-                plt.imshow(self.__images[idx], cmap=cmap, origin='lower')
+                plt.imshow(image_to_plot, cmap=cmap, origin='lower')
 
             else:
 
                 if with_buffer:
 
-                    im = plt.imshow(self.__images[idx], cmap=cmap, origin='lower')
+                    im = plt.imshow(image_to_plot, cmap=cmap, origin='lower')
 
                     # Extend the imshow area with the buffer:
                     f = lambda pixel: pixel - self.__particles.size_buffer
@@ -395,7 +480,7 @@ class Image:
 
                 else:
 
-                    plt.imshow(self.__images[idx][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower')
+                    plt.imshow(image_to_plot[idx][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower')
 
         if xlabel is not None:
             plt.xlabel(xlabel)
