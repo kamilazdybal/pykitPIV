@@ -4,6 +4,7 @@ import copy
 import scipy
 import warnings
 import matplotlib.patches as patches
+import matplotlib.animation as animation
 from pykitPIV.checks import *
 from pykitPIV.particle import Particle
 from pykitPIV.flowfield import FlowField
@@ -492,7 +493,6 @@ class Image:
             plt.title(title)
 
         if filename is not None:
-
             plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
         return plt
@@ -501,6 +501,7 @@ class Image:
 
     def plot_image_pair(self,
                         idx,
+                        with_buffer=False,
                         xlabel=None,
                         ylabel=None,
                         title=None,
@@ -509,7 +510,7 @@ class Image:
                         dpi=300,
                         filename=None):
         """
-        Plots a PIV image pair, :math:`\mathbf{I} = (I_1, I_2)^{\\top}`, at time :math:`t` and :math:`t + \\Delta t` respectively.
+        Plots an animated PIV image pair, :math:`\mathbf{I} = (I_1, I_2)^{\\top}`, at time :math:`t` and :math:`t + \\Delta t` respectively.
 
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
@@ -531,9 +532,65 @@ class Image:
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+        if not isinstance(idx, int):
+            raise ValueError("Parameter `idx` has to be of type 'int'.")
+        if idx < 0:
+            raise ValueError("Parameter `idx` has to be non-negative.")
+
+        imagelist = [self.images_I1[idx], self.images_I2[idx]]
+
         if self.__motion is None:
 
             print('Note: Movement of particles has not been added to the image yet!\n\n')
+
+        else:
+
+            fig = plt.figure(figsize=figsize)
+
+            # Check if particles were generated with a buffer:
+            if self.__particles.size_buffer == 0:
+
+                im = plt.imshow(imagelist[0], cmap=cmap, origin='lower', animated=True)
+
+            else:
+
+                if with_buffer:
+
+                    im = plt.imshow(imagelist[0], cmap=cmap, origin='lower', animated=True)
+
+                    # Extend the imshow area with the buffer:
+                    f = lambda pixel: pixel - self.__particles.size_buffer
+                    im.set_extent([f(x) for x in im.get_extent()])
+
+                    # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
+                    rect = patches.Rectangle((0, 0), self.__particles.size[1], self.__particles.size[0], linewidth=1, edgecolor='r', facecolor='none')
+                    ax = plt.gca()
+                    ax.add_patch(rect)
+
+                else:
+
+                    plt.imshow(imagelist[0][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower', animated=True)
+
+        if xlabel is not None:
+            plt.xlabel(xlabel)
+
+        if ylabel is not None:
+            plt.ylabel(ylabel)
+
+        if title is not None:
+            plt.title(title)
+
+        def updatefig(j):
+
+            im.set_array(imagelist[j])
+
+            return [im]
+
+        anim = animation.FuncAnimation(fig, updatefig, frames=range(2), interval=50, blit=True)
+
+        anim.save(filename, fps=2, bitrate=-1, dpi=200)
+
+        return anim
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
