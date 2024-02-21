@@ -124,6 +124,15 @@ class Image:
             ``FlowField`` class instance specifying the flow field.
         """
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(flowfield, FlowField):
+            raise ValueError("Parameter `flowfield` has to be an instance of `FlowField` class.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
         self.__flowfield = flowfield
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -137,6 +146,15 @@ class Image:
             ``Motion`` class instance specifying the movement of particles from one instance in time to the next.
             In general, the movement is defined by the ``FlowField`` class applied to particles defined by the ``Particle`` class.
         """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(motion, Motion):
+            raise ValueError("Parameter `motion` has to be an instance of `Motion` class.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__motion = motion
 
