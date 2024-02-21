@@ -258,8 +258,9 @@ class Image:
                 px_c_width = np.floor(particle_width_coordinate[p]).astype(int)
                 ceil_of_particle_radius = np.ceil(self.__particles.particle_diameters[i][p]/2).astype(int)
 
-                for h in range(px_c_height-ceil_of_particle_radius, px_c_height+ceil_of_particle_radius+1):
-                    for w in range(px_c_width-ceil_of_particle_radius, px_c_width+ceil_of_particle_radius+1):
+                # We only apply the Gaussian filter in the square neighborhood of the particle center:
+                for h in range(px_c_height - ceil_of_particle_radius, px_c_height + ceil_of_particle_radius + 1):
+                    for w in range(px_c_width - ceil_of_particle_radius, px_c_width + ceil_of_particle_radius + 1):
 
                         # Only change the value of pixels that are within the image area:
                         if (h >= 0 and h < self.__particles.size_with_buffer[0]) and (w >= 0 and w < self.__particles.size_with_buffer[1]):
