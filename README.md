@@ -60,7 +60,11 @@ python -m unittest discover -v
 </p>
 
 <p align="center">
-    <img src="docs/images/example-random-velocity-field-magnitude.png" width="600">
+    <img src="docs/images/example-random-velocity-field-magnitude-with-quiver.png" width="600">
+</p>
+
+<p align="center">
+    <img src="docs/images/example-random-velocity-field-magnitude-with-streamplot.png" width="600">
 </p>
 
 ## Example PIV image pair
