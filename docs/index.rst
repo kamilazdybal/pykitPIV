@@ -26,7 +26,7 @@ At each stage, the user can enforce reproducible image generation through fixing
   :width: 500
   :align: center
 
-**pykitPIV** exploits the idea that if time separation between two PIV image pairs is small,
+**pykitPIV** exploits the idea that if the time separation between two PIV images is small,
 kinematic relationship between particles is sufficient to determine particle displacement fields.
 For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please check the following references:
 
