@@ -262,30 +262,29 @@ class Image:
         # Randomize image exposure:
         self.__exposures_per_image = np.random.rand(self.__particles.n_images) * (exposures[1] - exposures[0]) + exposures[0]
 
-        images = []
+        # Function for adding Gaussian light distribution to image I1 and image I2:
+        def __gaussian_light(idx,
+                             particle_height_coordinate,
+                             particle_width_coordinate):
 
-        
-
-        for i in range(0,self.__particles.n_images):
+            # Note, that this number can be different between image I1 and I2 due to removal of particles from image area.
+            # That's why we do not set number_of_particles = self.__particles.n_of_particles[idx] -- this would only work for I1.
+            number_of_particles = particle_height_coordinate.shape[0]
 
             # Initialize an empty image:
             particles_with_gaussian_light = np.zeros((self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
 
-            # Compute particle coordinates on the current image:
-            particle_height_coordinate = self.__particles.particle_coordinates[i][0]
-            particle_width_coordinate = self.__particles.particle_coordinates[i][1]
-
             # Establish the peak intensity for each particle depending on its position with respect to the laser beam plane:
-            particle_positions_off_laser_plane = laser_beam_thickness * np.random.rand(self.__particles.n_of_particles[i]) - laser_beam_thickness/2
-            particle_position_relative_to_laser_centerline = np.abs(particle_positions_off_laser_plane) / (laser_beam_thickness/2)
-            particle_peak_intensities = self.exposures_per_image[i] * maximum_intensity * np.exp(-0.5 * (particle_position_relative_to_laser_centerline**2 / laser_beam_shape**2))
+            particle_positions_off_laser_plane = laser_beam_thickness * np.random.rand(number_of_particles) - laser_beam_thickness / 2
+            particle_position_relative_to_laser_centerline = np.abs(particle_positions_off_laser_plane) / (laser_beam_thickness / 2)
+            particle_peak_intensities = self.exposures_per_image[idx] * maximum_intensity * np.exp(-0.5 * (particle_position_relative_to_laser_centerline ** 2 / laser_beam_shape ** 2))
 
             # Add Gaussian blur to each particle location that mimics the light reflect from a particle of a given size:
-            for p in range(0,self.__particles.n_of_particles[i]):
+            for p in range(0, number_of_particles):
 
                 px_c_height = np.floor(particle_height_coordinate[p]).astype(int)
                 px_c_width = np.floor(particle_width_coordinate[p]).astype(int)
-                ceil_of_particle_radius = np.ceil(self.__particles.particle_diameters[i][p]/2).astype(int)
+                ceil_of_particle_radius = np.ceil(self.__particles.particle_diameters[idx][p] / 2).astype(int)
 
                 # We only apply the Gaussian blur in the square neighborhood of the particle center:
                 for h in range(px_c_height - ceil_of_particle_radius, px_c_height + ceil_of_particle_radius + 1):
@@ -293,90 +292,47 @@ class Image:
 
                         # Only change the value of pixels that are within the image area:
                         if (h >= 0 and h < self.__particles.size_with_buffer[0]) and (w >= 0 and w < self.__particles.size_with_buffer[1]):
-
                             # 0.5 is added because we are computing the distance from particle center to the center of each considered pixel:
                             coordinate_height = particle_height_coordinate[p] - (h + 0.5)
                             coordinate_width = particle_width_coordinate[p] - (w + 0.5)
 
-                            particles_with_gaussian_light[h,w] = particles_with_gaussian_light[h,w] + self.compute_light_intensity_at_pixel(particle_peak_intensities[p],
-                                                                                                                                            self.__particles.particle_diameters[i][p],
-                                                                                                                                            coordinate_height,
-                                                                                                                                            coordinate_width,
-                                                                                                                                            alpha=alpha)
+                            particles_with_gaussian_light[h, w] = particles_with_gaussian_light[h, w] + self.compute_light_intensity_at_pixel(particle_peak_intensities[p],
+                                                                                                                                              self.__particles.particle_diameters[idx][p],
+                                                                                                                                              coordinate_height,
+                                                                                                                                              coordinate_width,
+                                                                                                                                              alpha=alpha)
 
-            images.append(particles_with_gaussian_light)
+            return particles_with_gaussian_light
 
-        self.__images_I1 = images
+        # Add light to image I1:
+        if self.__particles is not None:
 
-        print('Reflected light added to image I1.')
+            images_I1 = []
 
+            for i in range(0,self.__particles.n_images):
 
+                particles_with_gaussian_light = __gaussian_light(i, self.__particles.particle_coordinates[i][0], self.__particles.particle_coordinates[i][1])
 
+                images_I1.append(particles_with_gaussian_light)
 
+                self.__images_I1 = images_I1
 
+            print('Reflected light added to images I1.')
 
-
-
-
-
-
-
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-        # This needs to be smarter! For the moment, it's just a copy of the code above.
-
-        # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+        # Add light to image I2:
         if self.__motion is not None:
 
-            images = []
+            images_I2 = []
 
-            for i in range(0, self.__particles.n_images):
+            for i in range(0,self.__particles.n_images):
 
-                # Initialize an empty image:
-                particles_with_gaussian_light = np.zeros((self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
+                particles_with_gaussian_light = __gaussian_light(i, self.__motion.particle_coordinates_I2[i][0], self.__motion.particle_coordinates_I2[i][1])
 
-                # Compute particle coordinates on the current image:
-                particle_height_coordinate = self.__motion.particle_coordinates_I2[i][0]
-                particle_width_coordinate = self.__motion.particle_coordinates_I2[i][1]
+                images_I2.append(particles_with_gaussian_light)
 
-                number_of_particles = particle_height_coordinate.shape[0]
+                self.__images_I2 = images_I2
 
-                # Establish the peak intensity for each particle depending on its position with respect to the laser beam plane:
-                particle_positions_off_laser_plane = laser_beam_thickness * np.random.rand(self.__particles.n_of_particles[i]) - laser_beam_thickness / 2
-                particle_position_relative_to_laser_centerline = np.abs(particle_positions_off_laser_plane) / (laser_beam_thickness / 2)
-                particle_peak_intensities = self.exposures_per_image[i] * maximum_intensity * np.exp(-0.5 * (particle_position_relative_to_laser_centerline ** 2 / laser_beam_shape ** 2))
-
-                # Add Gaussian blur to each particle location that mimics the light reflect from a particle of a given size:
-                for p in range(0, number_of_particles):
-
-                    px_c_height = np.floor(particle_height_coordinate[p]).astype(int)
-                    px_c_width = np.floor(particle_width_coordinate[p]).astype(int)
-                    ceil_of_particle_radius = np.ceil(self.__particles.particle_diameters[i][p] / 2).astype(int)
-
-                    # We only apply the Gaussian blur in the square neighborhood of the particle center:
-                    for h in range(px_c_height - ceil_of_particle_radius, px_c_height + ceil_of_particle_radius + 1):
-                        for w in range(px_c_width - ceil_of_particle_radius, px_c_width + ceil_of_particle_radius + 1):
-
-                            # Only change the value of pixels that are within the image area:
-                            if (h >= 0 and h < self.__particles.size_with_buffer[0]) and (w >= 0 and w < self.__particles.size_with_buffer[1]):
-                                # 0.5 is added because we are computing the distance from particle center to the center of each considered pixel:
-                                coordinate_height = particle_height_coordinate[p] - (h + 0.5)
-                                coordinate_width = particle_width_coordinate[p] - (w + 0.5)
-
-                                particles_with_gaussian_light[h, w] = particles_with_gaussian_light[h, w] + self.compute_light_intensity_at_pixel(particle_peak_intensities[p],
-                                                                                                                                                  self.__particles.particle_diameters[i][p],
-                                                                                                                                                  coordinate_height,
-                                                                                                                                                  coordinate_width,
-                                                                                                                                                  alpha=alpha)
-
-                images.append(particles_with_gaussian_light)
-
-            self.__images_I2 = images
-
-            print('Reflected light added to image I2.')
+            print('Reflected light added to images I2.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
