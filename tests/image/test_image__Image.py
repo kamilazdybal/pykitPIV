@@ -107,3 +107,17 @@ class TestImageClass(unittest.TestCase):
         pass
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_image__Image__creating_particle_blur(self):
+
+        image = Image(random_seed=100)
+
+
+
+
+
+
+
+
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
