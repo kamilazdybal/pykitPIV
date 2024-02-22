@@ -264,6 +264,8 @@ class Image:
 
         images = []
 
+        
+
         for i in range(0,self.__particles.n_images):
 
             # Initialize an empty image:

@@ -11,6 +11,9 @@ Welcome to ``pykitPIV``!
 The goal of this library is to give the user or a reinforcement learning (RL) agent a lot of flexibility in setting-up
 image generation.
 
+.. image:: images/example-image-I1-I2.gif
+  :width: 1100
+
 The graph below shows the possible workflows constructed from the four main classes:
 
 - The class **Particle** can be used to initialize particle properties and particle positions on an image.
@@ -40,9 +43,6 @@ check the following references:
 - `A lightweight neural network designed for fluid velocimetry <https://link.springer.com/article/10.1007/s00348-023-03695-8>`_
 
 - `A lightweight convolutional neural network to reconstruct deformation in BOS recordings <https://link.springer.com/article/10.1007/s00348-023-03618-7>`_
-
-.. image:: images/example-image-I1-I2.gif
-  :width: 1100
 
 .. toctree::
    :maxdepth: 5

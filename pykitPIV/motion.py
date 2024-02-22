@@ -131,7 +131,7 @@ class Motion:
     def forward_euler(self,
                       n_steps):
         """
-        Advects particles with a forward Euler numerical scheme according to the formula:
+        Advects particles with the forward Euler numerical scheme according to the formula:
 
         .. math::
 
@@ -140,7 +140,7 @@ class Motion:
             y_{t + \Delta t} = y_{t} + v \cdot \Delta t
 
         where :math:`u` and :math:`v` are velocity components in the :math:`x` and :math:`y` direction respectively.
-        Velocity components in-between the grid points are interpolated using ``scipy.interpolate.RegularGridInterpolator``.
+        Velocity components in-between the grid points are interpolated using `scipy.interpolate.RegularGridInterpolator <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RegularGridInterpolator.html>`_.
 
         :math:`\Delta t` is computed as:
 
@@ -151,6 +151,11 @@ class Motion:
         where :math:`T` is the time separation between two images specified as ``time_separation`` at class init and
         :math:`n` is the number of steps for the solver to take specified by the ``n_steps`` input parameter.
         The Euler scheme is applied :math:`n` times from :math:`t=0` to :math:`t=T`.
+
+        .. note::
+
+            Note, that the central assumption for generating the kinematic relationship between two consecutive PIV images
+            is that the velocity field defined by :math:`(u, v)` remains constant for the duration of time :math:`T`.
 
         :param n_steps:
             ``int`` specifying the number of time steps, :math:`n`, that the numerical solver should take.
@@ -204,6 +209,23 @@ class Motion:
             particle_coordinates_I2.append((y_coordinates_I2, x_coordinates_I2))
 
         self.__particle_coordinates_I2 = particle_coordinates_I2
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def runge_kutta_4th(self,
+                      n_steps):
+        """
+        Advects particles with the 4th order Runge-Kutta numerical scheme according to the formula:
+
+
+        .. note::
+
+            Note, that the central assumption for generating the kinematic relationship between two consecutive PIV images
+            is that the velocity field defined by :math:`(u, v)` remains constant for the duration of time :math:`T`.
+
+        """
+
+        pass
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
