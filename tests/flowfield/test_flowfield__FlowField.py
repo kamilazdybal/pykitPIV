@@ -104,3 +104,34 @@ class TestFlowFieldClass(unittest.TestCase):
             flowfield.velocity_field_magnitude
         except Exception:
             self.assertTrue(False)
+
+    def test_flowfield__FlowField__not_allowed_attribute_set(self):
+
+        flowfield = FlowField(1)
+
+        with self.assertRaises(AttributeError):
+            flowfield.n_images = 1
+
+        with self.assertRaises(AttributeError):
+            flowfield.size = (512, 512)
+
+        with self.assertRaises(AttributeError):
+            flowfield.size_buffer = 10
+
+        with self.assertRaises(AttributeError):
+            flowfield.flow_mode = 'random'
+
+        with self.assertRaises(AttributeError):
+            flowfield.displacement = (0, 10)
+
+        with self.assertRaises(AttributeError):
+            flowfield.gaussian_filters = (10, 30)
+
+        with self.assertRaises(AttributeError):
+            flowfield.n_gaussian_filter_iter = 6
+
+        with self.assertRaises(AttributeError):
+            flowfield.sin_period = (30, 300)
+
+        with self.assertRaises(AttributeError):
+            flowfield.random_seed = None

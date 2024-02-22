@@ -137,6 +137,40 @@ class TestParticleClass(unittest.TestCase):
         with self.assertRaises(ValueError):
             particles = Particle(1, seeding_mode='Test')
 
+    def test_particle__Particle__not_allowed_attribute_set(self):
+
+        particles = Particle(1)
+
+        with self.assertRaises(AttributeError):
+            particles.n_images = 10
+
+        with self.assertRaises(AttributeError):
+            particles.size = (512, 512)
+
+        with self.assertRaises(AttributeError):
+            particles.size_buffer = 20
+
+        with self.assertRaises(AttributeError):
+            particles.diameters = (3, 6)
+
+        with self.assertRaises(AttributeError):
+            particles.distances = (0.5, 2)
+
+        with self.assertRaises(AttributeError):
+            particles.densities = (0.05, 0.1)
+
+        with self.assertRaises(AttributeError):
+            particles.signal_to_noise = (5, 20)
+
+        with self.assertRaises(AttributeError):
+            particles.diameter_std = 0.1
+
+        with self.assertRaises(AttributeError):
+            particles.seeding_mode = 'random'
+
+        with self.assertRaises(AttributeError):
+            particles.random_seed = 100
+
     def test_particle__Particle__diameter_per_image(self):
 
         loop_for = 5
