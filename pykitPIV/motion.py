@@ -35,10 +35,12 @@ class Motion:
     :param flowfield:
         ``FlowField`` class instance specifying the flow field.
     :param time_separation: (optional)
-        ``float`` or ``int`` specifying the time separation in seconds :math:`[s]` between two consecutive PIV images.
+        ``float`` or ``int`` specifying the time separation, :math:`T`, in seconds :math:`[s]` between two consecutive PIV images.
     :param particle_loss: (optional)
-        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) percentage of lost particles.
-        Between two consecutive image pairs, this percentage of particles will be randomly removed and replaced due to movement of particles off the laser plane.
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+        percentage of lost particles between two consecutive PIV images. This percentage of particles from image :math:`I_1` will be randomly
+        removed and replaced in image :math:`I_2`. This parameter mimics the complete loss of luminosity of particles that move off the laser plane
+        and a gain of luminosity for brand new particles that arrive into the laser plane.
 
     **Attributes:**
 

@@ -15,6 +15,15 @@ class TestImageClass(unittest.TestCase):
 
         pass
 
+    def test_image__Image__attributes_available_after_class_init(self):
+
+        pass
+
+
+    def test_image__Image__not_allowed_attribute_set(self):
+
+        pass
+
     def test_image__Image__plotting(self):
 
         pass

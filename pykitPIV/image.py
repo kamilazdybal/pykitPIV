@@ -232,11 +232,14 @@ class Image:
         :param maximum_intensity: (optional)
             ``int`` specifying the maximum light intensity.
         :param laser_beam_thickness: (optional)
-            ``int`` or ``float`` specifying the thickness of the laser beam. With a small thickness, particles that are even slightly off-plane will appear darker.
+            ``int`` or ``float`` specifying the thickness of the laser beam. With a small thickness, particles that are e
+            ven slightly off-plane will appear darker. Note, that the thicker the laser plane, the larger the distance
+            that the particle can travel away from the laser plane to lose its luminosity.
         :param laser_over_exposure: (optional)
             ``int`` or ``float`` specifying the overexposure of the laser beam.
         :param laser_beam_shape: (optional)
-            ``int`` or ``float`` specifying the spread of the Gaussian shape of the laser beam. The larger this number is, the wider the Gaussian light distribution from the laser and more particles will be illuminated.
+            ``int`` or ``float`` specifying the spread of the Gaussian shape of the laser beam. The larger this number
+            is, the wider the Gaussian light distribution from the laser and more particles will be illuminated.
         :param alpha: (optional):
             ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius as per the ``Particle.compute_light_intensity_at_pixel()`` method.
         """
