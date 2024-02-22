@@ -303,7 +303,7 @@ class Image:
 
         self.__images_I1 = images
 
-        print('Reflected light added to the image.')
+        print('Reflected light added to image I1.')
 
 
 
@@ -314,7 +314,13 @@ class Image:
 
 
 
-        # This needs to be smarter!
+
+
+        # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
+
+        # This needs to be smarter! For the moment, it's just a copy of the code above.
+
+        # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -350,25 +356,22 @@ class Image:
                         for w in range(px_c_width - ceil_of_particle_radius, px_c_width + ceil_of_particle_radius + 1):
 
                             # Only change the value of pixels that are within the image area:
-                            if (h >= 0 and h < self.__particles.size_with_buffer[0]) and (
-                                    w >= 0 and w < self.__particles.size_with_buffer[1]):
+                            if (h >= 0 and h < self.__particles.size_with_buffer[0]) and (w >= 0 and w < self.__particles.size_with_buffer[1]):
                                 # 0.5 is added because we are computing the distance from particle center to the center of each considered pixel:
                                 coordinate_height = particle_height_coordinate[p] - (h + 0.5)
                                 coordinate_width = particle_width_coordinate[p] - (w + 0.5)
 
-                                particles_with_gaussian_light[h, w] = particles_with_gaussian_light[
-                                                                          h, w] + self.compute_light_intensity_at_pixel(
-                                    particle_peak_intensities[p],
-                                    self.__particles.particle_diameters[i][p],
-                                    coordinate_height,
-                                    coordinate_width,
-                                    alpha=alpha)
+                                particles_with_gaussian_light[h, w] = particles_with_gaussian_light[h, w] + self.compute_light_intensity_at_pixel(particle_peak_intensities[p],
+                                                                                                                                                  self.__particles.particle_diameters[i][p],
+                                                                                                                                                  coordinate_height,
+                                                                                                                                                  coordinate_width,
+                                                                                                                                                  alpha=alpha)
 
                 images.append(particles_with_gaussian_light)
 
             self.__images_I2 = images
 
-            print('Reflected light added to the image.')
+            print('Reflected light added to image I2.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

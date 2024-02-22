@@ -29,23 +29,16 @@ class Motion:
         ``FlowField`` class instance specifying the flow field.
     :param time_separation: (optional)
         ``float`` or ``int`` specifying the time separation in seconds :math:`[s]` between two consecutive PIV images.
-    :param n_steps: (optional)
-        ``int`` specifying the number of time steps that the numerical solver should take.
     :param particle_loss: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) percentage of lost particles.
         Between two consecutive image pairs, this percentage of particles will be randomly removed and replaced due to movement of particles off the laser plane.
-    :param warp_images:
-        ``str`` specifying the method to warp PIV images.
     """
 
     def __init__(self,
                  particles,
                  flowfield,
                  time_separation=1,
-                 n_steps=50,
-                 particle_loss=(0, 2),
-                 warp_images='forward',
-                 method='SINC-8'):
+                 particle_loss=(0, 2)):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -71,28 +64,8 @@ class Motion:
         if time_separation <= 0:
             raise ValueError("Parameter `time_separation` has to be a non-zero, positive number.")
 
-        if not isinstance(n_steps, int):
-            raise ValueError("Parameter `n_steps` has to be of type `int`.")
-
-        if n_steps < 1:
-            raise ValueError("Parameter `n_steps` has to be at least 1.")
-
         check_two_element_tuple(particle_loss, 'particle_loss')
         check_min_max_tuple(particle_loss, 'particle_loss')
-
-        __warp_images = ['forward', 'symmetric', 'two-step-forward']
-        __method = ['cubic-interpolation', 'SINC-8']
-
-        if warp_images not in __warp_images:
-            raise ValueError("Parameter `warp_images` has to be 'forward', 'random-symmetric', or 'two-step-forward'.")
-
-        if method not in __method:
-            raise ValueError("Parameter `method` has to be 'cubic-interpolation', or 'SINC-8''.")
-
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-        # Integration time step:
-        self.__delta_t = time_separation / n_steps
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -100,11 +73,7 @@ class Motion:
         self.__particles = particles
         self.__flowfield = flowfield
         self.__time_separation = time_separation
-        self.__n_steps = n_steps
         self.__particle_loss = particle_loss
-
-        self.__warp_images = warp_images
-        self.__method = method
 
         # Initialize particle coordinates:
         self.__particle_coordinates_I1 = self.__particles.particle_coordinates
@@ -114,26 +83,14 @@ class Motion:
 
     # Properties coming from user inputs:
     @property
+    def time_separation(self):
+        return self.__time_separation
+
+    @property
     def particle_loss(self):
         return self.__particle_loss
 
-    @property
-    def warp_images(self):
-        return self.__warp_images
-
-    @property
-    def n_steps(self):
-        return self.__n_steps
-
-    @property
-    def method(self):
-        return self.__method
-
     # Properties computed at class init:
-    @property
-    def delta_t(self):
-        return self.__delta_t
-
     @property
     def particle_coordinates_I1(self):
         return self.__particle_coordinates_I1
@@ -144,7 +101,44 @@ class Motion:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def forward_euler(self):
+    def forward_euler(self,
+                      n_steps):
+        """
+        Advects particles with a forward Euler numerical scheme according to the formula:
+
+        .. math::
+
+            x_{t + \Delta t} = x_{t} + u \cdot \Delta t
+
+            y_{t + \Delta t} = y_{t} + v \cdot \Delta t
+
+        where :math:`u` and :math:`v` are velocity components in the :math:`x` and :math:`y` direction respectively.
+        Velocity components in-between the grid points are interpolated using ``scipy.interpolate.RegularGridInterpolator``.
+
+        :math:`\Delta t` is computed as:
+
+        .. math::
+
+            \Delta t = T / n
+
+        where :math:`T` is the time separation between two images specified as ``time_separation`` at class init and
+        :math:`n` is the number of steps for the solver to take specified by the ``n_steps`` input parameter.
+        The Euler scheme is applied :math:`n` times from :math:`t=0` to :math:`t=T`.
+
+        :param n_steps:
+            ``int`` specifying the number of time steps, :math:`n`, that the numerical solver should take.
+        """
+
+        if not isinstance(n_steps, int):
+            raise ValueError("Parameter `n_steps` has to be of type `int`.")
+
+        if n_steps < 1:
+            raise ValueError("Parameter `n_steps` has to be at least 1.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Integration time step:
+        __delta_t = self.time_separation / n_steps
 
         particle_coordinates_I2 = []
 
@@ -162,11 +156,11 @@ class Motion:
                                                  self.__particles.particle_coordinates[i][1][:, None]))
 
             # This method assumes that the velocity field does not change during the image separation time:
-            for i in range(0,self.n_steps):
+            for i in range(0,n_steps):
 
                 # Compute the new coordinates at the next time step:
-                y_coordinates_I2 = particle_coordinates_I1[:,0] + interpolate_v_component(particle_coordinates_I1) * self.__delta_t * (i+1)
-                x_coordinates_I2 = particle_coordinates_I1[:,1] + interpolate_u_component(particle_coordinates_I1) * self.__delta_t * (i+1)
+                y_coordinates_I2 = particle_coordinates_I1[:,0] + interpolate_v_component(particle_coordinates_I1) * __delta_t * (i+1)
+                x_coordinates_I2 = particle_coordinates_I1[:,1] + interpolate_u_component(particle_coordinates_I1) * __delta_t * (i+1)
 
                 particle_coordinates_I1 = np.hstack((y_coordinates_I2[:,None], x_coordinates_I2[:,None]))
 

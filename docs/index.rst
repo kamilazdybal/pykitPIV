@@ -8,7 +8,8 @@ Welcome to ``pykitPIV``!
   :width: 300
 
 **pykitPIV** is a Python package for synthetic PIV image generation.
-The goal of this library is to give the user or a reinforcement learning (RL) agent a lot of flexibility in setting-up image generation.
+The goal of this library is to give the user or a reinforcement learning (RL) agent a lot of flexibility in setting-up
+image generation.
 
 The graph below shows the possible workflows constructed from the four main classes:
 
@@ -16,9 +17,12 @@ The graph below shows the possible workflows constructed from the four main clas
 
 - The class **FlowField** can be used to create a velocity field to advect the particles.
 
-- The class **Motion** takes an object of class **Particle** and applies an object of class **FlowField** to it to advect the particles and generate an image pair, :math:`\mathbf{I} = (I_1, I_2)^{\top}`, at time :math:`t` and :math:`t + \Delta t` respectively.
+- The class **Motion** takes an object of class **Particle** and applies an object of class **FlowField** to it to
+  advect the particles and generate an image pair, :math:`\mathbf{I} = (I_1, I_2)^{\top}`, at time :math:`t` and
+  :math:`t + T` respectively. Here :math:`T` denotes the time separation between two PIV images.
 
-- The class **Image** is the endpoint of the workflow and can be used to apply laser and camera properties on any standalone image, as well as on a series of images of advected particles.
+- The class **Image** is the endpoint of the workflow and can be used to apply laser and camera properties on any
+  standalone image, as well as on a series of images of advected particles.
 
 At each stage, the user can enforce reproducible image generation through fixing random seeds.
 
@@ -28,7 +32,8 @@ At each stage, the user can enforce reproducible image generation through fixing
 
 **pykitPIV** exploits the idea that if the time separation between two PIV images is small,
 kinematic relationship between particles is sufficient to determine particle displacement fields.
-For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please check the following references:
+For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please
+check the following references:
 
 - `Kinematic training of convolutional neural networks for particle image velocimetry <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae/meta>`_
 
