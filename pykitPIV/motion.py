@@ -20,8 +20,15 @@ from pykitPIV.flowfield import FlowField
 
 class Motion:
     """
-    Applies velocity field defined by the ``FlowField`` class instance to particles defined by the ``Particle`` class instance
-    and provides the position of particles at the next time instance, :math:`t + \\Delta t`.
+    Applies velocity field defined by the ``FlowField`` class instance to particles defined by the ``Particle`` class instance.
+    The ``Motion`` class provides the position of particles at the next time instance, :math:`t + T`, where :math:`T`
+    is the time separation for the PIV image pair :math:`\\mathbf{I} = (I_1, I_2)^{\\top}`.
+
+    .. note::
+
+        Particles that exit the image area as a result of their motion are removed from image :math:`I_2`.
+        To ensure that motion of particles does not cause unphysical removal of particles, set an appropriately large
+        image buffer when instantiating objects of ``Particle`` and ``FlowField`` class (see parameter ``size_buffer``).
 
     :param particles:
         ``Particle`` class instance specifying the properties and positions of particles.
@@ -195,7 +202,6 @@ class Motion:
             particle_coordinates_I2.append((y_coordinates_I2, x_coordinates_I2))
 
         self.__particle_coordinates_I2 = particle_coordinates_I2
-
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
