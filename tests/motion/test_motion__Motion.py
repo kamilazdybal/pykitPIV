@@ -14,6 +14,8 @@ class TestMotionClass(unittest.TestCase):
         except Exception:
             self.assertTrue(False)
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_motion__Motion__not_allowed_calls(self):
 
         particles = Particle(1)
@@ -33,6 +35,8 @@ class TestMotionClass(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             motion = Motion(particles, flowfield, particle_loss=(10,2))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def test_motion__Motion__attributes_available_after_class_init(self):
 
@@ -54,6 +58,8 @@ class TestMotionClass(unittest.TestCase):
         except Exception:
             self.assertTrue(False)
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_motion__Motion__allowed_attribute_set(self):
 
         particles = Particle(1)
@@ -70,6 +76,8 @@ class TestMotionClass(unittest.TestCase):
 
         self.assertTrue(motion.time_separation == 0.5)
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_motion__Motion__not_allowed_attribute_set(self):
 
         particles = Particle(1)
@@ -84,3 +92,5 @@ class TestMotionClass(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             motion.particle_coordinates_I2 = 2
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

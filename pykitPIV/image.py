@@ -32,8 +32,8 @@ class Image:
     **Attributes:**
 
     - **random_seed** - (read-only) as per user input.
-    - **images** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image of a given size.
-    - **particles** - (read-only) object of ``pykitPIV.Particle`` class.
+    - **images_I1** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_1` of a given size.
+    - **images_I2** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_2` of a given size.
     - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image.
     """
 

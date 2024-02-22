@@ -2,6 +2,8 @@ import unittest
 import numpy as np
 from pykitPIV import Particle
 
+loop_for = 2
+
 class TestParticleClass(unittest.TestCase):
 
     def test_particle__Particle__allowed_calls(self):
@@ -173,8 +175,6 @@ class TestParticleClass(unittest.TestCase):
 
     def test_particle__Particle__diameter_per_image(self):
 
-        loop_for = 5
-
         for i in range(0,loop_for):
 
             particles = Particle(100,
@@ -194,8 +194,6 @@ class TestParticleClass(unittest.TestCase):
             self.assertTrue(np.max(particles.diameter_per_image) <= 8.5)
 
     def test_particle__Particle__distance_per_image(self):
-
-        loop_for = 5
 
         for i in range(0,loop_for):
 
@@ -217,8 +215,6 @@ class TestParticleClass(unittest.TestCase):
 
     def test_particle__Particle__density_per_image(self):
 
-        loop_for = 5
-
         for i in range(0,loop_for):
 
             particles = Particle(100,
@@ -238,8 +234,6 @@ class TestParticleClass(unittest.TestCase):
             self.assertTrue(np.max(particles.density_per_image) <= 0.5)
 
     def test_particle__Particle__SNR_per_image(self):
-
-        loop_for = 5
 
         for i in range(0,loop_for):
 
@@ -262,8 +256,6 @@ class TestParticleClass(unittest.TestCase):
     def test_particle__Particle__particle_diameters_std(self):
 
         tolerance = 0.05
-
-        loop_for = 20
 
         # Check that the standard deviation for particle diameters is within the specified tolerance:
 

@@ -34,7 +34,7 @@ Specify the buffer in pixels for the image size:
 
     size_buffer = 10
 
-With buffer equal to :math:`10 \text{px}`, the total PIV image area is :math:`(260 \text{px} \times 520 \text{px})` in this case.
+With a buffer equal to :math:`10 \text{px}`, the total PIV image area is :math:`(260 \text{px} \times 520 \text{px})` in this case.
 
 Buffer should always be added to images to allow particles to exit or enter the proper PIV image area without creating
 spurious disappearance of particles close to image edge. At any stage of plotting PIV images, the user can decide to
