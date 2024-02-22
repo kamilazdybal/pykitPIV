@@ -178,3 +178,85 @@ class Motion:
 
         self.__particle_coordinates_I2 = particle_coordinates_I2
 
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def plot_particle_motion(self,
+                             idx,
+                             xlabel=None,
+                             ylabel=None,
+                             title=None,
+                             figsize=(5,5),
+                             dpi=300,
+                             filename=None):
+        """
+        Plots the positions of particles on images :math:`I_1` and :math:`I_2`.
+
+        :param idx:
+            ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
+        :param xlabel: (optional)
+            ``str`` specifying :math:`x`-label.
+        :param ylabel: (optional)
+            ``str`` specifying :math:`y`-label.
+        :param title: (optional)
+            ``str`` specifying figure title.
+        :param figsize: (optional)
+            ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
+        :param dpi: (optional)
+            ``int`` specifying the dpi for the image.
+        :param filename: (optional)
+            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(idx, int):
+            raise ValueError("Parameter `idx` has to be of type 'int'.")
+        if idx < 0:
+            raise ValueError("Parameter `idx` has to be non-negative.")
+
+        if (xlabel is not None) and (not isinstance(xlabel, str)):
+            raise ValueError("Parameter `xlabel` has to be of type 'str'.")
+
+        if (ylabel is not None) and (not isinstance(ylabel, str)):
+            raise ValueError("Parameter `ylabel` has to be of type 'str'.")
+
+        if (title is not None) and (not isinstance(title, str)):
+            raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        check_two_element_tuple(figsize, 'figsize')
+
+        if not isinstance(dpi, int):
+            raise ValueError("Parameter `dpi` has to be of type 'int'.")
+
+        if (filename is not None) and (not isinstance(filename, str)):
+            raise ValueError("Parameter `filename` has to be of type 'str'.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        if self.particle_coordinates_I2 is None:
+
+            print('Note: Particles have not been advected yet!\n\n')
+
+        else:
+
+            fig = plt.figure(figsize=figsize)
+
+            plt.scatter(self.particle_coordinates_I1[idx][1], self.particle_coordinates_I1[idx][0], c='k', s=2, zorder=10)
+            plt.scatter(self.particle_coordinates_I2[idx][1], self.particle_coordinates_I2[idx][0], c='#ee6c4d', s=1.5, zorder=20)
+
+            if xlabel is not None:
+                plt.xlabel(xlabel)
+
+            if ylabel is not None:
+                plt.ylabel(ylabel)
+
+            if title is not None:
+                plt.title(title)
+
+            if filename is not None:
+                plt.savefig(filename, dpi=dpi, bbox_inches='tight')
+
+            return plt

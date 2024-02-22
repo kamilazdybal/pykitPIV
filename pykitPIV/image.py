@@ -484,7 +484,7 @@ class Image:
 
                 else:
 
-                    plt.imshow(image_to_plot[idx][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower')
+                    plt.imshow(image_to_plot[self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower')
 
         if xlabel is not None:
             plt.xlabel(xlabel)
@@ -572,7 +572,7 @@ class Image:
 
                 else:
 
-                    plt.imshow(imagelist[0][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower', animated=True)
+                    im = plt.imshow(imagelist[0][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower', animated=True)
 
         if xlabel is not None:
             plt.xlabel(xlabel)
@@ -585,7 +585,13 @@ class Image:
 
         def updatefig(j):
 
-            im.set_array(imagelist[j])
+            if self.__particles.size_buffer == 0:
+                im.set_array(imagelist[j])
+            else:
+                if with_buffer:
+                    im.set_array(imagelist[j])
+                else:
+                    im.set_array(imagelist[j][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer])
 
             return [im]
 
