@@ -32,6 +32,13 @@ class Motion:
     :param particle_loss: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) percentage of lost particles.
         Between two consecutive image pairs, this percentage of particles will be randomly removed and replaced due to movement of particles off the laser plane.
+
+    **Attributes:**
+
+    - **time_separation** - (can be re-set) as per user input.
+    - **particle_loss** - (read-only) as per user input.
+    - **particle_coordinates_I1** - (read-only) coordinates of particles in image :math:`I_1`.
+    - **particle_coordinates_I2** - (read-only) coordinates of particles in image :math:`I_2`.
     """
 
     def __init__(self,
@@ -98,6 +105,17 @@ class Motion:
     @property
     def particle_coordinates_I2(self):
         return self.__particle_coordinates_I2
+
+    # Setters:
+    @time_separation.setter
+    def time_separation(self, new_time_separation):
+        if (not isinstance(new_time_separation, float)) and (not isinstance(new_time_separation, int)):
+            raise ValueError("Parameter `time_separation` has to be of type `float` or `int`.")
+        else:
+            if new_time_separation <= 0:
+                raise ValueError("Parameter `time_separation` has to be a non-zero, positive number.")
+            else:
+                self.__time_separation = new_time_separation
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
