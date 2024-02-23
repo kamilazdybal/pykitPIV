@@ -265,7 +265,8 @@ class Image:
         # Function for adding Gaussian light distribution to image I1 and image I2:
         def __gaussian_light(idx,
                              particle_height_coordinate,
-                             particle_width_coordinate):
+                             particle_width_coordinate,
+                             image_instance):
 
             # Note, that this number can be different between image I1 and I2 due to removal of particles from image area.
             # That's why we do not set number_of_particles = self.__particles.n_of_particles[idx] -- this would only work for I1.
@@ -282,6 +283,11 @@ class Image:
             # Add Gaussian blur to each particle location that mimics the light reflect from a particle of a given size:
             for p in range(0, number_of_particles):
 
+                if image_instance == 1:
+                    particle_diameter_on_image = self.__particles.particle_diameters[idx][p]
+                elif image_instance == 2:
+                    particle_diameter_on_image = self.__motion.updated_particle_diameters[idx][p]
+
                 px_c_height = np.floor(particle_height_coordinate[p]).astype(int)
                 px_c_width = np.floor(particle_width_coordinate[p]).astype(int)
                 ceil_of_particle_radius = np.ceil(self.__particles.particle_diameters[idx][p] / 2).astype(int)
@@ -297,7 +303,7 @@ class Image:
                             coordinate_width = particle_width_coordinate[p] - (w + 0.5)
 
                             particles_with_gaussian_light[h, w] = particles_with_gaussian_light[h, w] + self.compute_light_intensity_at_pixel(particle_peak_intensities[p],
-                                                                                                                                              self.__particles.particle_diameters[idx][p],
+                                                                                                                                              particle_diameter_on_image,
                                                                                                                                               coordinate_height,
                                                                                                                                               coordinate_width,
                                                                                                                                               alpha=alpha)
@@ -311,7 +317,10 @@ class Image:
 
             for i in range(0,self.__particles.n_images):
 
-                particles_with_gaussian_light = __gaussian_light(i, self.__particles.particle_coordinates[i][0], self.__particles.particle_coordinates[i][1])
+                particles_with_gaussian_light = __gaussian_light(i,
+                                                                 self.__particles.particle_coordinates[i][0],
+                                                                 self.__particles.particle_coordinates[i][1],
+                                                                 image_instance=1)
 
                 images_I1.append(particles_with_gaussian_light)
 
@@ -326,7 +335,10 @@ class Image:
 
             for i in range(0,self.__particles.n_images):
 
-                particles_with_gaussian_light = __gaussian_light(i, self.__motion.particle_coordinates_I2[i][0], self.__motion.particle_coordinates_I2[i][1])
+                particles_with_gaussian_light = __gaussian_light(i,
+                                                                 self.__motion.particle_coordinates_I2[i][0],
+                                                                 self.__motion.particle_coordinates_I2[i][1],
+                                                                 image_instance=2)
 
                 images_I2.append(particles_with_gaussian_light)
 

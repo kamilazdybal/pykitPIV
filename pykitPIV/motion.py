@@ -95,6 +95,9 @@ class Motion:
         self.__particle_coordinates_I1 = self.__particles.particle_coordinates
         self.__particle_coordinates_I2 = None
 
+        # Initialize updated particle diameters:
+        self.__updated_particle_diameters = None
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
@@ -114,6 +117,10 @@ class Motion:
     @property
     def particle_coordinates_I2(self):
         return self.__particle_coordinates_I2
+
+    @property
+    def updated_particle_diameters(self):
+        return self.__updated_particle_diameters
 
     # Setters:
     @time_separation.setter
@@ -174,6 +181,8 @@ class Motion:
 
         particle_coordinates_I2 = []
 
+        self.__updated_particle_diameters = []
+
         for i in range(0,self.__particles.n_images):
 
             # Build interpolants for the velocity field components:
@@ -187,6 +196,8 @@ class Motion:
             particle_coordinates_I1 = np.hstack((self.__particles.particle_coordinates[i][0][:, None],
                                                  self.__particles.particle_coordinates[i][1][:, None]))
 
+            updated_particle_diameters = self.__particles.particle_diameters[i]
+
             # This method assumes that the velocity field does not change during the image separation time:
             for i in range(0,n_steps):
 
@@ -196,17 +207,20 @@ class Motion:
 
                 particle_coordinates_I1 = np.hstack((y_coordinates_I2[:,None], x_coordinates_I2[:,None]))
 
-                # Remove particles that have moved outside of the image area:
+                # Remove particles that have moved outside the image area:
                 idx_removed_y, = np.where((particle_coordinates_I1[:,0] < 0) | (particle_coordinates_I1[:,0] > self.__particles.size_with_buffer[0]))
                 idx_removed_x, = np.where((particle_coordinates_I1[:,1] < 0) | (particle_coordinates_I1[:,1] > self.__particles.size_with_buffer[1]))
 
                 idx_removed = np.unique(np.concatenate((idx_removed_y, idx_removed_x)))
-
                 idx_retained = [i for i in range(0,particle_coordinates_I1.shape[0]) if i not in idx_removed]
 
                 particle_coordinates_I1 = particle_coordinates_I1[idx_retained,:]
 
+                if i != n_steps - 1:
+                    updated_particle_diameters = updated_particle_diameters[idx_retained]
+
             particle_coordinates_I2.append((y_coordinates_I2, x_coordinates_I2))
+            self.__updated_particle_diameters.append(updated_particle_diameters)
 
         self.__particle_coordinates_I2 = particle_coordinates_I2
 
