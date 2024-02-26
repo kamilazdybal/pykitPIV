@@ -16,6 +16,8 @@ Class: ``Image``
 
 .. autofunction:: pykitPIV.image.Image.compute_light_intensity_at_pixel
 
+.. autofunction:: pykitPIV.image.Image.save_to_h5
+
 .. autofunction:: pykitPIV.image.Image.plot
 
 .. autofunction:: pykitPIV.image.Image.plot_image_pair
