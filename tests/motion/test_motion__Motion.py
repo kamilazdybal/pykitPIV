@@ -94,3 +94,46 @@ class TestMotionClass(unittest.TestCase):
             motion.particle_coordinates_I2 = 2
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_motion__Motion__removal_of_particles(self):
+
+        # Scenario 1
+        particles = Particle(1, size_buffer=20)
+        flowfield = FlowField(1, size_buffer=20)
+        motion = Motion(particles, flowfield, time_separation=0.1)
+        motion.forward_euler(n_steps=10)
+
+        size_of_diameters = motion.updated_particle_diameters[0].shape
+        size_of_coordinates_y = motion.particle_coordinates_I2[0][0].shape
+        size_of_coordinates_x = motion.particle_coordinates_I2[0][1].shape
+
+        self.assertTrue(size_of_diameters[0] == size_of_coordinates_y[0])
+        self.assertTrue(size_of_diameters[0] == size_of_coordinates_x[0])
+
+        # Scenario 2
+        particles = Particle(1, size_buffer=2)
+        flowfield = FlowField(1, size_buffer=2)
+        motion = Motion(particles, flowfield, time_separation=0.5)
+        motion.forward_euler(n_steps=10)
+
+        size_of_diameters = motion.updated_particle_diameters[0].shape
+        size_of_coordinates_y = motion.particle_coordinates_I2[0][0].shape
+        size_of_coordinates_x = motion.particle_coordinates_I2[0][1].shape
+
+        self.assertTrue(size_of_diameters[0] == size_of_coordinates_y[0])
+        self.assertTrue(size_of_diameters[0] == size_of_coordinates_x[0])
+
+        # Scenario 3
+        particles = Particle(1, size_buffer=10)
+        flowfield = FlowField(1, size_buffer=10)
+        motion = Motion(particles, flowfield, time_separation=2)
+        motion.forward_euler(n_steps=10)
+
+        size_of_diameters = motion.updated_particle_diameters[0].shape
+        size_of_coordinates_y = motion.particle_coordinates_I2[0][0].shape
+        size_of_coordinates_x = motion.particle_coordinates_I2[0][1].shape
+
+        self.assertTrue(size_of_diameters[0] == size_of_coordinates_y[0])
+        self.assertTrue(size_of_diameters[0] == size_of_coordinates_x[0])
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
