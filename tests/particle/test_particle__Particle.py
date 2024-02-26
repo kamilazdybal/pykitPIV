@@ -31,6 +31,8 @@ class TestParticleClass(unittest.TestCase):
         except Exception:
             self.assertTrue(False)
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_particle__Particle__attributes_available_after_class_init(self):
 
         particles = Particle(1)
@@ -72,6 +74,8 @@ class TestParticleClass(unittest.TestCase):
         self.assertTrue(isinstance(particles.n_of_particles, list))
         self.assertTrue(isinstance(particles.particle_positions, list))
         self.assertTrue(isinstance(particles.particle_diameters, list))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def test_particle__Particle__not_allowed_calls(self):
 
@@ -139,6 +143,8 @@ class TestParticleClass(unittest.TestCase):
         with self.assertRaises(ValueError):
             particles = Particle(1, seeding_mode='Test')
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_particle__Particle__not_allowed_attribute_set(self):
 
         particles = Particle(1)
@@ -173,6 +179,8 @@ class TestParticleClass(unittest.TestCase):
         with self.assertRaises(AttributeError):
             particles.random_seed = 100
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_particle__Particle__diameter_per_image(self):
 
         for i in range(0,loop_for):
@@ -192,6 +200,8 @@ class TestParticleClass(unittest.TestCase):
 
             self.assertTrue(np.min(particles.diameter_per_image) >= 1)
             self.assertTrue(np.max(particles.diameter_per_image) <= 8.5)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def test_particle__Particle__distance_per_image(self):
 
@@ -213,6 +223,8 @@ class TestParticleClass(unittest.TestCase):
             self.assertTrue(np.min(particles.distance_per_image) >= 1.5)
             self.assertTrue(np.max(particles.distance_per_image) <= 8)
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_particle__Particle__density_per_image(self):
 
         for i in range(0,loop_for):
@@ -233,6 +245,8 @@ class TestParticleClass(unittest.TestCase):
             self.assertTrue(np.min(particles.density_per_image) >= 0.1)
             self.assertTrue(np.max(particles.density_per_image) <= 0.5)
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_particle__Particle__SNR_per_image(self):
 
         for i in range(0,loop_for):
@@ -252,6 +266,8 @@ class TestParticleClass(unittest.TestCase):
 
             self.assertTrue(np.min(particles.SNR_per_image) >= 5.5)
             self.assertTrue(np.max(particles.SNR_per_image) <= 20)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def test_particle__Particle__particle_diameters_std(self):
 
@@ -304,6 +320,8 @@ class TestParticleClass(unittest.TestCase):
 
             self.assertTrue(np.abs(actual_std - diameter_std) <= tolerance)
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_particle__Particle__seeding_density(self):
 
         particles_1 = Particle(1,
@@ -317,6 +335,8 @@ class TestParticleClass(unittest.TestCase):
                              seeding_mode='random')
 
         self.assertTrue(particles_1.n_of_particles < particles_2.n_of_particles)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def test_particle__Particle__adding_image_buffers(self):
 
@@ -353,4 +373,5 @@ class TestParticleClass(unittest.TestCase):
         self.assertTrue(particles.particle_positions[0].shape[0] == 104)
         self.assertTrue(particles.particle_positions[0].shape[1] == 204)
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
