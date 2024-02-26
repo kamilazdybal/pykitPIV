@@ -193,7 +193,7 @@ class Motion:
             interpolate_v_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i][1])
 
             # Retrieve the old particle coordinates (at time t):
-            particle_coordinates_I1 = np.hstack((self.__particles.particle_coordinates[i][0][:, None],
+            particle_coordinates_old = np.hstack((self.__particles.particle_coordinates[i][0][:, None],
                                                  self.__particles.particle_coordinates[i][1][:, None]))
 
             updated_particle_diameters = self.__particles.particle_diameters[i]
@@ -202,24 +202,22 @@ class Motion:
             for i in range(0,n_steps):
 
                 # Compute the new coordinates at the next time step:
-                y_coordinates_I2 = particle_coordinates_I1[:,0] + interpolate_v_component(particle_coordinates_I1) * __delta_t * (i+1)
-                x_coordinates_I2 = particle_coordinates_I1[:,1] + interpolate_u_component(particle_coordinates_I1) * __delta_t * (i+1)
+                y_coordinates_I2 = particle_coordinates_old[:,0] + interpolate_v_component(particle_coordinates_old) * __delta_t * (i+1)
+                x_coordinates_I2 = particle_coordinates_old[:,1] + interpolate_u_component(particle_coordinates_old) * __delta_t * (i+1)
 
-                particle_coordinates_I1 = np.hstack((y_coordinates_I2[:,None], x_coordinates_I2[:,None]))
+                particle_coordinates_old = np.hstack((y_coordinates_I2[:,None], x_coordinates_I2[:,None]))
 
                 # Remove particles that have moved outside the image area:
-                idx_removed_y, = np.where((particle_coordinates_I1[:,0] < 0) | (particle_coordinates_I1[:,0] > self.__particles.size_with_buffer[0]))
-                idx_removed_x, = np.where((particle_coordinates_I1[:,1] < 0) | (particle_coordinates_I1[:,1] > self.__particles.size_with_buffer[1]))
-
+                idx_removed_y, = np.where((particle_coordinates_old[:,0] < 0) | (particle_coordinates_old[:,0] > self.__particles.size_with_buffer[0]))
+                idx_removed_x, = np.where((particle_coordinates_old[:,1] < 0) | (particle_coordinates_old[:,1] > self.__particles.size_with_buffer[1]))
                 idx_removed = np.unique(np.concatenate((idx_removed_y, idx_removed_x)))
-                idx_retained = [i for i in range(0,particle_coordinates_I1.shape[0]) if i not in idx_removed]
+                idx_retained = [i for i in range(0,particle_coordinates_old.shape[0]) if i not in idx_removed]
 
-                particle_coordinates_I1 = particle_coordinates_I1[idx_retained,:]
+                particle_coordinates_old = particle_coordinates_old[idx_retained,:]
 
-                if i != n_steps - 1:
-                    updated_particle_diameters = updated_particle_diameters[idx_retained]
+                updated_particle_diameters = updated_particle_diameters[idx_retained]
 
-            particle_coordinates_I2.append((y_coordinates_I2, x_coordinates_I2))
+            particle_coordinates_I2.append((particle_coordinates_old[:,0], particle_coordinates_old[:,1]))
             self.__updated_particle_diameters.append(updated_particle_diameters)
 
         self.__particle_coordinates_I2 = particle_coordinates_I2
