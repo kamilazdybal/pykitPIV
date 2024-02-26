@@ -84,9 +84,9 @@ class FlowField:
                                             title='Example random velocity field magnitude',
                                             cmap=cmc.oslo_r,
                                             figsize=(10,2),
-                                            filename='example-random-velocity-field-magnitude.png');
+                                            filename='example-random-velocity-field-magnitud-quiver.png');
 
-    .. image:: ../images/example-random-velocity-field-magnitude-with-quiver.png
+    .. image:: ../images/example-random-velocity-field-magnitude-quiver.png
       :width: 700
       :align: center
 
@@ -101,9 +101,9 @@ class FlowField:
                                             title='Example random velocity field magnitude',
                                             cmap=cmc.oslo_r,
                                             figsize=(10,2),
-                                            filename='example-random-velocity-field-magnitude-with-streamplot.png');
+                                            filename='example-random-velocity-field-magnitude-streamplot.png');
 
-    .. image:: ../images/example-random-velocity-field-magnitude-with-streamplot.png
+    .. image:: ../images/example-random-velocity-field-magnitude-streamplot.png
       :width: 700
       :align: center
 
