@@ -380,56 +380,105 @@ class Image:
         if filename is None:
             filename = 'PIV-dataset.h5'
 
-        if self.images_I1 is None or self.images_I2 is None:
-            raise ValueError("Image pairs have not been generated yet.")
+        if self.images_I1 is None:
+            raise ValueError("Particles have not been added to the image yet!")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        if save_individually:
+        if self.images_I1 is not None and self.images_I2 is None:
 
-            n_zero_pad = int(np.floor(np.log10(self.__particles.n_images)))
+            print('Note: Particles have not been advected yet! Saving only initial images, `I_1`.\n\n')
 
-            for i in range(0,self.__particles.n_images):
+            if save_individually:
 
-                if with_buffer:
-                    images_to_save = (self.__images_I1[i], self.__images_I2[i])
-                else:
-                    images_to_save = (self.__images_I1[i][self.__particles.size_buffer: -self.__particles.size_buffer,self.__particles.size_buffer: -self.__particles.size_buffer],
-                                      self.__images_I2[i][self.__particles.size_buffer: -self.__particles.size_buffer,self.__particles.size_buffer: -self.__particles.size_buffer])
+                n_zero_pad = int(np.ceil(np.log10(self.__particles.n_images)))
 
-                filename_split = filename.split('.')
-                save_filename = filename_split[0] + '-pair-' + str(i+1).zfill(n_zero_pad) + '.h5'
+                for i in range(0,self.__particles.n_images):
 
-                print('Saving ' + save_filename + ' ...')
+                    if with_buffer:
+                        images_to_save = self.__images_I1[i]
+                    else:
+                        images_to_save = self.__images_I1[i][self.__particles.size_buffer: -self.__particles.size_buffer,self.__particles.size_buffer: -self.__particles.size_buffer]
 
-                with h5py.File(save_filename, 'w', libver='latest') as f:
+                    filename_split = filename.split('.')
+                    save_filename = filename_split[0] + '-I1-' + str(i+1).zfill(n_zero_pad) + '.h5'
+
+                    print('Saving ' + save_filename + ' ...')
+
+                    with h5py.File(save_filename, 'w', libver='latest') as f:
+                        for idx, image in enumerate(images_to_save):
+                            dataset = f.create_dataset(str(idx), data=image, compression='gzip', compression_opts=9)
+                        f.close()
+
+                print('\nAll datasets saved.\n')
+
+            else:
+
+                images_to_save = []
+
+                for i in range(0,self.__particles.n_images):
+
+                    if with_buffer:
+                        images_to_save.append(self.__images_I1[i])
+                    else:
+                        images_to_save.append(self.__images_I1[i][self.__particles.size_buffer: -self.__particles.size_buffer, self.__particles.size_buffer: -self.__particles.size_buffer])
+
+                print('Saving ' + filename + ' ...')
+
+                with h5py.File(filename, 'w', libver='latest') as f:
                     for idx, image in enumerate(images_to_save):
                         dataset = f.create_dataset(str(idx), data=image, compression='gzip', compression_opts=9)
                     f.close()
 
-            print('\nAll datasets saved.\n')
+                print('\nDataset saved.\n')
 
         else:
 
-            images_to_save = []
+            if save_individually:
 
-            for i in range(0,self.__particles.n_images):
+                n_zero_pad = int(np.ceil(np.log10(self.__particles.n_images)))
 
-                if with_buffer:
-                    images_to_save.append(self.__images_I1[i])
-                    images_to_save.append(self.__images_I2[i])
-                else:
-                    images_to_save.append(self.__images_I1[i][self.__particles.size_buffer: -self.__particles.size_buffer, self.__particles.size_buffer: -self.__particles.size_buffer])
-                    images_to_save.append(self.__images_I2[i][self.__particles.size_buffer: -self.__particles.size_buffer, self.__particles.size_buffer: -self.__particles.size_buffer])
+                for i in range(0,self.__particles.n_images):
 
-            print('Saving ' + filename + ' ...')
+                    if with_buffer:
+                        images_to_save = (self.__images_I1[i], self.__images_I2[i])
+                    else:
+                        images_to_save = (self.__images_I1[i][self.__particles.size_buffer: -self.__particles.size_buffer,self.__particles.size_buffer: -self.__particles.size_buffer],
+                                          self.__images_I2[i][self.__particles.size_buffer: -self.__particles.size_buffer,self.__particles.size_buffer: -self.__particles.size_buffer])
 
-            with h5py.File(filename, 'w', libver='latest') as f:
-                for idx, image in enumerate(images_to_save):
-                    dataset = f.create_dataset(str(idx), data=image, compression='gzip', compression_opts=9)
-                f.close()
+                    filename_split = filename.split('.')
+                    save_filename = filename_split[0] + '-pair-' + str(i+1).zfill(n_zero_pad) + '.h5'
 
-            print('\nDataset saved.\n')
+                    print('Saving ' + save_filename + ' ...')
+
+                    with h5py.File(save_filename, 'w', libver='latest') as f:
+                        for idx, image in enumerate(images_to_save):
+                            dataset = f.create_dataset(str(idx), data=image, compression='gzip', compression_opts=9)
+                        f.close()
+
+                print('\nAll datasets saved.\n')
+
+            else:
+
+                images_to_save = []
+
+                for i in range(0,self.__particles.n_images):
+
+                    if with_buffer:
+                        images_to_save.append(self.__images_I1[i])
+                        images_to_save.append(self.__images_I2[i])
+                    else:
+                        images_to_save.append(self.__images_I1[i][self.__particles.size_buffer: -self.__particles.size_buffer, self.__particles.size_buffer: -self.__particles.size_buffer])
+                        images_to_save.append(self.__images_I2[i][self.__particles.size_buffer: -self.__particles.size_buffer, self.__particles.size_buffer: -self.__particles.size_buffer])
+
+                print('Saving ' + filename + ' ...')
+
+                with h5py.File(filename, 'w', libver='latest') as f:
+                    for idx, image in enumerate(images_to_save):
+                        dataset = f.create_dataset(str(idx), data=image, compression='gzip', compression_opts=9)
+                    f.close()
+
+                print('\nDataset saved.\n')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -538,7 +587,7 @@ class Image:
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        if self.__images_I1 is None:
+        if self.images_I1 is None:
 
             print('Note: Particles have not been added to the image yet!\n\n')
 
