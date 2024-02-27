@@ -1,15 +1,14 @@
-import numpy as np
 import matplotlib.pyplot as plt
-import copy
-import scipy
-import warnings
 import h5py
-import matplotlib.patches as patches
 import matplotlib.animation as animation
+import matplotlib.patches as patches
+import matplotlib.pyplot as plt
+
 from pykitPIV.checks import *
-from pykitPIV.particle import Particle
 from pykitPIV.flowfield import FlowField
 from pykitPIV.motion import Motion
+from pykitPIV.particle import Particle
+
 
 # self.__LEF = self.__light_enhancement_factor[0] + np.random.rand(self.__n_images) * (
 #             self.__light_enhancement_factor[1] - self.__light_enhancement_factor[0])
@@ -351,12 +350,17 @@ class Image:
 
     def save_to_h5(self,
                    with_buffer=False,
+                   save_individually=False,
                    filename=None):
         """
-        Saves the image pair, :math:`\\mathbf{I} = (I_1, I_2)`, to ``.h5`` data format.
+        Saves the image pairs, :math:`\\mathbf{I} = (I_1, I_2)`, to ``.h5`` data format.
 
         :param with_buffer: (optional)
             ``bool`` specifying whether the buffer for the image size should be saved. If set to ``False``, the true PIV image size is saved. If set to ``True``, the PIV image with a buffer is saved.
+        :param save_individually: (optional)
+            ``bool`` specifying whether each image pair should be saved into a separate ``.h5`` file.
+            If set to ``False``, all pairs are saved into one ``.h5`` file;
+            the even indices refer to :math:`I_1` and the odd indices refer to :math:`I_2`.
         :param filename: (optional)
             ``str`` specifying the path and filename to save the ``.h5`` data. Note that ``'-pair-#'`` will be added
             automatically to your filename for each saved image pair.
@@ -378,23 +382,86 @@ class Image:
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        n_zero_pad = int(np.floor(np.log10(self.__particles.n_images)))
+        if save_individually:
 
-        for i in range(0,self.__particles.n_images):
+            n_zero_pad = int(np.floor(np.log10(self.__particles.n_images)))
 
-            images_to_save = (self.__images_I1[i], self.__images_I2[i])
+            for i in range(0,self.__particles.n_images):
 
-            filename_split = filename.split('.')
-            save_filename = filename_split[0] + '-pair-' + str(i+1).zfill(n_zero_pad) + '.h5'
+                if with_buffer:
+                    images_to_save = (self.__images_I1[i], self.__images_I2[i])
+                else:
+                    images_to_save = (self.__images_I1[i][self.__particles.size_buffer: -self.__particles.size_buffer,self.__particles.size_buffer: -self.__particles.size_buffer],
+                                      self.__images_I2[i][self.__particles.size_buffer: -self.__particles.size_buffer,self.__particles.size_buffer: -self.__particles.size_buffer])
 
-            print('Saving ' + save_filename + ' ...')
+                filename_split = filename.split('.')
+                save_filename = filename_split[0] + '-pair-' + str(i+1).zfill(n_zero_pad) + '.h5'
 
-            with h5py.File(save_filename, 'w', libver='latest') as f:
+                print('Saving ' + save_filename + ' ...')
+
+                with h5py.File(save_filename, 'w', libver='latest') as f:
+                    for idx, image in enumerate(images_to_save):
+                        dataset = f.create_dataset(str(idx), data=image, compression='gzip', compression_opts=9)
+                    f.close()
+
+            print('\nAll datasets saved.\n')
+
+        else:
+
+            images_to_save = []
+
+            for i in range(0,self.__particles.n_images):
+
+                if with_buffer:
+                    images_to_save.append(self.__images_I1[i])
+                    images_to_save.append(self.__images_I2[i])
+                else:
+                    images_to_save.append(self.__images_I1[i][self.__particles.size_buffer: -self.__particles.size_buffer, self.__particles.size_buffer: -self.__particles.size_buffer])
+                    images_to_save.append(self.__images_I2[i][self.__particles.size_buffer: -self.__particles.size_buffer, self.__particles.size_buffer: -self.__particles.size_buffer])
+
+            print('Saving ' + filename + ' ...')
+
+            with h5py.File(filename, 'w', libver='latest') as f:
                 for idx, image in enumerate(images_to_save):
                     dataset = f.create_dataset(str(idx), data=image, compression='gzip', compression_opts=9)
                 f.close()
 
-        print('\nAll datasets saved.\n')
+            print('\nDataset saved.\n')
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def upload_from_h5(self,
+                       filename=None):
+        """
+        Upload image pairs, :math:`\\mathbf{I} = (I_1, I_2)`, to ``.h5`` data format.
+
+        :param filename: (optional)
+            ``str`` specifying the path and filename to save the ``.h5`` data. Note that ``'-pair-#'`` will be added
+            automatically to your filename for each saved image pair.
+            If set to ``None``, a default name ``'PIV-dataset-pair-#.h5'`` will be used.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if (filename is not None) and (not isinstance(filename, str)):
+            raise ValueError("Parameter `filename` has to be of type 'str'.")
+
+        if filename is None:
+            filename = 'PIV-dataset.h5'
+
+
+
+
+
+
+
+
+
+
+
+
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
