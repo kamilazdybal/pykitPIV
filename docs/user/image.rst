@@ -18,6 +18,8 @@ Class: ``Image``
 
 .. autofunction:: pykitPIV.image.Image.save_to_h5
 
+.. autofunction:: pykitPIV.image.Image.upload_from_h5
+
 .. autofunction:: pykitPIV.image.Image.plot
 
 .. autofunction:: pykitPIV.image.Image.plot_image_pair

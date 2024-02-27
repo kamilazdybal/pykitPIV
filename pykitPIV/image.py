@@ -380,6 +380,9 @@ class Image:
         if filename is None:
             filename = 'PIV-dataset.h5'
 
+        if self.images_I1 is None or self.images_I2 is None:
+            raise ValueError("Image pairs have not been generated yet.")
+
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         if save_individually:
@@ -433,7 +436,7 @@ class Image:
     def upload_from_h5(self,
                        filename=None):
         """
-        Upload image pairs, :math:`\\mathbf{I} = (I_1, I_2)`, to ``.h5`` data format.
+        Upload image pairs, :math:`\\mathbf{I} = (I_1, I_2)`, from ``.h5`` data format.
 
         :param filename: (optional)
             ``str`` specifying the path and filename to save the ``.h5`` data. Note that ``'-pair-#'`` will be added
@@ -450,6 +453,9 @@ class Image:
 
         if filename is None:
             filename = 'PIV-dataset.h5'
+
+
+
 
 
 
