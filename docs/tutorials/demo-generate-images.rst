@@ -360,3 +360,23 @@ as well as in the dynamic mode (as animation):
     :align: center
 
 Note, that at the last stage of the PIV image generation we may want to remove buffers from the image by setting the ``with_buffer=False`` flag.
+
+************************************************************
+Save the generated PIV image pairs dataset to ``.h5`` format
+************************************************************
+
+We can save the prepared image pair to ``.h5`` format:
+
+.. code:: python
+
+    image.save_to_h5(with_buffer=False,
+                     save_individually=True,
+                     filename='PIV-image')
+
+Running this function will print:
+
+.. code-block:: text
+
+    Saving PIV-image-pair-1.h5 ...
+
+    All datasets saved.
