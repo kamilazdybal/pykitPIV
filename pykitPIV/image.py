@@ -217,7 +217,7 @@ class Image:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def add_reflected_light(self,
-                            exposures=(0.02,0.8),
+                            exposures=(0.5,0.9),
                             maximum_intensity=2**16-1,
                             laser_beam_thickness=2,
                             laser_over_exposure=1,
@@ -310,6 +310,9 @@ class Image:
 
             return particles_with_gaussian_light
 
+        def __clip_intensities(image, maximum_intensity):
+            return np.clip(image, a_min=0, a_max=maximum_intensity)
+
         # Add light to image I1:
         if self.__particles is not None:
 
@@ -322,7 +325,7 @@ class Image:
                                                                  self.__particles.particle_coordinates[i][1],
                                                                  image_instance=1)
 
-                images_I1.append(particles_with_gaussian_light)
+                images_I1.append(__clip_intensities(particles_with_gaussian_light, maximum_intensity))
 
                 self.__images_I1 = images_I1
 
@@ -340,7 +343,7 @@ class Image:
                                                                  self.__motion.particle_coordinates_I2[i][1],
                                                                  image_instance=2)
 
-                images_I2.append(particles_with_gaussian_light)
+                images_I2.append(__clip_intensities(particles_with_gaussian_light, maximum_intensity))
 
                 self.__images_I2 = images_I2
 
