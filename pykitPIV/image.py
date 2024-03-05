@@ -74,6 +74,9 @@ class Image:
         # Initialize exposures per image:
         self.__exposures_per_image = None
 
+        # Initialize maximum intensity:
+        self.__maximum_intensity = None
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
@@ -93,6 +96,10 @@ class Image:
     @property
     def exposures_per_image(self):
         return self.__exposures_per_image
+
+    @property
+    def maximum_intensity(self):
+        return self.__maximum_intensity
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -256,6 +263,11 @@ class Image:
 
         if self.random_seed is not None:
             np.random.seed(seed=self.random_seed)
+
+        if not(isinstance(maximum_intensity, int)):
+            raise ValueError("Parameter `maximum_intensity` has to be an instance of `int`.")
+
+        self.__maximum_intensity = maximum_intensity
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -613,13 +625,13 @@ class Image:
             # Check if particles were generated with a buffer:
             if self.__particles.size_buffer == 0:
 
-                plt.imshow(image_to_plot, cmap=cmap, origin='lower')
+                plt.imshow(image_to_plot, cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
 
             else:
 
                 if with_buffer:
 
-                    im = plt.imshow(image_to_plot, cmap=cmap, origin='lower')
+                    im = plt.imshow(image_to_plot, cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
 
                     # Extend the imshow area with the buffer:
                     f = lambda pixel: pixel - self.__particles.size_buffer
@@ -632,7 +644,7 @@ class Image:
 
                 else:
 
-                    plt.imshow(image_to_plot[self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower')
+                    plt.imshow(image_to_plot[self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
 
         if xlabel is not None:
             plt.xlabel(xlabel)
