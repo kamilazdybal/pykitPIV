@@ -62,6 +62,10 @@ class Image:
         self.__images_I1 = None
         self.__images_I2 = None
 
+        # Initialize images without buffer:
+        self.__images_I1_no_buffer = None
+        self.__images_I2_no_buffer = None
+
         # Initialize particles:
         self.__particles = None
 
@@ -92,6 +96,14 @@ class Image:
     @property
     def images_I2(self):
         return self.__images_I2
+
+    @property
+    def images_I1_no_buffer(self):
+        return self.__images_I1_no_buffer
+
+    @property
+    def images_I2_no_buffer(self):
+        return self.__images_I2_no_buffer
 
     @property
     def exposures_per_image(self):
@@ -360,6 +372,49 @@ class Image:
                 self.__images_I2 = images_I2
 
             print('Reflected light added to images I2.')
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def remove_buffers(self):
+        """
+        Remove buffers from generated PIV image pairs. Executing this function populates the class attributes ``Image.images_I1_no_buffer``,
+        ``Image.images_I2_no_buffer`` with copies of ``Image.images_I1``, ``Image.images_I2`` but with buffer removed.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        if self.__particles.size_buffer > 0:
+
+            if self.images_I1 is None:
+
+                raise ValueError("Images have not been initialized yet!")
+
+            else:
+
+                self.__images_I1_no_buffer = []
+
+                for i in range(0,self.__particles.n_images):
+
+                    self.__images_I1_no_buffer.append(self.images_I1[i][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer])
+
+            if self.images_I2 is None:
+
+                pass
+
+            else:
+
+                self.__images_I2_no_buffer = []
+
+                for i in range(0,self.__particles.n_images):
+
+                    self.__images_I2_no_buffer.append(self.images_I2[i][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer])
+
+        else:
+
+            print('Images do not have a buffer to remove!')
+
+            self.__images_I1_no_buffer = self.images_I1
+            self.__images_I2_no_buffer = self.images_I2
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
