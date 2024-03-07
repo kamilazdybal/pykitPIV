@@ -377,7 +377,7 @@ class Image:
 
     def remove_buffers(self):
         """
-        Remove buffers from generated PIV image pairs. Executing this function populates the class attributes ``Image.images_I1_no_buffer``,
+        Removes buffers from generated PIV image pairs. Executing this function populates the class attributes ``Image.images_I1_no_buffer``,
         ``Image.images_I2_no_buffer`` with copies of ``Image.images_I1``, ``Image.images_I2`` but with buffer removed.
         """
 
