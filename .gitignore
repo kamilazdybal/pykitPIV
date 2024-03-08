@@ -7,6 +7,8 @@
 *.pyc
 *__pycache__
 *.DS_Store
+*.h5
+*.mat
 .idea/
 build/
 pypiv.egg-info/
