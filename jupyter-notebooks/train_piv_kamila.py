@@ -6,6 +6,19 @@ import pytorch_lightning as pl
 import torchvision.transforms
 from rich import print
 from torch.utils.data import DataLoader
+from torch.utils.data import Dataset
+import glob
+import h5py
+import skimage.io as io
+import torch
+import math
+import random
+
+import numpy as np
+import torch
+import torchvision.transforms.functional as F
+from torchvision import transforms
+
 
 # LIMA
 import lima
@@ -194,11 +207,41 @@ def argument_parser():
     parser.add_argument(
         "--dataset",
         type=str,
-        default="kamila-test",
+        default="rand_L_lag",
         metavar="T",
         help="training data type",
     )
     return parser
+
+
+
+
+class HDF5Dataset(Dataset):
+    """HDF5Dataset loaded"""
+
+    def __init__(self, path, transform=None, n_samples=None, pin_to_ram=False):
+        f = h5py.File(path, "r")
+        self.data = f["I"]
+        self.target = np.array(f["target"])[:,2:4,:,:]
+        if n_samples:
+            self.data = self.data[:n_samples]
+            self.target = self.target[:n_samples]
+        if pin_to_ram:
+            self.data = np.array(self.data)
+            self.target = np.array(self.target)
+            f.close()
+        self.transform = transform
+
+    def __len__(self):
+        return len(self.data)
+
+    def __getitem__(self, idx):
+        if torch.is_tensor(idx):
+            idx = idx.tolist()
+        sample = self.data[idx], self.target[idx]
+        if self.transform:
+            sample = self.transform(sample)
+        return sample
 
 
 def get_train_test_loader(args):
@@ -219,18 +262,14 @@ def get_train_test_loader(args):
         ]
     )
 
-    datasets_path = {
-        "kamila-test": ("PIV_n3_s180_maxd10_rnd_v1.h5", "PIV_n3_s180_maxd10_rnd_v1.h5")
-    }
+    args.train_dataset = '/home/zdka/GitLab-Empa/pykitPIV/jupyter-notebooks/PIV_n3_s180_maxd10_rnd_v1.h5'
+    args.test_dataset = '/home/zdka/GitLab-Empa/pykitPIV/jupyter-notebooks/PIV_n3_s180_maxd10_rnd_v1.h5'
 
-    args.train_dataset = datasets_path[args.dataset][0]
-    args.test_dataset = datasets_path[args.dataset][1]
-
-    train_dataset = lima.dataset.HDF5Dataset(
+    train_dataset = HDF5Dataset(
         path=args.train_dataset,
         transform=transform,
     )
-    test_dataset = lima.dataset.HDF5Dataset(
+    test_dataset = HDF5Dataset(
         path=args.test_dataset,
         transform=transform,
     )
