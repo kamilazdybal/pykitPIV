@@ -19,11 +19,102 @@ import torch
 import torchvision.transforms.functional as F
 from torchvision import transforms
 
+import matplotlib.pyplot as plt
+import numpy as np
+import cmcrameri.cm as cmc
+
+# pykitPIV
+from pykitPIV import Particle, FlowField, Motion, Image
 
 # LIMA
 import lima
 import lima.dataset
 
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+# Generate pykitPIV image pairs
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
+
+image_size = (128,128)
+size_buffer = 10
+figsize = (5,3)
+
+def generate_images(n_images, random_seed):
+
+    # Instantiate an object of the Particle class:
+    particles = Particle(n_images,
+                         size=image_size,
+                         size_buffer=size_buffer,
+                         diameters=(4,4.1),
+                         distances=(1,2),
+                         densities=(0.05,0.1),
+                         signal_to_noise=(5,20),
+                         diameter_std=0.2,
+                         seeding_mode='random',
+                         random_seed=random_seed)
+
+    # Instantiate an object of the FlowField class:
+    flowfield = FlowField(n_images,
+                          size=image_size,
+                          size_buffer=size_buffer,
+                          flow_mode='random',
+                          gaussian_filters=(10,11),
+                          n_gaussian_filter_iter=20,
+                          sin_period=(30,300),
+                          displacement=(0,10),
+                          random_seed=random_seed)
+
+    # Instantiate an object of the Motion class:
+    motion = Motion(particles, 
+                    flowfield, 
+                    time_separation=0.1)
+
+    # Instantiate an object of the Image class:
+    image = Image(random_seed=random_seed)
+
+    # Prepare images - - - - - - - - - - - - - - - - - - 
+
+    image.add_particles(particles)
+
+    image.add_velocity_field(flowfield)
+            
+    motion.forward_euler(n_steps=10)
+    
+    image.add_motion(motion)
+    
+    image.add_reflected_light(exposures=(0.6,0.65),
+                              maximum_intensity=2**16-1,
+                              laser_beam_thickness=1,
+                              laser_over_exposure=1,
+                              laser_beam_shape=0.95,
+                              alpha=1/10)
+
+    image.remove_buffers()
+
+    return image
+
+# Training samples - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+n_images = 100
+training_random_seed = 100
+
+image_train = generate_images(n_images, training_random_seed)
+
+image_pairs_train = image_train.image_pairs_to_tensor()
+targets_train = image_train.targets_to_tensor()
+
+# Testing samples - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+n_images = 10
+test_random_seed = 200
+
+image_test = generate_images(n_images, test_random_seed)
+
+image_pairs_test = image_test.image_pairs_to_tensor()
+targets_test = image_test.targets_to_tensor()
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 def argument_parser():
     """Define parameters that only apply to this model/training"""
@@ -213,23 +304,21 @@ def argument_parser():
     )
     return parser
 
+class pykitPIVDataset(Dataset):
+    """Load pykitPIV-generated dataset"""
 
+    def __init__(self, image_pairs, targets, transform=None, n_samples=None, pin_to_ram=False):
 
+        self.data = image_pairs
+        self.target = targets
 
-class HDF5Dataset(Dataset):
-    """HDF5Dataset loaded"""
-
-    def __init__(self, path, transform=None, n_samples=None, pin_to_ram=False):
-        f = h5py.File(path, "r")
-        self.data = f["I"]
-        self.target = np.array(f["target"])[:,2:4,:,:]
         if n_samples:
             self.data = self.data[:n_samples]
             self.target = self.target[:n_samples]
         if pin_to_ram:
             self.data = np.array(self.data)
             self.target = np.array(self.target)
-            f.close()
+
         self.transform = transform
 
     def __len__(self):
@@ -241,8 +330,8 @@ class HDF5Dataset(Dataset):
         sample = self.data[idx], self.target[idx]
         if self.transform:
             sample = self.transform(sample)
-        return sample
 
+        return sample
 
 def get_train_test_loader(args):
     # Data loader
@@ -261,31 +350,24 @@ def get_train_test_loader(args):
             lima.transforms.RandomNoise(std=(0, args.noise_std)),
         ]
     )
-
-    args.train_dataset = '/home/zdka/GitLab-Empa/pykitPIV/jupyter-notebooks/PIV_n3_s180_maxd10_rnd_v1.h5'
-    args.test_dataset = '/home/zdka/GitLab-Empa/pykitPIV/jupyter-notebooks/PIV_n3_s180_maxd10_rnd_v1.h5'
-
-    train_dataset = HDF5Dataset(
-        path=args.train_dataset,
-        transform=transform,
-    )
-    test_dataset = HDF5Dataset(
-        path=args.test_dataset,
-        transform=transform,
-    )
-
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=args.batch_size,
-        shuffle=True,
-        num_workers=args.num_workers,
-        pin_memory=True,
-    )
-    test_loader = DataLoader(
-        test_dataset,
-        batch_size=args.batch_size,
-    )
-
+    
+    train_dataset = pykitPIVDataset(image_pairs=image_pairs_train,
+                                    targets=targets_train,
+                                    transform=transform)
+    
+    test_dataset = pykitPIVDataset(image_pairs=image_pairs_test,
+                                    targets=targets_test,
+                                    transform=transform)
+    
+    train_loader = DataLoader(train_dataset,
+                              batch_size=5,
+                              shuffle=True,
+                              num_workers=1,
+                              pin_memory=True)
+    
+    test_loader = DataLoader(test_dataset,
+                             batch_size=10)
+    
     return train_loader, test_loader
 
 
@@ -331,6 +413,14 @@ def main(args):
     # 6. Train the model
     trainer.fit(model, train_loader, test_loader)
 
+    # Visualize the prediction:
+    image_to_predict = 0
+    velocity_component = 0
+    predicted_flow = model.inference(torch.from_numpy(image_pairs_test[image_to_predict,:,:,:]).to(dtype=torch.float)).numpy()
+    plt.imshow(predicted_flow[velocity_component,:,:], 
+               cmap='Blues', 
+               origin='lower')
+    plt.colorbar()
 
 if __name__ == "__main__":
     parser = argument_parser()
