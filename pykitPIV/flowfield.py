@@ -23,9 +23,7 @@ class FlowField:
 
     .. code:: python
 
-        import numpy as np
-        import cmcrameri.cm as cmc
-        from pykitPIV import FlowField, Image
+        from pykitPIV import FlowField
 
         # Specify size in pixels for each image:
         image_size = (128,512)
@@ -50,12 +48,32 @@ class FlowField:
         This number should be approximately equal to the maximum displacement that particles are subject to in order to allow for new particles to arrive into the image area.
     :param flow_mode: (optional)
         ``str`` specifying the mode for the velocity field generation. It can be one of the following: ``'random'``, ``'random-sinusoidal'``, ``'quadrant'``, or ``'checkerboard'``.
+    :param displacement: (optional)
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement
     :param gaussian_filters: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) Gaussian filter size (bandwidth) for smoothing out the random velocity fields to randomly sample from.
     :param n_gaussian_filter_iter: (optional)
         ``int`` specifying the number of iterations applying a Gaussian filter to the random velocity field to eventually arrive at a smoothed velocity map. With no iterations, each pixel attains a random velocity component value.
+    :param sin_period: (optional)
+        UNUSED.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
+
+    **Attributes:**
+
+    - **n_images** - (read-only) as per user input.
+    - **size** - (read-only) as per user input.
+    - **size_buffer** - (read-only) as per user input.
+    - **flow_mode** - (read-only) as per user input.
+    - **displacement** - (read-only) as per user input.
+    - **gaussian_filters** - (read-only) as per user input.
+    - **n_gaussian_filter_iter** - (read-only) as per user input.
+    - **random_seed** - (read-only) as per user input.
+    - **size_with_buffer** - (read-only) ``tuple`` specifying the size of each image in pixels with buffer added.
+    - **gaussian_filter_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the Gaussian filter sizes in pixels :math:`[\\text{px}]` for each image. Template diameters are random numbers between ``gaussian_filters[0]`` and ``gaussian_filters[1]``.
+    - **displacement_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the displacements per each image. Template diameters are random numbers between ``displacement[0]`` and ``displacement[1]``.
+    - **velocity_field** - (read-only) ``list`` of two-element ``tuple`` specifying the velocity field components per each image, :math:`u` and :math:`v`. The first element of each tuple is :math:`u` and the second element of each tuple is :math:`v`.
+    - **velocity_field_magnitude** - (read-only) ``list`` of ``numpy.ndarray`` specifying the velocity field magnitude per each image.
     """
 
     def __init__(self,

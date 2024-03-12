@@ -34,7 +34,6 @@ class Motion:
 
     .. code:: python
 
-        import numpy as np
         from pykitPIV import Particle, Flowfield, Motion
 
         # We are going to generate 10 PIV image pairs:
@@ -55,8 +54,8 @@ class Motion:
                              seeding_mode='random',
                              random_seed=1)
 
-        # Initialize a flow field object that generates a random velocity field for one image pair:
-        flowfield = FlowField(1,
+        # Initialize a flow field object:
+        flowfield = FlowField(n_images=n_images,
                               size=image_size,
                               size_buffer=10,
                               flow_mode='random',

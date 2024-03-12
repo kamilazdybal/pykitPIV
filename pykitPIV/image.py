@@ -26,6 +26,15 @@ class Image:
     """
     Stores and plots synthetic PIV images and/or the associated flow fields at any stage of particle generation and movement.
 
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import Image
+
+        # Initialize an image object:
+        image = Image(random_seed=100)
+
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
 

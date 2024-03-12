@@ -23,8 +23,7 @@ class Particle:
 
     .. code:: python
 
-        import numpy as np
-        from pykitPIV import Particle, Image
+        from pykitPIV import Particle
 
         # We are going to generate 10 PIV image pairs:
         n_images = 10
@@ -71,6 +70,7 @@ class Particle:
 
     - **n_images** - (read-only) as per user input.
     - **size** - (read-only) as per user input.
+    - **size_buffer** - (read-only) as per user input.
     - **diameters** - (read-only) as per user input.
     - **distances** - (read-only) as per user input.
     - **densities** - (read-only) as per user input.
@@ -78,6 +78,7 @@ class Particle:
     - **signal_to_noise** - (read-only) as per user input.
     - **seeding_mode** - (read-only) as per user input.
     - **random_seed** - (read-only) as per user input.
+    - **size_with_buffer** - (read-only) ``tuple`` specifying the size of each image in pixels with buffer added.
     - **diameter_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle diameters in pixels :math:`[\\text{px}]` for each image. Template diameters are random numbers between ``diameters[0]`` and ``diameters[1]``.
     - **distance_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle distances in pixels :math:`[\\text{px}]` for each image. Template distances are random numbers between ``distances[0]`` and ``distances[1]``.
     - **density_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle densities in particle per pixel :math:`[\\text{ppp}]` for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
