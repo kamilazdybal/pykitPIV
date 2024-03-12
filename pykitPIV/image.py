@@ -184,6 +184,8 @@ class Image:
         self.__flowfield = flowfield
         self.__targets = flowfield.velocity_field
 
+        print('Velocity field added to the image.')
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def add_motion(self,
@@ -206,6 +208,8 @@ class Image:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__motion = motion
+
+        print('Particle movement added to the image.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
