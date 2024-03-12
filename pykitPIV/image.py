@@ -66,6 +66,12 @@ class Image:
         self.__images_I1_no_buffer = None
         self.__images_I2_no_buffer = None
 
+        # Initialize flow targets:
+        self.__targets = None
+
+        # Initialize flow targets without buffer:
+        self.__targets_no_buffer = None
+
         # Initialize particles:
         self.__particles = None
 
@@ -104,6 +110,14 @@ class Image:
     @property
     def images_I2_no_buffer(self):
         return self.__images_I2_no_buffer
+
+    @property
+    def targets(self):
+        return self.__targets
+
+    @property
+    def targets_no_buffer(self):
+        return self.__targets_no_buffer
 
     @property
     def exposures_per_image(self):
@@ -159,6 +173,7 @@ class Image:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__flowfield = flowfield
+        self.__targets = flowfield.velocity_field
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -377,14 +392,18 @@ class Image:
 
     def remove_buffers(self):
         """
-        Removes buffers from generated PIV image pairs. Executing this function populates the class attributes ``Image.images_I1_no_buffer``,
-        ``Image.images_I2_no_buffer`` with copies of ``Image.images_I1``, ``Image.images_I2`` but with buffer removed.
+        Removes buffers from generated PIV image pairs and the associated targets (velocity fields).
+        Executing this function populates the class attributes ``Image.images_I1_no_buffer``,
+        ``Image.images_I2_no_buffer`` with copies of ``Image.images_I1``, ``Image.images_I2`` but with buffer removed,
+        and it also populates the class attribute  ``Image.targets_no_buffer``,
+        with a copy of ``Image.targets`` but with buffer removed.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         if self.__particles.size_buffer > 0:
 
+            # Remove buffer from PIV image pairs:
             if self.images_I1 is None:
 
                 raise ValueError("Images have not been initialized yet!")
@@ -396,6 +415,8 @@ class Image:
                 for i in range(0,self.__particles.n_images):
 
                     self.__images_I1_no_buffer.append(self.images_I1[i][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer])
+
+                print('Buffers removed from images I1.')
 
             if self.images_I2 is None:
 
@@ -409,12 +430,68 @@ class Image:
 
                     self.__images_I2_no_buffer.append(self.images_I2[i][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer])
 
+                print('Buffers removed from images I2.')
+
+            # Remove buffer from PIV image targets (velocity field):
+            if self.__flowfield is not None:
+
+                self.__targets_no_buffer = []
+
+                for i in range(0,self.__particles.n_images):
+
+                    target_tuple = (self.__flowfield.velocity_field[i][0][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer],
+                                    self.__flowfield.velocity_field[i][1][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer])
+
+                    self.__targets_no_buffer.append(target_tuple)
+
+                print('Buffers removed from the velocity field.')
+
         else:
 
             print('Images do not have a buffer to remove!')
 
             self.__images_I1_no_buffer = self.images_I1
             self.__images_I2_no_buffer = self.images_I2
+
+            if self.__flowfield is not None:
+
+                self.__targets_no_buffer = self.targets
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def image_pairs_to_tensor(self):
+        """
+        Prepares a 4-dimensional array with dimensions: ``(n_images, 2, image_height, image_width)`` that stores the image pairs.
+
+        The second dimension represents the image pair, :math:`I_1` and :math:`I_2`.
+        """
+
+        images_tensor = np.zeros((self.__particles.n_images, 2, self.__particles.size[0], self.__particles.size[1]))
+
+        for i in range(0, self.__particles.n_images):
+
+            images_tensor[i, 0, :, :] = self.images_I1_no_buffer[i]
+            images_tensor[i, 1, :, :] = self.images_I2_no_buffer[i]
+
+        return images_tensor
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def targets_to_tensor(self):
+        """
+        Prepares a 4-dimensional array with dimensions: ``(n_images, 2, image_height, image_width)`` that stores the flow targets.
+
+        The second dimension represents the velocity field components, :math:`u` and :math:`v`.
+        """
+
+        targets_tensor = np.zeros((self.__particles.n_images, 2, self.__particles.size[0], self.__particles.size[1]))
+
+        for i in range(0, self.__particles.n_images):
+
+            targets_tensor[i, 0, :, :] = self.targets_no_buffer[i][0]
+            targets_tensor[i, 1, :, :] = self.targets_no_buffer[i][1]
+
+        return targets_tensor
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

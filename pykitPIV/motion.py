@@ -27,8 +27,48 @@ class Motion:
     .. note::
 
         Particles that exit the image area as a result of their motion are removed from image :math:`I_2`.
-        To ensure that motion of particles does not cause unphysical removal of particles, set an appropriately large
+        To ensure that motion of particles does not cause unphysical removal of particles near image boundaries, set an appropriately large
         image buffer when instantiating objects of ``Particle`` and ``FlowField`` class (see parameter ``size_buffer``).
+
+    **Example:**
+
+    .. code:: python
+
+        import numpy as np
+        from pykitPIV import Particle, Flowfield, Motion
+
+        # We are going to generate 10 PIV image pairs:
+        n_images = 10
+
+        # Specify size in pixels for each image:
+        image_size = (128,512)
+
+        # Initialize a particle object:
+        particles = Particle(n_images=n_images,
+                             size=image_size,
+                             size_buffer=10,
+                             diameters=(2,4),
+                             distances=(1,2),
+                             densities=(0.01,0.05),
+                             signal_to_noise=(5,20),
+                             diameter_std=1,
+                             seeding_mode='random',
+                             random_seed=1)
+
+        # Initialize a flow field object that generates a random velocity field for one image pair:
+        flowfield = FlowField(1,
+                              size=image_size,
+                              size_buffer=10,
+                              flow_mode='random',
+                              gaussian_filters=(8,10),
+                              n_gaussian_filter_iter=10,
+                              sin_period=(30,300),
+                              displacement=(0,10),
+                              random_seed=100)
+
+        # Initialize a motion object:
+        motion = Motion(particles, flowfield)
+
 
     :param particles:
         ``Particle`` class instance specifying the properties and positions of particles.

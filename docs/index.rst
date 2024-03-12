@@ -7,9 +7,10 @@ Welcome to ``pykitPIV``!
 .. image:: images/pykitPIV-logo.png
   :width: 300
 
-**pykitPIV** is a Python package for synthetic PIV image generation.
+**pykitPIV** is a Python package for synthetic PIV image generation that exploits the kinematic relationship between two PIV images.
 The goal of this library is to give the user or a reinforcement learning (RL) agent a lot of flexibility in setting-up
-image generation.
+image generation. The generated image pairs and the associated flow targets can be directly used in training
+convolutional neural network (CNN) for flow estimation.
 
 .. image:: images/example-image-I1-I2.gif
   :width: 1100
