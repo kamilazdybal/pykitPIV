@@ -41,7 +41,7 @@ class Particle:
                              signal_to_noise=(5,20),
                              diameter_std=1,
                              seeding_mode='random',
-                             random_seed=1)
+                             random_seed=100)
 
     :param n_images:
         ``int`` specifying the number of image pairs to create.

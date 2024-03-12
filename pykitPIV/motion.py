@@ -52,7 +52,7 @@ class Motion:
                              signal_to_noise=(5,20),
                              diameter_std=1,
                              seeding_mode='random',
-                             random_seed=1)
+                             random_seed=100)
 
         # Initialize a flow field object:
         flowfield = FlowField(n_images=n_images,

@@ -6,16 +6,22 @@ Integrate synthetic image generation with training a convolutional neural networ
 Introduction
 ************************************************************
 
+We define the PIV image sizes (128 :math:`\text{px}` by 128 :math:`\text{px}`)
+and we specify a 10 :math:`\text{px}` buffer for the image size.
+The buffer prevents particles from artificially disappearing near image boundaries during particle movement, *i.e.*, particles that reside within
+the 10 :math:`\text{px}` outline at image frame :math:`I_1` are able to enter the proper image area in image frame :math:`I_2`.
 
+.. code:: python
 
+    image_size = (128,128)
 
+    size_buffer = 10
 
 ************************************************************
 Generate synthetic images with ``pykitPIV``
 ************************************************************
 
-Below, we define a function for generating train and test PIV image pairs.
-Training dataset can be generated with a different random seed than test dataset.
+Below, we define a function for generating train and test PIV image pairs and the flow targets (velocity components :math:`u` and :math:`v`).
 
 .. code:: python
 
@@ -56,6 +62,8 @@ Training dataset can be generated with a different random seed than test dataset
 
         image.add_particles(particles)
 
+        image.add_velocity_field(flowfield)
+
         motion.forward_euler(n_steps=10)
 
         image.add_motion(motion)
@@ -67,19 +75,65 @@ Training dataset can be generated with a different random seed than test dataset
                                   laser_beam_shape=0.95,
                                   alpha=1/10)
 
-        return image
+        image.remove_buffers()
 
+        return image
 
 Training set
 ======================
 
+The training set will have 10 image pairs:
 
+.. code:: python
 
+    n_images = 100
 
+We fix a random seed for generating the training set of PIV images:
+
+.. code:: python
+
+    training_random_seed = 100
+
+Call the function that generates image pairs:
+
+.. code:: python
+
+    image_train = generate_images(n_images, training_random_seed)
+
+Finally, we convert the generated images and their corresponding targets to 4-dimensional tensors:
+
+.. code:: python
+
+    image_pairs_train = image_train.image_pairs_to_tensor()
+    targets_train = image_train.targets_to_tensor()
 
 Testing set
 ======================
 
+The test set will have 10 image pairs:
+
+.. code:: python
+
+    n_images = 10
+
+Testing dataset can be generated with a different random seed than training dataset to assure a diverse inference from the trained model.
+
+.. code:: python
+
+    test_random_seed = 200
+
+Call the function that generates image pairs:
+
+.. code:: python
+
+    image_test = generate_images(n_images, test_random_seed)
+
+Convert the generated images and their targets to 4-dimensional tensors:
+
+.. code:: python
+
+    image_pairs_test = image_test.image_pairs_to_tensor()
+    targets_test = image_test.targets_to_tensor()
 
 
 

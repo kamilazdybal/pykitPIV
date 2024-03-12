@@ -25,11 +25,14 @@ class FlowField:
 
         from pykitPIV import FlowField
 
+        # We are going to generate 10 flow fields for 10 PIV image pairs:
+        n_images = 10
+
         # Specify size in pixels for each image:
         image_size = (128,512)
 
-        # Initialize a flow field object that generates a random velocity field for one image pair:
-        flowfield = FlowField(1,
+        # Initialize a flow field object:
+        flowfield = FlowField(n_images=n_images,
                               size=image_size,
                               size_buffer=10,
                               flow_mode='random',

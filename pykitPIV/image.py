@@ -41,9 +41,14 @@ class Image:
     **Attributes:**
 
     - **random_seed** - (read-only) as per user input.
-    - **images_I1** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_1` of a given size.
-    - **images_I2** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_2` of a given size.
-    - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image.
+    - **images_I1** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_1` of a given size. Only available after ``Image.add_particles()`` has been called.
+    - **images_I2** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_2` of a given size. Only available after ``Image.add_motion()`` has been called.
+    - **images_I1_no_buffer** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_1` of a given size, without the buffer. Only available after ``Image.add_particles()`` and ``Image.remove_buffer()`` have been called.
+    - **images_I2_no_buffer** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_2` of a given size, without the buffer. Only available after ``Image.add_motion()`` and ``Image.remove_buffer()`` have been called.
+    - **targets** - (read-only) ``list`` of ``tuple``, where each element contains the velocity field components, :math:`u` and :math:`v`, as ``numpy.ndarray``. Only available after ``Image.add_flowfield()`` has been called.
+    - **targets_no_buffer** - (read-only) ``list`` of ``tuple``, where each element contains the velocity field components, :math:`u` and :math:`v`, as ``numpy.ndarray``, without the buffer. Only available after ``Image.add_flowfield()`` and ``Image.remove_buffer()`` have been called.
+    - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image. Only available after ``Image.add_reflected_light`` has been called.
+    - **maximum_intensity** - (read-only) ``int`` specifying the maximum intensity that was used when adding reflected light to the image. Only available after ``Image.add_reflected_light`` has been called.
     """
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -405,11 +410,11 @@ class Image:
 
     def remove_buffers(self):
         """
-        Removes buffers from generated PIV image pairs and the associated targets (velocity fields).
+        Removes buffers from the generated PIV image pairs and from the associated targets (velocity fields).
         Executing this function populates the class attributes ``Image.images_I1_no_buffer``,
-        ``Image.images_I2_no_buffer`` with copies of ``Image.images_I1``, ``Image.images_I2`` but with buffer removed,
+        ``Image.images_I2_no_buffer`` with copies of ``Image.images_I1``, ``Image.images_I2`` but with the buffer removed,
         and it also populates the class attribute  ``Image.targets_no_buffer``,
-        with a copy of ``Image.targets`` but with buffer removed.
+        with a copy of ``Image.targets`` but with the buffer removed.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
