@@ -145,7 +145,7 @@ Add generated flow field to the image:
 
 .. code:: python
 
-    image.add_velocity_field(flowfield)
+    image.add_flowfield(flowfield)
 
 At this point, the ``Image`` class can help us visualize the generated velocity field.
 

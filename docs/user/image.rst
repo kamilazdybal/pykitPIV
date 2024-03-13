@@ -8,7 +8,7 @@ Class: ``Image``
 
 .. autofunction:: pykitPIV.image.Image.add_particles
 
-.. autofunction:: pykitPIV.image.Image.add_velocity_field
+.. autofunction:: pykitPIV.image.Image.add_flowfield
 
 .. autofunction:: pykitPIV.image.Image.add_motion
 

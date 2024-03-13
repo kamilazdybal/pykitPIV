@@ -82,7 +82,7 @@ class TestImageClass(unittest.TestCase):
         flowfield = FlowField(1)
 
         try:
-            image.add_velocity_field(flowfield)
+            image.add_flowfield(flowfield)
         except Exception:
             self.assertTrue(False)
 
