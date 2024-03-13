@@ -547,7 +547,7 @@ class Image:
                 dataset = f.create_dataset(name_tag, data=data_item, compression='gzip', compression_opts=9)
             f.close()
 
-        print('\nDataset saved.\n')
+        print('Dataset saved.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -572,25 +572,16 @@ class Image:
         if filename is None:
             filename = 'PIV-dataset.h5'
 
+        tensors_dictionary = {}
+
         f = h5py.File(filename, 'r')
 
-        __image_pairs = f['I']
-        __flow_targets = np.array(f['target'])
-
-
+        for key in f.keys():
+            tensors_dictionary[key] = np.array(f[key])
 
         f.close()
 
-
-
-
-
-
-
-
-
-
-
+        return tensors_dictionary
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
