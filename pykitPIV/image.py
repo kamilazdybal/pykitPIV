@@ -1,4 +1,3 @@
-import matplotlib.pyplot as plt
 import h5py
 import matplotlib.animation as animation
 import matplotlib.patches as patches
@@ -9,22 +8,22 @@ from pykitPIV.flowfield import FlowField
 from pykitPIV.motion import Motion
 from pykitPIV.particle import Particle
 
-
 # self.__LEF = self.__light_enhancement_factor[0] + np.random.rand(self.__n_images) * (
 #             self.__light_enhancement_factor[1] - self.__light_enhancement_factor[0])
 # self.__noise_s = self.__LEF / self.__SNR  # Not sure yet what that is...
 
-################################################################################
-################################################################################
+########################################################################################################################
+########################################################################################################################
 ####
 ####    Class: Image
 ####
-################################################################################
-################################################################################
+########################################################################################################################
+########################################################################################################################
 
 class Image:
     """
-    Stores and plots synthetic PIV images and/or the associated flow fields at any stage of particle generation and movement.
+    Stores and plots synthetic PIV images and/or the associated flow fields at any stage of particle generation
+    and movement.
 
     **Example:**
 
@@ -54,8 +53,7 @@ class Image:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def __init__(self,
-                 random_seed=None,
-                 ):
+                 random_seed=None):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -225,8 +223,11 @@ class Image:
                                          coordinate_width,
                                          alpha=1/8):
         """
-        Computes the intensity of light reflected from a particle at a requested pixel at position relative to the particle centroid.
-        The reflected light follows a Gaussian distribution, i.e., the light intensity value, :math:`i_p`, at the request pixel, :math:`p`, is computed as:
+        Computes the intensity of light reflected from a particle at a requested pixel at position relative
+        to the particle centroid.
+
+        The reflected light follows a Gaussian distribution, i.e., the light intensity value, :math:`i_p`, at the
+        request pixel, :math:`p`, is computed as:
 
         .. math::
 
@@ -259,6 +260,20 @@ class Image:
 
         # Input parameter check:
 
+        if not (isinstance(peak_intensity, float)):
+            raise ValueError("Parameter `peak_intensity` has to be of type `float`.")
+
+        if not (isinstance(particle_diameter, float)):
+            raise ValueError("Parameter `particle_diameter` has to be of type `float`.")
+
+        if not (isinstance(coordinate_height, float)):
+            raise ValueError("Parameter `coordinate_height` has to be of type `float`.")
+
+        if not (isinstance(coordinate_width, float)):
+            raise ValueError("Parameter `coordinate_width` has to be of type `float`.")
+
+        if not (isinstance(alpha, float)):
+            raise ValueError("Parameter `alpha` has to be of type `float`.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -277,7 +292,9 @@ class Image:
                             alpha=1/8):
         """
         Creates particle sizes and adds laser light reflected from particles.
-        The reflected light follows a Gaussian distribution and is computed using the ``Image.compute_light_intensity_at_pixel()`` method.
+
+        The reflected light follows a Gaussian distribution and is computed using
+        the ``Image.compute_light_intensity_at_pixel()`` method.
 
         :param exposures: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) light exposure.
@@ -303,23 +320,36 @@ class Image:
         check_two_element_tuple(exposures, 'exposures')
         check_min_max_tuple(exposures, 'exposures')
 
-        if self.__particles is None:
-            raise NameError("Particles have not been added to the image yet! Use the `Image.add_particles()` method first.")
+        if not(isinstance(maximum_intensity, int)):
+            raise ValueError("Parameter `maximum_intensity` has to be of type `int`.")
+
+        if not(isinstance(laser_beam_thickness, int)) and not(isinstance(laser_beam_thickness, float)):
+            raise ValueError("Parameter `laser_beam_thickness` has to be of type `int` or `float`.")
+
+        if not(isinstance(laser_over_exposure, int)) and not(isinstance(laser_over_exposure, float)):
+            raise ValueError("Parameter `laser_over_exposure` has to be of type `int` or `float`.")
+
+        if not(isinstance(laser_beam_shape, int)) and not(isinstance(laser_beam_shape, float)):
+            raise ValueError("Parameter `laser_beam_shape` has to be of type `int` or `float`.")
+
+        if not(isinstance(alpha, float)):
+            raise ValueError("Parameter `alpha` has to be of type `float`.")
 
         if self.random_seed is not None:
             np.random.seed(seed=self.random_seed)
 
-        if not(isinstance(maximum_intensity, int)):
-            raise ValueError("Parameter `maximum_intensity` has to be an instance of `int`.")
-
-        self.__maximum_intensity = maximum_intensity
+        if self.__particles is None:
+            raise NameError("Particles have not been added to the image yet! Use the `Image.add_particles()` method first.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Save the maximum intensity:
+        self.__maximum_intensity = maximum_intensity
 
         # Randomize image exposure:
         self.__exposures_per_image = np.random.rand(self.__particles.n_images) * (exposures[1] - exposures[0]) + exposures[0]
 
-        # Function for adding Gaussian light distribution to image I1 and image I2:
+        # Function for adding Gaussian light distribution to image I1 or image I2:
         def __gaussian_light(idx,
                              particle_height_coordinate,
                              particle_width_coordinate,
@@ -412,8 +442,8 @@ class Image:
         """
         Removes buffers from the generated PIV image pairs and from the associated targets (velocity fields).
         Executing this function populates the class attributes ``Image.images_I1_no_buffer``,
-        ``Image.images_I2_no_buffer`` with copies of ``Image.images_I1``, ``Image.images_I2`` but with the buffer removed,
-        and it also populates the class attribute  ``Image.targets_no_buffer``,
+        ``Image.images_I2_no_buffer`` with copies of ``Image.images_I1``, ``Image.images_I2`` but with the buffer
+        removed, and it also populates the class attribute  ``Image.targets_no_buffer``,
         with a copy of ``Image.targets`` but with the buffer removed.
         """
 
@@ -479,7 +509,7 @@ class Image:
 
     def measure_counts(self, image):
         """
-        Measures the number of intensity counts in a given image.
+        Measures the number of light intensity counts in a given image.
 
         :param image:
             ``numpy.ndarray`` specifying the single PIV image.
@@ -493,7 +523,7 @@ class Image:
         # Input parameter check:
 
         if not isinstance(image, np.ndarray):
-            raise ValueError("Parameter `image` has to be an instance of `numpy.ndarray`.")
+            raise ValueError("Parameter `image` has to be of type `numpy.ndarray`.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -512,7 +542,8 @@ class Image:
 
     def image_pairs_to_tensor(self):
         """
-        Prepares a 4-dimensional array with dimensions: ``(n_images, 2, image_height, image_width)`` that stores the image pairs.
+        Prepares a 4-dimensional array with dimensions: ``(n_images, 2, image_height, image_width)`` that stores
+        the image pairs.
 
         The second dimension represents the image pair, :math:`I_1` and :math:`I_2`.
 
@@ -533,7 +564,8 @@ class Image:
 
     def targets_to_tensor(self):
         """
-        Prepares a 4-dimensional array with dimensions: ``(n_images, 2, image_height, image_width)`` that stores the flow targets.
+        Prepares a 4-dimensional array with dimensions: ``(n_images, 2, image_height, image_width)`` that stores
+        the flow targets.
 
         The second dimension represents the velocity field components, :math:`u` and :math:`v`.
 
@@ -614,6 +646,8 @@ class Image:
         if filename is None:
             filename = 'PIV-dataset.h5'
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
         tensors_dictionary = {}
 
         f = h5py.File(filename, 'r')
@@ -624,6 +658,14 @@ class Image:
         f.close()
 
         return tensors_dictionary
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    # ##################################################################################################################
+
+    # Plotting functions
+
+    # ##################################################################################################################
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -674,6 +716,11 @@ class Image:
             raise ValueError("Parameter `idx` has to be of type 'int'.")
         if idx < 0:
             raise ValueError("Parameter `idx` has to be non-negative.")
+
+        if not isinstance(instance, int):
+            raise ValueError("Parameter `instance` has to be of type 'int'.")
+        if instance not in [1,2]:
+            raise ValueError("Parameter `instance` has to be 1 (for image I1) or 2 (for image I2).")
 
         if not isinstance(with_buffer, bool):
             raise ValueError("Parameter `with_buffer` has to be of type 'bool'.")
@@ -768,7 +815,8 @@ class Image:
                         dpi=300,
                         filename=None):
         """
-        Plots an animated PIV image pair, :math:`\mathbf{I} = (I_1, I_2)^{\\top}`, at time :math:`t` and :math:`t + \\Delta t` respectively.
+        Plots an animated PIV image pair, :math:`\mathbf{I} = (I_1, I_2)^{\\top}`, at time :math:`t`
+        and :math:`t + \\Delta t` respectively.
 
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
@@ -795,10 +843,34 @@ class Image:
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+        # Input parameter check:
+
         if not isinstance(idx, int):
             raise ValueError("Parameter `idx` has to be of type 'int'.")
         if idx < 0:
             raise ValueError("Parameter `idx` has to be non-negative.")
+
+        if not isinstance(with_buffer, bool):
+            raise ValueError("Parameter `with_buffer` has to be of type 'bool'.")
+
+        if (xlabel is not None) and (not isinstance(xlabel, str)):
+            raise ValueError("Parameter `xlabel` has to be of type 'str'.")
+
+        if (ylabel is not None) and (not isinstance(ylabel, str)):
+            raise ValueError("Parameter `ylabel` has to be of type 'str'.")
+
+        if (title is not None) and (not isinstance(title, tuple)):
+            raise ValueError("Parameter `title` has to be of type 'tuple'.")
+
+        check_two_element_tuple(figsize, 'figsize')
+
+        if not isinstance(dpi, int):
+            raise ValueError("Parameter `dpi` has to be of type 'int'.")
+
+        if (filename is not None) and (not isinstance(filename, str)):
+            raise ValueError("Parameter `filename` has to be of type 'str'.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         imagelist = [self.images_I1[idx], self.images_I2[idx]]
 
@@ -890,7 +962,7 @@ class Image:
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
         :param vmin_vmax: (optional)
-            ``tuple`` of two numerical elements specifying the fixed minimum (first element) and maximum (second element) bounds for the colorbar.
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) fixed bounds for the colorbar.
         :param figsize: (optional)
             ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
         :param dpi: (optional)
@@ -922,6 +994,9 @@ class Image:
 
         if (title is not None) and (not isinstance(title, tuple)):
             raise ValueError("Parameter `title` has to be of type 'tuple'.")
+
+        check_two_element_tuple(vmin_vmax, 'vmin_vmax')
+        check_min_max_tuple(vmin_vmax)
 
         check_two_element_tuple(figsize, 'figsize')
 
@@ -1083,7 +1158,7 @@ class Image:
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
         :param vmin_vmax: (optional)
-            ``tuple`` of two numerical elements specifying the fixed minimum (first element) and maximum (second element) bounds for the colorbar.
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) fixed bounds for the colorbar.
         :param add_quiver: (optional)
             ``bool`` specifying if vector field should be plotted on top of the scalar magnitude field.
         :param quiver_step: (optional)
@@ -1127,6 +1202,9 @@ class Image:
 
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        check_two_element_tuple(vmin_vmax, 'vmin_vmax')
+        check_min_max_tuple(vmin_vmax)
 
         if not isinstance(add_quiver, bool):
             raise ValueError("Parameter `add_quiver` has to be of type 'bool'.")
@@ -1303,6 +1381,38 @@ class Image:
         :return:
             - **plt** - ``matplotlib.pyplot`` image handle.
         """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(image, np.ndarray):
+            raise ValueError("Parameter `image` has to be of type 'numpy.ndarray'.")
+
+        if not isinstance(logscale, bool):
+            raise ValueError("Parameter `logscale` has to be of type 'bool'.")
+
+        if (xlabel is not None) and (not isinstance(xlabel, str)):
+            raise ValueError("Parameter `xlabel` has to be of type 'str'.")
+
+        if (ylabel is not None) and (not isinstance(ylabel, str)):
+            raise ValueError("Parameter `ylabel` has to be of type 'str'.")
+
+        if (title is not None) and (not isinstance(title, str)):
+            raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        if not isinstance(color, str):
+            raise ValueError("Parameter `color` has to be of type 'str'.")
+
+        check_two_element_tuple(figsize, 'figsize')
+
+        if not isinstance(dpi, int):
+            raise ValueError("Parameter `dpi` has to be of type 'int'.")
+
+        if (filename is not None) and (not isinstance(filename, str)):
+            raise ValueError("Parameter `filename` has to be of type 'str'.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         fig = plt.figure(figsize=figsize)
 
