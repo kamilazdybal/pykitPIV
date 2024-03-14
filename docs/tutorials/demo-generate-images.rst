@@ -359,24 +359,51 @@ as well as in the dynamic mode (as animation):
     :width: 700
     :align: center
 
-Note, that at the last stage of the PIV image generation we may want to remove buffers from the image by setting the ``with_buffer=False`` flag.
-
 ************************************************************
-Save the generated PIV image pairs dataset to ``.h5`` format
+Save the generated dataset to the ``.h5`` format
 ************************************************************
 
-We can save the prepared image pair to ``.h5`` format:
+Note, that at the last stage of the PIV image generation we may want to remove buffers from the image by running the ``Image.remove_buffers()`` function:
 
 .. code:: python
 
-    image.save_to_h5(with_buffer=False,
-                     save_individually=True,
-                     filename='PIV-image')
+    image.remove_buffers()
 
-Running this function will print:
+After removing buffers we can convert the generated image pairs and the associated targets to tensor arrays:
+
+.. code:: python
+
+    images_tensor = image.image_pairs_to_tensor()
+    targets_tensor = image.targets_to_tensor()
+
+We can now save the prepared image pairs and the associated targets to ``.h5`` format.
+The saving function requires us to construct a dictionary with tensors to save. In this case, these will be:
+
+.. code:: python
+
+    tensors_dictionary = {"I"      : images_tensor,
+                          "targets": targets_tensor}
+
+.. code:: python
+
+    image.save_to_h5(tensors_dictionary,
+                     filename='pykitPIV-tutorial-PIV-pairs.h5')
+
+Running this function successfully will print:
 
 .. code-block:: text
 
-    Saving PIV-image-pair-1.h5 ...
+    Dataset saved.
 
-    All datasets saved.
+************************************************************
+Upload the saved dataset
+************************************************************
+
+The standalone import of previously saved PIV image pairs and the associated targets can be performed following this minimal example:
+
+.. code:: python
+
+    from pykitPIV import Image
+    image = Image()
+    tensors_dictionary_uploaded = image.upload_from_h5(filename='pykitPIV-tutorial-PIV-pairs.h5')
+

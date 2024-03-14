@@ -59,5 +59,6 @@ check the following references:
    :caption: Tutorials & Demos
 
    tutorials/demo-generate-images
+   tutorials/demo-image-statistics
    tutorials/demo-integrate-with-LIMA
 

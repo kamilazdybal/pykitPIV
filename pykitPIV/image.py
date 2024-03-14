@@ -477,11 +477,47 @@ class Image:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def measure_counts(self, image):
+        """
+        Measures the number of intensity counts in a given image.
+
+        :param image:
+            ``numpy.ndarray`` specifying the single PIV image.
+
+        :return:
+            - **counts_dictionary** - ``dict`` specifying the measured counts. Keys are pixel intensities and values are the number of occurrence of the given intensity in the image.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(image, np.ndarray):
+            raise ValueError("Parameter `image` has to be an instance of `numpy.ndarray`.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        __flat_image = list(image.ravel())
+
+        counts_dictionary = {}
+
+        unique_counts = list(np.unique(__flat_image))
+
+        for value in unique_counts:
+            counts_dictionary[value] = __flat_image.count(value)
+
+        return counts_dictionary
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def image_pairs_to_tensor(self):
         """
         Prepares a 4-dimensional array with dimensions: ``(n_images, 2, image_height, image_width)`` that stores the image pairs.
 
         The second dimension represents the image pair, :math:`I_1` and :math:`I_2`.
+
+        :return:
+            - **images_tensor** - ``dict`` specifying the PIV image pairs tensor.
         """
 
         images_tensor = np.zeros((self.__particles.n_images, 2, self.__particles.size[0], self.__particles.size[1]))
@@ -500,6 +536,9 @@ class Image:
         Prepares a 4-dimensional array with dimensions: ``(n_images, 2, image_height, image_width)`` that stores the flow targets.
 
         The second dimension represents the velocity field components, :math:`u` and :math:`v`.
+
+        :return:
+            - **targets_tensor** - ``dict`` specifying the flow targets tensor.
         """
 
         targets_tensor = np.zeros((self.__particles.n_images, 2, self.__particles.size[0], self.__particles.size[1]))
@@ -560,6 +599,9 @@ class Image:
             ``str`` specifying the path and filename to save the ``.h5`` data. Note that ``'-pair-#'`` will be added
             automatically to your filename for each saved image pair.
             If set to ``None``, a default name ``'PIV-dataset-pair-#.h5'`` will be used.
+
+        :return:
+            - **tensors_dictionary** - ``dict`` specifying the dataset tensors.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -619,6 +661,9 @@ class Image:
             ``int`` specifying the dpi for the image.
         :param filename: (optional)
             ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+
+        :return:
+            - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -741,6 +786,9 @@ class Image:
             ``int`` specifying the dpi for the image.
         :param filename: (optional)
             ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+
+        :return:
+            - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -847,6 +895,9 @@ class Image:
             ``int`` specifying the dpi for the image.
         :param filename: (optional)
             ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved. An appendix ``-u`` or ``-v`` will be added to each filename to differentiate between velocity field components.
+
+        :return:
+            - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1049,6 +1100,9 @@ class Image:
             ``int`` specifying the dpi for the image.
         :param filename: (optional)
             ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+
+        :return:
+            - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1207,6 +1261,66 @@ class Image:
             if filename is not None:
 
                 plt.savefig(filename, dpi=dpi, bbox_inches='tight')
+
+        return plt
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def plot_image_histogram(self,
+                             image,
+                             logscale=False,
+                             xlabel=None,
+                             ylabel=None,
+                             title=None,
+                             color='k',
+                             figsize=(5, 5),
+                             dpi=300,
+                             filename=None):
+        """
+        Plots a historgram of the image intensity.
+
+        :param image:
+            ``numpy.ndarray`` specifying the single PIV image.
+        :param logscale:
+            ``bool`` specifying whether the y-axis should be plotted in the logscale.
+        :param xlabel: (optional)
+            ``str`` specifying :math:`x`-label.
+        :param ylabel: (optional)
+            ``str`` specifying :math:`y`-label.
+        :param title: (optional)
+            ``str`` specifying figure title.
+        :param color: (optional)
+            ``str`` specifying the color of the bars.
+        :param figsize: (optional)
+            ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
+        :param dpi: (optional)
+            ``int`` specifying the dpi for the image.
+        :param filename: (optional)
+            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+
+        :return:
+            - **plt** - ``matplotlib.pyplot`` image handle.
+        """
+
+        fig = plt.figure(figsize=figsize)
+
+        plt.hist(image.ravel(), color=color)
+        plt.xlim([0,self.maximum_intensity])
+
+        if logscale:
+            plt.yscale('log')
+
+        if xlabel is not None:
+            plt.xlabel(xlabel)
+
+        if ylabel is not None:
+            plt.ylabel(ylabel)
+
+        if title is not None:
+            plt.title(title)
+
+        if filename is not None:
+            plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
         return plt
 

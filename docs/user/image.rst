@@ -18,6 +18,8 @@ Class: ``Image``
 
 .. autofunction:: pykitPIV.image.Image.remove_buffers
 
+.. autofunction:: pykitPIV.image.Image.measure_counts
+
 .. autofunction:: pykitPIV.image.Image.image_pairs_to_tensor
 
 .. autofunction:: pykitPIV.image.Image.targets_to_tensor
@@ -33,3 +35,5 @@ Class: ``Image``
 .. autofunction:: pykitPIV.image.Image.plot_velocity_field
 
 .. autofunction:: pykitPIV.image.Image.plot_velocity_field_magnitude
+
+.. autofunction:: pykitPIV.image.Image.plot_image_histogram
