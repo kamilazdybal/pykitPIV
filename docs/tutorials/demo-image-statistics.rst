@@ -91,7 +91,7 @@ Statistics of low-exposure images
     :width: 700
     :align: center
 
-Statistics of low-exposure images
+Statistics of high-exposure images
 ============================================
 
 .. code:: python

@@ -548,7 +548,7 @@ class Image:
         The second dimension represents the image pair, :math:`I_1` and :math:`I_2`.
 
         :return:
-            - **images_tensor** - ``dict`` specifying the PIV image pairs tensor.
+            - **images_tensor** - ``numpy.ndarray`` specifying the PIV image pairs tensor.
         """
 
         images_tensor = np.zeros((self.__particles.n_images, 2, self.__particles.size[0], self.__particles.size[1]))
@@ -570,7 +570,7 @@ class Image:
         The second dimension represents the velocity field components, :math:`u` and :math:`v`.
 
         :return:
-            - **targets_tensor** - ``dict`` specifying the flow targets tensor.
+            - **targets_tensor** - ``numpy.ndarray`` specifying the flow targets tensor.
         """
 
         targets_tensor = np.zeros((self.__particles.n_images, 2, self.__particles.size[0], self.__particles.size[1]))
@@ -584,11 +584,50 @@ class Image:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def log_transform_images(self,
+                             images_tensor,
+                             addition=1):
+        """
+        Log-transforms PIV image pairs tensor.
+
+        .. math::
+
+            \mathbf{T}_{\\text{log}} = \log_{10} (\mathbf{T} + a)
+
+        :param images_tensor:
+            ``numpy.ndarray`` specifying the PIV image pairs tensor.
+        :param addition:
+            ``int`` specifying the added constant, :math:`a`, whose purpose is to eliminate zero elements in the images tensor.
+
+        :return:
+            - **log_transformed_images_tensor** - ``dict`` specifying the flow targets tensor.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(images_tensor, np.ndarray):
+            raise ValueError("Parameter `images_tensor` has to be of type `numpy.ndarray`.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        log_transformed_images_tensor = np.zeros_like(images_tensor)
+
+        for i in range(0, images_tensor.shape[0]):
+
+            log_transformed_images_tensor[i, 0, :, :] = np.log10(images_tensor[i, 0, :, :] + addition)
+            log_transformed_images_tensor[i, 1, :, :] = np.log10(images_tensor[i, 1, :, :] + addition)
+
+        return log_transformed_images_tensor
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def save_to_h5(self,
                    tensors_dictionary,
                    filename=None):
         """
-        Saves the image pairs tensor and the associated flow targets tensors to ``.h5`` data format.
+        Saves the image pairs tensor and the associated flow targets tensor to ``.h5`` data format.
 
         :param tensors_dictionary:
             ``dict`` specifying the tensors to save.
@@ -625,7 +664,7 @@ class Image:
     def upload_from_h5(self,
                        filename=None):
         """
-        Upload image pairs, :math:`\\mathbf{I} = (I_1, I_2)`, from ``.h5`` data format.
+        Upload image pairs tensor and the associated flow targets tensor from ``.h5`` data format.
 
         :param filename: (optional)
             ``str`` specifying the path and filename to save the ``.h5`` data. Note that ``'-pair-#'`` will be added
