@@ -300,9 +300,20 @@ class Particle:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    # ##################################################################################################################
+
+    # Plotting functions
+
+    # ##################################################################################################################
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def plot_properties_per_image(self):
         """
         Plots statistical properties of the generated particles on one selected image out of all ``n_images`` images.
+
+        :return:
+            - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
         pass
@@ -312,6 +323,10 @@ class Particle:
     def plot_properties_across_images(self):
         """
         Plots statistical properties of the generated particles across all ``n_images`` images.
+
+
+        :return:
+            - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
         pass

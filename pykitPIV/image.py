@@ -585,12 +585,12 @@ class Image:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def save_to_h5(self,
-                   tensors_dict,
+                   tensors_dictionary,
                    filename=None):
         """
         Saves the image pairs tensor and the associated flow targets tensors to ``.h5`` data format.
 
-        :param tensors_dict:
+        :param tensors_dictionary:
             ``dict`` specifying the tensors to save.
         :param filename: (optional)
             ``str`` specifying the path and filename to save the ``.h5`` data. Note that ``'-pair-#'`` will be added
@@ -602,7 +602,7 @@ class Image:
 
         # Input parameter check:
 
-        if not isinstance(tensors_dict, dict):
+        if not isinstance(tensors_dictionary, dict):
             raise ValueError("Parameter `tensors_dict` has to be of type 'dict'.")
 
         if (filename is not None) and (not isinstance(filename, str)):
@@ -614,7 +614,7 @@ class Image:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         with h5py.File(filename, 'w', libver='latest') as f:
-            for name_tag, data_item in tensors_dict.items():
+            for name_tag, data_item in tensors_dictionary.items():
                 dataset = f.create_dataset(name_tag, data=data_item, compression='gzip', compression_opts=9)
             f.close()
 
@@ -859,8 +859,8 @@ class Image:
         if (ylabel is not None) and (not isinstance(ylabel, str)):
             raise ValueError("Parameter `ylabel` has to be of type 'str'.")
 
-        if (title is not None) and (not isinstance(title, tuple)):
-            raise ValueError("Parameter `title` has to be of type 'tuple'.")
+        if not isinstance(title, str):
+            raise ValueError("Parameter `title` has to be of type 'str'.")
 
         check_two_element_tuple(figsize, 'figsize')
 
@@ -995,8 +995,9 @@ class Image:
         if (title is not None) and (not isinstance(title, tuple)):
             raise ValueError("Parameter `title` has to be of type 'tuple'.")
 
-        check_two_element_tuple(vmin_vmax, 'vmin_vmax')
-        check_min_max_tuple(vmin_vmax)
+        if vmin_vmax is not None:
+            check_two_element_tuple(vmin_vmax, 'vmin_vmax')
+            check_min_max_tuple(vmin_vmax)
 
         check_two_element_tuple(figsize, 'figsize')
 
@@ -1203,8 +1204,9 @@ class Image:
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
 
-        check_two_element_tuple(vmin_vmax, 'vmin_vmax')
-        check_min_max_tuple(vmin_vmax)
+        if vmin_vmax is not None:
+            check_two_element_tuple(vmin_vmax, 'vmin_vmax')
+            check_min_max_tuple(vmin_vmax)
 
         if not isinstance(add_quiver, bool):
             raise ValueError("Parameter `add_quiver` has to be of type 'bool'.")

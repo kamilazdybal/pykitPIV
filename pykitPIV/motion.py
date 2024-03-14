@@ -207,6 +207,10 @@ class Motion:
             ``int`` specifying the number of time steps, :math:`n`, that the numerical solver should take.
         """
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
         if not isinstance(n_steps, int):
             raise ValueError("Parameter `n_steps` has to be of type `int`.")
 
@@ -280,6 +284,14 @@ class Motion:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    # ##################################################################################################################
+
+    # Plotting functions
+
+    # ##################################################################################################################
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def plot_particle_motion(self,
                              idx,
                              xlabel=None,
@@ -305,6 +317,9 @@ class Motion:
             ``int`` specifying the dpi for the image.
         :param filename: (optional)
             ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+
+        :return:
+            - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
