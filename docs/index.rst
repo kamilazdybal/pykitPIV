@@ -45,6 +45,8 @@ check the following references:
 
 - `A lightweight convolutional neural network to reconstruct deformation in BOS recordings <https://link.springer.com/article/10.1007/s00348-023-03618-7>`_
 
+------------------------------------------------------------------------------------------------------------------------
+
 .. toctree::
    :maxdepth: 5
    :caption: User Guide

@@ -772,6 +772,8 @@ class Image:
 
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
+        :param with_buffer:
+            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is marked with a red rectangle.
         :param xlabel: (optional)
             ``str`` specifying :math:`x`-label.
         :param ylabel: (optional)
@@ -855,7 +857,7 @@ class Image:
 
         anim = animation.FuncAnimation(fig, updatefig, frames=range(2), interval=50, blit=True)
 
-        anim.save(filename, fps=2, bitrate=-1, dpi=200)
+        anim.save(filename, fps=2, bitrate=-1, dpi=dpi)
 
         return anim
 
