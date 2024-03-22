@@ -245,8 +245,8 @@ class Motion:
             for i in range(0,n_steps):
 
                 # Compute the new coordinates at the next time step:
-                y_coordinates_I2 = particle_coordinates_old[:,0] + interpolate_v_component(particle_coordinates_old) * __delta_t * (i+1)
-                x_coordinates_I2 = particle_coordinates_old[:,1] + interpolate_u_component(particle_coordinates_old) * __delta_t * (i+1)
+                y_coordinates_I2 = particle_coordinates_old[:,0] + interpolate_v_component(particle_coordinates_old) * __delta_t
+                x_coordinates_I2 = particle_coordinates_old[:,1] + interpolate_u_component(particle_coordinates_old) * __delta_t
 
                 particle_coordinates_old = np.hstack((y_coordinates_I2[:,None], x_coordinates_I2[:,None]))
 
@@ -254,7 +254,7 @@ class Motion:
                 idx_removed_y, = np.where((particle_coordinates_old[:,0] < 0) | (particle_coordinates_old[:,0] > self.__particles.size_with_buffer[0]))
                 idx_removed_x, = np.where((particle_coordinates_old[:,1] < 0) | (particle_coordinates_old[:,1] > self.__particles.size_with_buffer[1]))
                 idx_removed = np.unique(np.concatenate((idx_removed_y, idx_removed_x)))
-                idx_retained = [i for i in range(0,particle_coordinates_old.shape[0]) if i not in idx_removed]
+                idx_retained = [ii for ii in range(0,particle_coordinates_old.shape[0]) if ii not in idx_removed]
 
                 particle_coordinates_old = particle_coordinates_old[idx_retained,:]
 
@@ -281,6 +281,17 @@ class Motion:
         """
 
         pass
+
+
+
+
+
+
+
+
+
+
+
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
