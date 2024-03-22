@@ -280,18 +280,94 @@ class Motion:
 
         """
 
-        pass
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(n_steps, int):
+            raise ValueError("Parameter `n_steps` has to be of type `int`.")
+
+        if n_steps < 1:
+            raise ValueError("Parameter `n_steps` has to be at least 1.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Integration time step:
+        __delta_t = self.time_separation / n_steps
+
+        particle_coordinates_I2 = []
+
+        self.__updated_particle_diameters = []
+
+        for i in range(0,self.__particles.n_images):
+
+            # Build interpolants for the velocity field components:
+            grid = (np.linspace(0, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[0]),
+                    np.linspace(0, self.__particles.size_with_buffer[1], self.__particles.size_with_buffer[1]))
+
+            interpolate_u_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i][0])
+            interpolate_v_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i][1])
+
+            # Retrieve the old particle coordinates (at time t):
+            particle_coordinates_old = np.hstack((self.__particles.particle_coordinates[i][0][:, None],
+                                                 self.__particles.particle_coordinates[i][1][:, None]))
+
+            updated_particle_diameters = self.__particles.particle_diameters[i]
+
+            y_R1 = __delta_t * interpolate_v_component(particle_coordinates_old)
+            y_R2 = __delta_t * interpolate_v_component(particle_coordinates_old)
+            y_R3 = __delta_t * interpolate_v_component(particle_coordinates_old)
+            y_R4 = __delta_t * interpolate_v_component(particle_coordinates_old)
+
+            x_R1 = __delta_t * interpolate_u_component(particle_coordinates_old)
+            x_R2 = __delta_t * interpolate_u_component(particle_coordinates_old)
+            x_R3 = __delta_t * interpolate_u_component(particle_coordinates_old)
+            x_R4 = __delta_t * interpolate_u_component(particle_coordinates_old)
+
+            y_R = 1.0 / 6.0 * (y_R1 + 2 * y_R2 + 2 * y_R3 + y_R4)
+            x_R = 1.0 / 6.0 * (x_R1 + 2 * x_R2 + 2 * x_R3 + x_R4)
+
+            # This method assumes that the velocity field does not change during the image separation time:
+            for i in range(0,n_steps):
+
+                # Compute the new coordinates at the next time step:
+                y_coordinates_I2 = particle_coordinates_old[:,0] + y_R
+                x_coordinates_I2 = particle_coordinates_old[:,0] + x_R
+
+                particle_coordinates_old = np.hstack((y_coordinates_I2[:,None], x_coordinates_I2[:,None]))
+
+                # Remove particles that have moved outside the image area:
+                idx_removed_y, = np.where((particle_coordinates_old[:,0] < 0) | (particle_coordinates_old[:,0] > self.__particles.size_with_buffer[0]))
+                idx_removed_x, = np.where((particle_coordinates_old[:,1] < 0) | (particle_coordinates_old[:,1] > self.__particles.size_with_buffer[1]))
+                idx_removed = np.unique(np.concatenate((idx_removed_y, idx_removed_x)))
+                idx_retained = [i for i in range(0,particle_coordinates_old.shape[0]) if i not in idx_removed]
+
+                particle_coordinates_old = particle_coordinates_old[idx_retained,:]
+
+                updated_particle_diameters = updated_particle_diameters[idx_retained]
+
+                y_R1 = __delta_t * interpolate_v_component(particle_coordinates_old)
+                y_R2 = __delta_t * interpolate_v_component(particle_coordinates_old + np.hstack((x_R1[:,None]/2, y_R1[:,None]/2)))
+                y_R3 = __delta_t * interpolate_v_component(particle_coordinates_old + np.hstack((x_R2[:,None]/2, y_R2[:,None]/2)))
+                y_R4 = __delta_t * interpolate_v_component(particle_coordinates_old + np.hstack((x_R3[:,None], y_R3[:,None])))
+
+                x_R1 = __delta_t * interpolate_u_component(particle_coordinates_old)
+                x_R2 = __delta_t * interpolate_u_component(particle_coordinates_old + np.hstack((x_R1[:,None]/2, y_R1[:,None]/2)))
+                x_R3 = __delta_t * interpolate_u_component(particle_coordinates_old + np.hstack((x_R2[:,None]/2, y_R2[:,None]/2)))
+                x_R4 = __delta_t * interpolate_u_component(particle_coordinates_old + np.hstack((x_R3[:,None], y_R3[:,None])))
+
+                y_R = 1.0 / 6.0 * (y_R1 + 2 * y_R2 + 2 * y_R3 + y_R4)
+                x_R = 1.0 / 6.0 * (x_R1 + 2 * x_R2 + 2 * x_R3 + x_R4)
 
 
 
 
 
 
+            particle_coordinates_I2.append((particle_coordinates_old[:,0], particle_coordinates_old[:,1]))
+            self.__updated_particle_diameters.append(updated_particle_diameters)
 
-
-
-
-
+        self.__particle_coordinates_I2 = particle_coordinates_I2
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
