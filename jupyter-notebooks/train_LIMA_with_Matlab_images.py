@@ -32,93 +32,17 @@ import lima.dataset
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-# Generate pykitPIV image pairs
+# Upload Matlab image pairs
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # 
 
-image_size = (128,128)
-size_buffer = 10
-figsize = (5,3)
-
-def generate_images(n_images, random_seed):
-
-    # Instantiate an object of the Particle class:
-    particles = Particle(n_images,
-                         size=image_size,
-                         size_buffer=size_buffer,
-                         diameters=(4,4.1),
-                         distances=(1,2),
-                         densities=(0.05,0.1),
-                         signal_to_noise=(5,20),
-                         diameter_std=0.2,
-                         seeding_mode='random',
-                         random_seed=random_seed)
-
-    # Instantiate an object of the FlowField class:
-    flowfield = FlowField(n_images,
-                          size=image_size,
-                          size_buffer=size_buffer,
-                          flow_mode='random',
-                          gaussian_filters=(10,11),
-                          n_gaussian_filter_iter=20,
-                          sin_period=(30,300),
-                          displacement=(0,10),
-                          random_seed=random_seed)
-
-    # Instantiate an object of the Motion class:
-    motion = Motion(particles, 
-                    flowfield, 
-                    time_separation=0.1)
-
-    # Instantiate an object of the Image class:
-    image = Image(random_seed=random_seed)
-
-    # Prepare images - - - - - - - - - - - - - - - - - - 
-
-    image.add_particles(particles)
-
-    image.add_flowfield(flowfield)
-            
-    motion.forward_euler(n_steps=10)
-    
-    image.add_motion(motion)
-    
-    image.add_reflected_light(exposures=(0.6,0.65),
-                              maximum_intensity=2**16-1,
-                              laser_beam_thickness=1,
-                              laser_over_exposure=1,
-                              laser_beam_shape=0.95,
-                              alpha=1/10)
-
-    image.remove_buffers()
-
-    return image
-
 # Training samples - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-n_images = 100
-training_random_seed = 100
 
-image_train = generate_images(n_images, training_random_seed)
-
-image_pairs_train = image_train.image_pairs_to_tensor()
-targets_train = image_train.targets_to_tensor()
-
-print(targets_train.max())
-print(targets_train.min())
 
 # Testing samples - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-n_images = 10
-test_random_seed = 200
 
-image_test = generate_images(n_images, test_random_seed)
-
-image_pairs_test = image_test.image_pairs_to_tensor()
-targets_test = image_test.targets_to_tensor()
-
-print(targets_test.max())
-print(targets_test.min())
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -310,13 +234,27 @@ def argument_parser():
     )
     return parser
 
-class pykitPIVDataset(Dataset):
-    """Load pykitPIV-generated dataset"""
+path = 'PIV_n3_s180_maxd10_rnd_v1.h5'
 
-    def __init__(self, image_pairs, targets, transform=None, n_samples=None, pin_to_ram=False):
+f = h5py.File(path, "r")
 
-        self.data = image_pairs
-        self.target = targets
+images = f["I"]
+images = np.array(images)
+targets = f["target"]
+targets = np.array(targets)[:,2:4,:,:]
+
+f.close()
+
+print(targets.max())
+print(targets.min())
+
+class HDF5Dataset(Dataset):
+    """HDF5Dataset loaded"""
+
+    def __init__(self, path, transform=None, n_samples=None, pin_to_ram=False):
+        f = h5py.File(path, "r")
+        self.data = f["I"]
+        self.target = np.array(f["target"])[:,2:4,:,:]
 
         if n_samples:
             self.data = self.data[:n_samples]
@@ -324,7 +262,7 @@ class pykitPIVDataset(Dataset):
         if pin_to_ram:
             self.data = np.array(self.data)
             self.target = np.array(self.target)
-
+            f.close()
         self.transform = transform
 
     def __len__(self):
@@ -357,13 +295,11 @@ def get_train_test_loader(args):
         ]
     )
     
-    train_dataset = pykitPIVDataset(image_pairs=image_pairs_train,
-                                    targets=targets_train,
-                                    transform=transform)
+    train_dataset = HDF5Dataset(path=path,
+                            transform=transform,)
     
-    test_dataset = pykitPIVDataset(image_pairs=image_pairs_test,
-                                    targets=targets_test,
-                                    transform=transform)
+    test_dataset = HDF5Dataset(path=path,
+                           transform=transform,)
     
     train_loader = DataLoader(train_dataset,
                               batch_size=5,
@@ -375,7 +311,6 @@ def get_train_test_loader(args):
                              batch_size=10)
     
     return train_loader, test_loader
-
 
 def main(args):
     # 1. Log
@@ -419,20 +354,17 @@ def main(args):
     # 6. Train the model
     trainer.fit(model, train_loader, test_loader)
 
-    print(targets_train.max())
-    print(targets_train.min())
-
-    print(targets_test.max())
-    print(targets_test.min())
+    print(targets.max())
+    print(targets.min())
     
     # Visualize the prediction:
     image_to_predict = 0
     velocity_component = 0
-    predicted_flow = model.inference(torch.from_numpy(image_pairs_test[image_to_predict,:,:,:]).to(dtype=torch.float)).numpy()
+    predicted_flow = model.inference(torch.from_numpy(images[image_to_predict,:,:,:]).to(dtype=torch.float)).numpy()
 
     print(predicted_flow.max())
     print(predicted_flow.min())
-
+   
     fig = plt.figure(figsize=(7,6))
     
     plt.imshow(predicted_flow[velocity_component,:,:], 
@@ -440,7 +372,7 @@ def main(args):
                origin='lower')
     plt.colorbar()
     plt.savefig('test-run.png', dpi=300, bbox_inches='tight')
-    
+
 if __name__ == "__main__":
     parser = argument_parser()
     parser = pl.Trainer.add_argparse_args(parser)
