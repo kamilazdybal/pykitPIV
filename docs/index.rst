@@ -12,7 +12,7 @@ The goal of this library is to give the user or a reinforcement learning (RL) ag
 image generation. The generated image pairs and the associated flow targets can be directly used in training
 convolutional neural network (CNN) for flow estimation.
 
-.. image:: images/example-image-I1-I2.gif
+.. image:: images/example-image-I1-I2-no-buffer.gif
   :width: 1100
 
 The graph below shows the possible workflows constructed from the four main classes:

@@ -99,7 +99,7 @@ We can now add laser light reflected from the particles:
 
 .. code:: python
 
-    image.add_reflected_light(exposures=(0.01,0.8),
+    image.add_reflected_light(exposures=(0.6,0.65),
                               maximum_intensity=2**16-1,
                               laser_beam_thickness=1,
                               laser_over_exposure=1,
@@ -237,7 +237,7 @@ Instantiate an object of the ``Motion`` class that takes in the defined particle
 
     motion = Motion(particles,
                     flowfield,
-                    time_separation=0.1)
+                    time_separation=1)
 
 We now use the forward Euler numerical scheme to advect the particles:
 
@@ -254,9 +254,9 @@ After particles have been moved, we can visualize their old vs. new coordinates:
                                 ylabel='Height [px]',
                                 title='Displacement of particles',
                                 figsize=figsize,
-                                filename='particle-displacement-01.png');
+                                filename='particle-displacement-1.png');
 
-.. image:: ../images/particle-displacement-01.png
+.. image:: ../images/particle-displacement-1.png
     :width: 700
     :align: center
 
@@ -264,7 +264,7 @@ Note, that time separation, :math:`T`, can be updated within the ``Motion`` clas
 
 .. code:: python
 
-    motion.time_separation = 0.5
+    motion.time_separation = 2
 
 New displacement can be re-computed for the new time separation:
 
@@ -281,9 +281,19 @@ The effect of allowing longer :math:`T` can be seen in the figure below:
                                 ylabel='Height [px]',
                                 title='Displacement of particles',
                                 figsize=figsize,
-                                filename='particle-displacement-05.png');
+                                filename='particle-displacement-2.png');
 
-.. image:: ../images/particle-displacement-05.png
+.. image:: ../images/particle-displacement-2.png
+    :width: 700
+    :align: center
+
+We can also use the 4th order Runge-Kutta scheme:
+
+.. code:: python
+
+    motion.runge_kutta_4th(n_steps=10)
+
+.. image:: ../images/particle-displacement-RK4.png
     :width: 700
     :align: center
 
