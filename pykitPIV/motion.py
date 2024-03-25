@@ -305,8 +305,8 @@ class Motion:
             grid = (np.linspace(0, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[0]),
                     np.linspace(0, self.__particles.size_with_buffer[1], self.__particles.size_with_buffer[1]))
 
-            interpolate_u_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i][0])
-            interpolate_v_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i][1])
+            interpolate_u_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i][0], bounds_error=False, fill_value=None)
+            interpolate_v_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i][1], bounds_error=False, fill_value=None)
 
             # Retrieve the old particle coordinates (at time t):
             particle_coordinates_old = np.hstack((self.__particles.particle_coordinates[i][0][:, None],
@@ -330,8 +330,16 @@ class Motion:
             # This method assumes that the velocity field does not change during the image separation time:
             for i in range(0,n_steps):
 
+                x_R1_old = copy.deepcopy(x_R1)
+                x_R2_old = copy.deepcopy(x_R2)
+                x_R3_old = copy.deepcopy(x_R3)
+
+                y_R1_old = copy.deepcopy(y_R1)
+                y_R2_old = copy.deepcopy(y_R2)
+                y_R3_old = copy.deepcopy(y_R3)
+
                 # Compute the new coordinates at the next time step:
-                y_coordinates_I2 = particle_coordinates_old[:,0] + y_R
+                y_coordinates_I2 = particle_coordinates_old[:,1] + y_R
                 x_coordinates_I2 = particle_coordinates_old[:,0] + x_R
 
                 particle_coordinates_old = np.hstack((y_coordinates_I2[:,None], x_coordinates_I2[:,None]))
@@ -346,23 +354,26 @@ class Motion:
 
                 updated_particle_diameters = updated_particle_diameters[idx_retained]
 
+                x_R1_old = x_R1_old[idx_retained]
+                x_R2_old = x_R2_old[idx_retained]
+                x_R3_old = x_R3_old[idx_retained]
+
+                y_R1_old = y_R1_old[idx_retained]
+                y_R2_old = y_R2_old[idx_retained]
+                y_R3_old = y_R3_old[idx_retained]
+
                 y_R1 = __delta_t * interpolate_v_component(particle_coordinates_old)
-                y_R2 = __delta_t * interpolate_v_component(particle_coordinates_old + np.hstack((x_R1[:,None]/2, y_R1[:,None]/2)))
-                y_R3 = __delta_t * interpolate_v_component(particle_coordinates_old + np.hstack((x_R2[:,None]/2, y_R2[:,None]/2)))
-                y_R4 = __delta_t * interpolate_v_component(particle_coordinates_old + np.hstack((x_R3[:,None], y_R3[:,None])))
+                y_R2 = __delta_t * interpolate_v_component(particle_coordinates_old + np.hstack((x_R1_old[:,None]/2, y_R1_old[:,None]/2)))
+                y_R3 = __delta_t * interpolate_v_component(particle_coordinates_old + np.hstack((x_R2_old[:,None]/2, y_R2_old[:,None]/2)))
+                y_R4 = __delta_t * interpolate_v_component(particle_coordinates_old + np.hstack((x_R3_old[:,None], y_R3_old[:,None])))
 
                 x_R1 = __delta_t * interpolate_u_component(particle_coordinates_old)
-                x_R2 = __delta_t * interpolate_u_component(particle_coordinates_old + np.hstack((x_R1[:,None]/2, y_R1[:,None]/2)))
-                x_R3 = __delta_t * interpolate_u_component(particle_coordinates_old + np.hstack((x_R2[:,None]/2, y_R2[:,None]/2)))
-                x_R4 = __delta_t * interpolate_u_component(particle_coordinates_old + np.hstack((x_R3[:,None], y_R3[:,None])))
+                x_R2 = __delta_t * interpolate_u_component(particle_coordinates_old + np.hstack((x_R1_old[:,None]/2, y_R1_old[:,None]/2)))
+                x_R3 = __delta_t * interpolate_u_component(particle_coordinates_old + np.hstack((x_R2_old[:,None]/2, y_R2_old[:,None]/2)))
+                x_R4 = __delta_t * interpolate_u_component(particle_coordinates_old + np.hstack((x_R3_old[:,None], y_R3_old[:,None])))
 
                 y_R = 1.0 / 6.0 * (y_R1 + 2 * y_R2 + 2 * y_R3 + y_R4)
                 x_R = 1.0 / 6.0 * (x_R1 + 2 * x_R2 + 2 * x_R3 + x_R4)
-
-
-
-
-
 
             particle_coordinates_I2.append((particle_coordinates_old[:,0], particle_coordinates_old[:,1]))
             self.__updated_particle_diameters.append(updated_particle_diameters)
