@@ -85,8 +85,8 @@ class Motion:
 
     - **time_separation** - (can be re-set) as per user input.
     - **particle_loss** - (read-only) as per user input.
-    - **particle_coordinates_I1** - (read-only) coordinates of particles in image :math:`I_1`.
-    - **particle_coordinates_I2** - (read-only) coordinates of particles in image :math:`I_2`.
+    - **particle_coordinates_I1** - (read-only) ``list`` of ``tuple`` specifying the coordinates of particles in image :math:`I_1`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
+    - **particle_coordinates_I2** - (read-only) ``list`` of ``tuple`` specifying the  coordinates of particles in image :math:`I_2`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     """
 
     def __init__(self,
@@ -181,9 +181,9 @@ class Motion:
 
         .. math::
 
-            x_{t + \Delta t} = x_{t} + u \cdot \Delta t
+            x_{t + \Delta t} = x_{t} + u(x_t, y_t) \cdot \Delta t
 
-            y_{t + \Delta t} = y_{t} + v \cdot \Delta t
+            y_{t + \Delta t} = y_{t} + v(x_t, y_t) \cdot \Delta t
 
         where :math:`u` and :math:`v` are velocity components in the :math:`x` and :math:`y` direction respectively.
         Velocity components in-between the grid points are interpolated using `scipy.interpolate.RegularGridInterpolator <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RegularGridInterpolator.html>`_.
@@ -272,12 +272,64 @@ class Motion:
         """
         Advects particles with the 4th order Runge-Kutta numerical scheme according to the formula:
 
+        .. math::
+
+            x_{t + \Delta t} = x_{t} + R_x
+
+            y_{t + \Delta t} = y_{t} + R_y
+
+        where the residuals are computed as:
+
+        .. math::
+
+            R_x = \\frac{1}{6} \cdot \Big( R1_x + 2 \cdot R2_x + 2 \cdot R3_x + R4_x \Big)
+
+            R_y = \\frac{1}{6} \cdot \Big( R1_y + 2 \cdot R2_y + 2 \cdot R3_y + R4_y \Big)
+
+        with the coefficients:
+
+        .. math::
+
+            R1_x = \Delta t \cdot u(x_{t}, y_{t})
+
+            R2_x = \Delta t \cdot u\Big( x_{t} + \\frac{1}{2} \cdot R1_x(t), y_{t} + \\frac{1}{2} \cdot R1_y(t)\Big)
+
+            R3_x = \Delta t \cdot u\Big( x_{t} + \\frac{1}{2} \cdot R2_x(t), y_{t} + \\frac{1}{2} \cdot R2_y(t)\Big)
+
+            R4_x = \Delta t \cdot u\Big( x_{t} + R3_x(t), y_{t} + R3_y(t)\Big)
+
+        and:
+
+        .. math::
+
+            R1_y = \Delta t \cdot v(x_{t}, y_{t})
+
+            R2_y = \Delta t \cdot v\Big( x_{t} + \\frac{1}{2} \cdot R1_x(t), y_{t} + \\frac{1}{2} \cdot R1_y(t)\Big)
+
+            R3_y = \Delta t \cdot v\Big( x_{t} + \\frac{1}{2} \cdot R2_x(t), y_{t} + \\frac{1}{2} \cdot R2_y(t)\Big)
+
+            R4_y = \Delta t \cdot v\Big( x_{t} + R3_x(t), y_{t} + R3_y(t)\Big)
+
+        where :math:`u` and :math:`v` are velocity components in the :math:`x` and :math:`y` direction respectively.
+        Velocity components in-between the grid points are interpolated using `scipy.interpolate.RegularGridInterpolator <https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RegularGridInterpolator.html>`_.
+
+        :math:`\Delta t` is computed as:
+
+        .. math::
+
+            \Delta t = T / n
+
+        where :math:`T` is the time separation between two images specified as ``time_separation`` at class init and
+        :math:`n` is the number of steps for the solver to take specified by the ``n_steps`` input parameter.
+        The 4th order Runge-Kutta scheme is applied :math:`n` times from :math:`t=0` to :math:`t=T`.
 
         .. note::
 
             Note, that the central assumption for generating the kinematic relationship between two consecutive PIV images
             is that the velocity field defined by :math:`(u, v)` remains constant for the duration of time :math:`T`.
 
+        :param n_steps:
+            ``int`` specifying the number of time steps, :math:`n`, that the numerical solver should take.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -84,7 +84,7 @@ class Particle:
     - **density_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle densities in particle per pixel :math:`[\\text{ppp}]` for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
     - **SNR_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the signal-to-noise ratio for each image. Template signal-to-noise are random numbers between ``signal_to_noise[0]`` and ``signal_to_noise[1]``.
     - **n_of_particles** - (read-only) ``list`` specifying the number of particles created for each image based on each template density.
-    - **particle_coordinates** - (read-only) ``list`` specifying the absolute coordinates of all particle centers for each image. The posititions are computed based on the ``seeding_mode``.
+    - **particle_coordinates** - (read-only) ``list`` specifying the absolute coordinates of all particle centers for each image. The posititions are computed based on the ``seeding_mode``. The first element in each tuple are the coordinates along the image height, and the second element are the coordinates along the image width.
     - **particle_positions** - (read-only) ``list`` specifying the position per pixel of all particle centers for each image. The posititions are computed based on the ``seeding_mode``.
     - **particle_diameters** - (read-only) ``list`` specifying the diameters of all seeded particles in pixels :math:`[\\text{px}]` for each image based on each template diameter.
    """
