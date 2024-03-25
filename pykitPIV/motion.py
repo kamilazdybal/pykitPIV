@@ -339,8 +339,8 @@ class Motion:
                 y_R3_old = copy.deepcopy(y_R3)
 
                 # Compute the new coordinates at the next time step:
-                y_coordinates_I2 = particle_coordinates_old[:,1] + y_R
-                x_coordinates_I2 = particle_coordinates_old[:,0] + x_R
+                y_coordinates_I2 = particle_coordinates_old[:,0] + y_R
+                x_coordinates_I2 = particle_coordinates_old[:,1] + x_R
 
                 particle_coordinates_old = np.hstack((y_coordinates_I2[:,None], x_coordinates_I2[:,None]))
 
