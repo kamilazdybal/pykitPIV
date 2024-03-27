@@ -76,7 +76,7 @@ class TestImageClass(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def test_image__Image__adding_velocity_field(self):
+    def test_image__Image__adding_flowfield(self):
 
         image = Image(random_seed=100)
         flowfield = FlowField(1)
@@ -99,6 +99,156 @@ class TestImageClass(unittest.TestCase):
             image.add_motion(motion)
         except Exception:
             self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_image__Image__removing_buffers_no_light_no_motion(self):
+
+        # Remove buffers from the I1 frames before reflected light is added to the image and before motion is applied:
+
+        size = (100,80)
+        size_buffer = 5
+
+        image = Image(random_seed=100)
+        particles = Particle(1,
+                             size=size,
+                             size_buffer=size_buffer)
+
+        image.add_particles(particles)
+
+        self.assertTrue(image.images_I1[0].shape[0] == 110)
+        self.assertTrue(image.images_I1[0].shape[1] == 90)
+
+        self.assertTrue(image.images_I2 is None)
+
+        self.assertTrue(image.images_I1_no_buffer is None)
+        self.assertTrue(image.images_I2_no_buffer is None)
+
+        image.remove_buffers()
+
+        self.assertTrue(image.images_I1_no_buffer is not None)
+        self.assertTrue(image.images_I2_no_buffer is None)
+
+        self.assertTrue(image.images_I1_no_buffer[0].shape[0] == 100)
+        self.assertTrue(image.images_I1_no_buffer[0].shape[1] == 80)
+
+        self.assertTrue(image.images_I1[0].shape[0] == 110)
+        self.assertTrue(image.images_I1[0].shape[1] == 90)
+
+        self.assertTrue(image.images_I2 is None)
+
+    def test_image__Image__removing_buffers_with_light_no_motion(self):
+
+        # Remove buffers from the I1 frames after reflected light is added to the image and before motion is applied:
+
+        size = (100, 80)
+        size_buffer = 5
+
+        image = Image(random_seed=100)
+        particles = Particle(1,
+                             size=size,
+                             size_buffer=size_buffer)
+
+        image.add_particles(particles)
+        image.add_reflected_light(exposures=(0.6,0.65),
+                                  maximum_intensity=2**16-1,
+                                  laser_beam_thickness=1,
+                                  laser_over_exposure=1,
+                                  laser_beam_shape=0.95,
+                                  alpha=1/20)
+
+        self.assertTrue(image.images_I1[0].shape[0] == 110)
+        self.assertTrue(image.images_I1[0].shape[1] == 90)
+
+        self.assertTrue(image.images_I2 is None)
+
+        self.assertTrue(image.images_I1_no_buffer is None)
+        self.assertTrue(image.images_I2_no_buffer is None)
+
+        image.remove_buffers()
+
+        self.assertTrue(image.images_I1_no_buffer is not None)
+        self.assertTrue(image.images_I2_no_buffer is None)
+
+        self.assertTrue(image.images_I1_no_buffer[0].shape[0] == 100)
+        self.assertTrue(image.images_I1_no_buffer[0].shape[1] == 80)
+
+        self.assertTrue(image.images_I1[0].shape[0] == 110)
+        self.assertTrue(image.images_I1[0].shape[1] == 90)
+
+        self.assertTrue(image.images_I2 is None)
+
+    def test_image__Image__removing_buffers_with_light_with_motion(self):
+
+        # Remove buffers from the I1 frames after reflected light is added to the image and after motion is applied:
+
+        size = (100, 80)
+        size_buffer = 5
+
+        image = Image(random_seed=100)
+
+        particles = Particle(1,
+                             size=size,
+                             size_buffer=size_buffer)
+
+        image.add_particles(particles)
+
+        image.add_reflected_light(exposures=(0.6,0.65),
+                                  maximum_intensity=2**16-1,
+                                  laser_beam_thickness=1,
+                                  laser_over_exposure=1,
+                                  laser_beam_shape=0.95,
+                                  alpha=1/20)
+
+        flowfield = FlowField(1,
+                              size=size,
+                              size_buffer=size_buffer,
+                              flow_mode='random',
+                              gaussian_filters=(10, 11),
+                              n_gaussian_filter_iter=20,
+                              sin_period=(30, 300),
+                              displacement=(0, 10),
+                              random_seed=100)
+
+        image.add_flowfield(flowfield)
+
+        motion = Motion(particles,
+                        flowfield,
+                        time_separation=1)
+
+        motion.forward_euler(n_steps=10)
+
+        image.add_motion(motion)
+
+        image.add_reflected_light(exposures=(0.6,0.65),
+                                  maximum_intensity=2**16-1,
+                                  laser_beam_thickness=1,
+                                  laser_over_exposure=1,
+                                  laser_beam_shape=0.95,
+                                  alpha=1/20)
+
+        self.assertTrue(image.images_I1[0].shape[0] == 110)
+        self.assertTrue(image.images_I1[0].shape[1] == 90)
+        self.assertTrue(image.images_I2[0].shape[0] == 110)
+        self.assertTrue(image.images_I2[0].shape[1] == 90)
+
+        self.assertTrue(image.images_I1_no_buffer is None)
+        self.assertTrue(image.images_I2_no_buffer is None)
+
+        image.remove_buffers()
+
+        self.assertTrue(image.images_I1_no_buffer is not None)
+        self.assertTrue(image.images_I2_no_buffer is not None)
+
+        self.assertTrue(image.images_I1_no_buffer[0].shape[0] == 100)
+        self.assertTrue(image.images_I1_no_buffer[0].shape[1] == 80)
+        self.assertTrue(image.images_I2_no_buffer[0].shape[0] == 100)
+        self.assertTrue(image.images_I2_no_buffer[0].shape[1] == 80)
+
+        self.assertTrue(image.images_I1[0].shape[0] == 110)
+        self.assertTrue(image.images_I1[0].shape[1] == 90)
+        self.assertTrue(image.images_I2[0].shape[0] == 110)
+        self.assertTrue(image.images_I2[0].shape[1] == 90)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
