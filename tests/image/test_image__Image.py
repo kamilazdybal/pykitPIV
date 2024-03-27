@@ -261,6 +261,7 @@ class TestImageClass(unittest.TestCase):
         # Check that the image without buffer is equal to the interior part of the image with buffer:
 
         np.array_equal(image.images_I1[0][size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], image.images_I1_no_buffer[0])
+        np.array_equal(image.images_I2[0][size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], image.images_I2_no_buffer[0])
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
