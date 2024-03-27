@@ -146,6 +146,26 @@ class Image:
         """
         Adds particles to the image. Particles should be defined using the ``Particle`` class.
 
+        Calling this function populates the private ``image.__particles`` attribute and the ``image.images_I1`` attribute.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, Image
+
+            # Initialize a particle object:
+            particles = Particle(1,
+                                 size=(128,512),
+                                 size_buffer=10,
+                                 random_seed=100)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add particles to an image:
+            image.add_particles(particles)
+
         :param particles:
             ``Particle`` class instance specifying the properties and positions of particles.
         """
@@ -171,6 +191,26 @@ class Image:
         """
         Adds the flow field to the image. The flow field should be defined using the ``FlowField`` class.
 
+        Calling this function populates the private ``image.__flowfield`` attribute and the ``image.targets`` attribute.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import FlowField, Image
+
+            # Initialize a flow field object:
+            flowfield = FlowField(1,
+                                  size=(128,512),
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add flow field to an image:
+            image.add_flowfield(flowfield)
+
         :param flowfield:
             ``FlowField`` class instance specifying the flow field.
         """
@@ -195,6 +235,35 @@ class Image:
                    motion):
         """
         Adds particle movement to the image. The movement should be defined using the ``Motion`` class.
+
+        Calling this function populates the private ``image.__motion`` attribute.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, FlowField, Motion, Image
+
+            # Initialize a particle object:
+            particles = Particle(1,
+                                 size=(128,512),
+                                 size_buffer=10,
+                                 random_seed=100)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(1,
+                                  size=(128,512),
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Initialize a motion object:
+            motion = Motion(particles, flowfield)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add motion to an image:
+            image.add_motion(motion)
 
         :param motion:
             ``Motion`` class instance specifying the movement of particles from one instance in time to the next.
@@ -295,6 +364,31 @@ class Image:
 
         The reflected light follows a Gaussian distribution and is computed using
         the ``Image.compute_light_intensity_at_pixel()`` method.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, Image
+
+            # Initialize a particle object:
+            particles = Particle(1,
+                                 size=(128,512),
+                                 size_buffer=10)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add particles to an image:
+            image.add_particles(particles)
+
+            # Add reflected light to an image:
+            image.add_reflected_light(exposures=(0.5, 0.9),
+                                      maximum_intensity=2**16-1,
+                                      laser_beam_thickness=1,
+                                      laser_over_exposure=1,
+                                      laser_beam_shape=0.95,
+                                      alpha=1/20)
 
         :param exposures: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) light exposure.
