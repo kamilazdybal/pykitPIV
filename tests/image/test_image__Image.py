@@ -137,6 +137,10 @@ class TestImageClass(unittest.TestCase):
 
         self.assertTrue(image.images_I2 is None)
 
+        # Check that the image without buffer is equal to the interior part of the image with buffer:
+
+        np.array_equal(image.images_I1[0][size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], image.images_I1_no_buffer[0])
+
     def test_image__Image__removing_buffers_with_light_no_motion(self):
 
         # Remove buffers from the I1 frames after reflected light is added to the image and before motion is applied:
@@ -177,6 +181,10 @@ class TestImageClass(unittest.TestCase):
         self.assertTrue(image.images_I1[0].shape[1] == 90)
 
         self.assertTrue(image.images_I2 is None)
+
+        # Check that the image without buffer is equal to the interior part of the image with buffer:
+
+        np.array_equal(image.images_I1[0][size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], image.images_I1_no_buffer[0])
 
     def test_image__Image__removing_buffers_with_light_with_motion(self):
 
@@ -249,6 +257,10 @@ class TestImageClass(unittest.TestCase):
         self.assertTrue(image.images_I1[0].shape[1] == 90)
         self.assertTrue(image.images_I2[0].shape[0] == 110)
         self.assertTrue(image.images_I2[0].shape[1] == 90)
+
+        # Check that the image without buffer is equal to the interior part of the image with buffer:
+
+        np.array_equal(image.images_I1[0][size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], image.images_I1_no_buffer[0])
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
