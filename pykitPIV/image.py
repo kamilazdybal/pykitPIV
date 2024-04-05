@@ -913,7 +913,7 @@ class Image:
                     im.set_extent([f(x) for x in im.get_extent()])
 
                     # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
-                    rect = patches.Rectangle((0, 0), self.__particles.size[1], self.__particles.size[0], linewidth=1, edgecolor='r', facecolor='none')
+                    rect = patches.Rectangle((-0.5, -0.5), self.__particles.size[1], self.__particles.size[0], linewidth=1, edgecolor='r', facecolor='none')
                     ax = plt.gca()
                     ax.add_patch(rect)
 
@@ -1031,7 +1031,7 @@ class Image:
                     im.set_extent([f(x) for x in im.get_extent()])
 
                     # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
-                    rect = patches.Rectangle((0, 0), self.__particles.size[1], self.__particles.size[0], linewidth=1, edgecolor='r', facecolor='none')
+                    rect = patches.Rectangle((-0.5, -0.5), self.__particles.size[1], self.__particles.size[0], linewidth=1, edgecolor='r', facecolor='none')
                     ax = plt.gca()
                     ax.add_patch(rect)
 
@@ -1175,7 +1175,7 @@ class Image:
                     im.set_extent([f(x) for x in im.get_extent()])
 
                     # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
-                    rect = patches.Rectangle((0, 0), self.__flowfield.size[1], self.__flowfield.size[0], linewidth=1, edgecolor='r', facecolor='none')
+                    rect = patches.Rectangle((-0.5, -0.5), self.__flowfield.size[1], self.__flowfield.size[0], linewidth=1, edgecolor='r', facecolor='none')
                     ax = plt.gca()
                     ax.add_patch(rect)
 
@@ -1228,7 +1228,7 @@ class Image:
                     im.set_extent([f(x) for x in im.get_extent()])
 
                     # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
-                    rect = patches.Rectangle((0, 0), self.__flowfield.size[1], self.__flowfield.size[0], linewidth=1, edgecolor='r', facecolor='none')
+                    rect = patches.Rectangle((-0.5, -0.5), self.__flowfield.size[1], self.__flowfield.size[0], linewidth=1, edgecolor='r', facecolor='none')
                     ax = plt.gca()
                     ax.add_patch(rect)
 
@@ -1399,7 +1399,7 @@ class Image:
                     im.set_extent([f(x) for x in im.get_extent()])
 
                     # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
-                    rect = patches.Rectangle((0, 0), self.__flowfield.size[1], self.__flowfield.size[0], linewidth=1, edgecolor='r', facecolor='none')
+                    rect = patches.Rectangle((-0.5, -0.5), self.__flowfield.size[1], self.__flowfield.size[0], linewidth=1, edgecolor='r', facecolor='none')
                     ax = plt.gca()
                     ax.add_patch(rect)
 
