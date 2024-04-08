@@ -511,6 +511,8 @@ class Motion:
             plt.scatter(self.particle_coordinates_I1[idx][1], self.particle_coordinates_I1[idx][0], c='k', s=2, zorder=10)
             plt.scatter(self.particle_coordinates_I2[idx][1], self.particle_coordinates_I2[idx][0], c='#ee6c4d', s=1.5, zorder=20)
 
+            plt.axis('equal')
+
             if xlabel is not None:
                 plt.xlabel(xlabel)
 
