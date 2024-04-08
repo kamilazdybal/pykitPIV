@@ -20,13 +20,11 @@ Specify the number of image pairs to generate:
 
     n_images = 1
 
-Define image sizes in pixels:
+Define image size in pixels -- this tuple defines the proper PIV image area, in this case :math:`(240 \text{px} \times 500 \text{px})`:
 
 .. code:: python
 
     image_size = (240,500)
-
-This tuple defines the proper PIV image area, in this case :math:`(240 \text{px} \times 500 \text{px})`.
 
 Specify the buffer in pixels for the image size:
 
@@ -34,12 +32,12 @@ Specify the buffer in pixels for the image size:
 
     size_buffer = 10
 
-With a buffer equal to :math:`10 \text{px}`, the total PIV image area is :math:`(260 \text{px} \times 520 \text{px})` in this case.
+With a buffer equal to :math:`10 \text{px}`, the total PIV image area in this case is :math:`(260 \text{px} \times 520 \text{px})`.
 
 Buffer should always be added to images to allow particles to exit or enter the proper PIV image area without creating
-spurious disappearance of particles close to image edge. At any stage of plotting PIV images, the user can decide to
-visualize with buffer (``with_buffer=True``) or without buffer (``with_buffer=False``). When ``with_buffer=True``,
-the buffer outline is marked with the red rectangle.
+spurious disappearance of particles close to image edge. At any stage of plotting or saving PIV images, the user can decide to
+visualize/save with buffer (``with_buffer=True``) or without buffer (``with_buffer=False``). When ``with_buffer=True``,
+the buffer outline is marked with the red rectangle on plots.
 
 Specify the figure sizes for all plotted images:
 
