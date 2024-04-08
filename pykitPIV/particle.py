@@ -108,8 +108,8 @@ class Particle:
         if type(n_images) != int:
             raise ValueError("Parameter `n_images` has to of type 'int'.")
 
-        if n_images < 0:
-            raise ValueError("Parameter `n_images` has to be positive.")
+        if n_images <= 0:
+            raise ValueError("Parameter `n_images` has to be positive. At least one image has to be generated.")
 
         check_two_element_tuple(size, 'size')
 
