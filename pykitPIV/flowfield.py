@@ -17,13 +17,14 @@ from pykitPIV.checks import *
 
 class FlowField:
     """
-    Generates or uploads velocity fields to advect the particles between two consecutive images.
+    Generates or uploads velocity field(s) to advect particles between two consecutive PIV images.
 
+    Two-dimensional velocity field is supported for the moment: :math:`\\vec{V} = [u, v]`, where
     :math:`u` and :math:`v` velocity components are represented as two-dimensional arrays
-    of shape :math:`(\\text{height} [\\text{px}] \\times \\text{width} [\\text{px}])]`.
+    of shape :math:`(\\text{height} [\\text{px}] \\times \\text{width} [\\text{px}])`.
 
-    Velocity magnitude is computed as :math:`\\sqrt{u^2 + v^2}` and is also represented as a two-dimensional array
-    of shape :math:`(\\text{height} [\\text{px}] \\times \\text{width} [\\text{px}])]`.
+    Velocity magnitude is computed as :math:`|\\vec{V}| = \\sqrt{u^2 + v^2}` and is also represented as a two-dimensional array
+    of shape :math:`(\\text{height} [\\text{px}] \\times \\text{width} [\\text{px}])`.
 
     **Example:**
 
@@ -173,10 +174,10 @@ class FlowField:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def generate_random_field(self,
-                              displacement=(0, 10),
-                              gaussian_filters=(10,30),
-                              n_gaussian_filter_iter=6):
+    def generate_random_velocity_field(self,
+                                       displacement=(0, 10),
+                                       gaussian_filters=(10,30),
+                                       n_gaussian_filter_iter=6):
         """
         Generates random velocity field.
 
@@ -199,9 +200,9 @@ class FlowField:
                                   random_seed=100)
 
             # Generate random velocity field:
-            flowfield.generate_random_field(displacement=(0, 10),
-                                            gaussian_filters=(10,30),
-                                            n_gaussian_filter_iter=6)
+            flowfield.generate_random_velocity_field(displacement=(0, 10),
+                                                     gaussian_filters=(10,30),
+                                                     n_gaussian_filter_iter=6)
 
         :param displacement: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement
@@ -263,7 +264,7 @@ class FlowField:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def upload_flowfield(self, velocity_field_tuple):
+    def upload_velocity_field(self, velocity_field_tuple):
         """
         Uploads a custom velocity field, e.g., generated from synthetic turbulence.
 
@@ -285,8 +286,13 @@ class FlowField:
                                   size_buffer=10,
                                   random_seed=100)
 
+            # Importing external velocity field file:
+            # ...
+            # ...
+            # ...
+
             # Upload velocity field:
-            flowfield.upload_flowfield(velocity_field_tuple)
+            flowfield.upload_velocity_field(velocity_field_tuple)
 
         :param velocity_field_tuple:
             ``tuple`` of two ``numpy.ndarray`` specifying the velocity components.

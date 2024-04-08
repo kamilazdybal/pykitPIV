@@ -211,12 +211,11 @@ class TestImageClass(unittest.TestCase):
         flowfield = FlowField(1,
                               size=size,
                               size_buffer=size_buffer,
-                              flow_mode='random',
-                              gaussian_filters=(10, 11),
-                              n_gaussian_filter_iter=20,
-                              sin_period=(30, 300),
-                              displacement=(0, 10),
                               random_seed=100)
+
+        flowfield.generate_random_velocity_field(gaussian_filters=(10, 11),
+                                                 n_gaussian_filter_iter=20,
+                                                 displacement=(0, 10))
 
         image.add_flowfield(flowfield)
 
