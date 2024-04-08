@@ -19,11 +19,22 @@ class TestFlowFieldClass(unittest.TestCase):
         try:
             flowfield = FlowField(1,
                                   size=(128, 512),
-                                  flow_mode='random',
-                                  gaussian_filters=(8, 10),
-                                  n_gaussian_filter_iter=10,
-                                  sin_period=(30, 300),
-                                  displacement=(0, 10),
+                                  random_seed=100)
+        except Exception:
+            self.assertTrue(False)
+
+        try:
+            flowfield = FlowField(1,
+                                  size=(128, 512),
+                                  size_buffer=10,
+                                  random_seed=100)
+        except Exception:
+            self.assertTrue(False)
+
+        try:
+            flowfield = FlowField(1,
+                                  size=(128, 512),
+                                  size_buffer=0,
                                   random_seed=100)
         except Exception:
             self.assertTrue(False)
@@ -32,22 +43,13 @@ class TestFlowFieldClass(unittest.TestCase):
 
         # Wrong type:
         with self.assertRaises(ValueError):
+            flowfield = FlowField(n_images=[])
+
+        with self.assertRaises(ValueError):
             flowfield = FlowField(1, size=[])
 
         with self.assertRaises(ValueError):
-            flowfield = FlowField(1, flow_mode=[])
-
-        with self.assertRaises(ValueError):
-            flowfield = FlowField(1, gaussian_filters=[])
-
-        with self.assertRaises(ValueError):
-            flowfield = FlowField(1, n_gaussian_filter_iter=[])
-
-        with self.assertRaises(ValueError):
-            flowfield = FlowField(1, sin_period=[])
-
-        with self.assertRaises(ValueError):
-            flowfield = FlowField(1, displacement=[])
+            flowfield = FlowField(1, size_buffer=[])
 
         with self.assertRaises(ValueError):
             flowfield = FlowField(1, random_seed=[])
@@ -56,28 +58,21 @@ class TestFlowFieldClass(unittest.TestCase):
         with self.assertRaises(ValueError):
             flowfield = FlowField(1, size=(10,))
 
+        # Wrong numerical value:
         with self.assertRaises(ValueError):
-            flowfield = FlowField(1, displacement=(10,))
+            flowfield = FlowField(n_images=0)
 
         with self.assertRaises(ValueError):
-            flowfield = FlowField(1, gaussian_filters=(10,))
+            flowfield = FlowField(n_images=-1)
 
         with self.assertRaises(ValueError):
-            flowfield = FlowField(1, sin_period=(10,))
-
-        # Not a min-max tuple:
-        with self.assertRaises(ValueError):
-            flowfield = FlowField(1, displacement=(10,1))
+            flowfield = FlowField(n_images=1.5)
 
         with self.assertRaises(ValueError):
-            flowfield = FlowField(1, gaussian_filters=(10,1))
+            flowfield = FlowField(1, size_buffer=-1)
 
         with self.assertRaises(ValueError):
-            flowfield = FlowField(1, sin_period=(10,1))
-
-        # Not allowed string:
-        with self.assertRaises(ValueError):
-            flowfield = FlowField(1, flow_mode='Test')
+            flowfield = FlowField(1, size_buffer=1.5)
 
     def test_flowfield__FlowField__attributes_available_after_class_init(self):
 
@@ -87,23 +82,40 @@ class TestFlowFieldClass(unittest.TestCase):
         try:
             flowfield.n_images
             flowfield.size
-            flowfield.flow_mode
-            flowfield.displacement
-            flowfield.gaussian_filters
-            flowfield.n_gaussian_filter_iter
-            flowfield.sin_period
+            flowfield.size_buffer
             flowfield.random_seed
         except Exception:
             self.assertTrue(False)
 
-        # Attributes computed at class init:
+        # Attributes initialized at class init:
         try:
+            flowfield.displacement
+            flowfield.gaussian_filters
+            flowfield.n_gaussian_filter_iter
             flowfield.gaussian_filter_per_image
             flowfield.displacement_per_image
             flowfield.velocity_field
             flowfield.velocity_field_magnitude
         except Exception:
             self.assertTrue(False)
+
+        self.assertEqual(flowfield.displacement, None)
+        self.assertEqual(flowfield.gaussian_filters, None)
+        self.assertEqual(flowfield.n_gaussian_filter_iter, None)
+        self.assertEqual(flowfield.gaussian_filter_per_image, None)
+        self.assertEqual(flowfield.displacement_per_image, None)
+        self.assertEqual(flowfield.velocity_field, None)
+        self.assertEqual(flowfield.velocity_field_magnitude, None)
+
+        # Attributes computed at class init:
+        try:
+            flowfield.size_with_buffer
+        except Exception:
+            self.assertTrue(False)
+
+        flowfield = FlowField(1, size=(100,200), size_buffer=10)
+
+        self.assertEqual(flowfield.size_with_buffer, (120,220))
 
     def test_flowfield__FlowField__not_allowed_attribute_set(self):
 
@@ -119,9 +131,6 @@ class TestFlowFieldClass(unittest.TestCase):
             flowfield.size_buffer = 10
 
         with self.assertRaises(AttributeError):
-            flowfield.flow_mode = 'random'
-
-        with self.assertRaises(AttributeError):
             flowfield.displacement = (0, 10)
 
         with self.assertRaises(AttributeError):
@@ -129,9 +138,6 @@ class TestFlowFieldClass(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             flowfield.n_gaussian_filter_iter = 6
-
-        with self.assertRaises(AttributeError):
-            flowfield.sin_period = (30, 300)
 
         with self.assertRaises(AttributeError):
             flowfield.random_seed = None
