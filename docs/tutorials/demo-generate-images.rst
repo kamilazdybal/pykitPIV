@@ -127,19 +127,22 @@ Which produces the PIV image :math:`I_1`:
 Generate random velocity field to advect the particles
 ************************************************************
 
-Instantiate an object of the ``FlowField`` class that defines the random velocity field:
+Instantiate an object of the ``FlowField`` class:
 
 .. code:: python
 
     flowfield = FlowField(n_images,
                           size=image_size,
                           size_buffer=size_buffer,
-                          flow_mode='random',
-                          gaussian_filters=(10,11),
-                          n_gaussian_filter_iter=20,
-                          sin_period=(30,300),
-                          displacement=(0,10),
                           random_seed=100)
+
+and generate the random velocity field:
+
+.. code:: python
+    
+    flowfield.generate_random_field(gaussian_filters=(10,11),
+                                    n_gaussian_filter_iter=20,
+                                    displacement=(0,10))
 
 Add generated flow field to the image:
 
