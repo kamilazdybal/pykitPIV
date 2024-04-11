@@ -6,8 +6,7 @@ Generate PyTorch ``Dataset`` with PIV image pairs
 Introduction
 ************************************************************
 
-
-
+In this tutorial, we prepare the synthetic PIV data for training with ``torch.utils.data.DataLoader``.
 
 ************************************************************
 Generate synthetic images with ``pykitPIV``
@@ -80,61 +79,11 @@ Below, we define a function for generating train and test PIV image pairs and th
 
         return image
 
-Training set
-======================
+Create datasets
+=================================
 
-The training set will have 100 image pairs:
 
-.. code:: python
 
-    n_images = 100
-
-We fix a random seed for generating the training set of PIV images:
-
-.. code:: python
-
-    training_random_seed = 100
-
-Call the function that generates image pairs:
-
-.. code:: python
-
-    image_train = generate_images(n_images, training_random_seed)
-
-Finally, we convert the generated images and their corresponding targets to 4-dimensional tensors:
-
-.. code:: python
-
-    image_pairs_train = image_train.image_pairs_to_tensor()
-    targets_train = image_train.targets_to_tensor()
-
-Validation set
-======================
-
-The validation set will have 10 image pairs:
-
-.. code:: python
-
-    n_images = 10
-
-Testing dataset can be generated with a different random seed than training dataset to assure a diverse inference from the trained model.
-
-.. code:: python
-
-    test_random_seed = 200
-
-Call the function that generates image pairs:
-
-.. code:: python
-
-    image_test = generate_images(n_images, test_random_seed)
-
-Convert the generated images and their targets to 4-dimensional tensors:
-
-.. code:: python
-
-    image_pairs_test = image_test.image_pairs_to_tensor()
-    targets_test = image_test.targets_to_tensor()
 
 ************************************************************
 Create ``Dataset`` class
@@ -144,3 +93,45 @@ Create ``Dataset`` class
 
 
 
+Our ``PIVDataset`` class inherits after the ``torch.utils.data.Dataset`` class.
+We implement three standard methods: ``__init__``, ``__len__``, and ``__getitem__``.
+
+.. code:: python
+
+    class PIVDataset(Dataset):
+
+      def __init__(self, image_IDs):
+            self.image_IDs = image_IDs
+
+      def __len__(self):
+            return len(self.image_IDs)
+
+      def __getitem__(self, index):
+
+            ID = self.image_IDs[index]
+
+            image = Image()
+            sample_dictionary = image.upload_from_h5(filename='data/PyTorch-Dataset-PIV-pairs-' + ID + '.h5')
+
+            X = sample_dictionary['I']
+            y = sample_dictionary['targets']
+
+            return X, y
+
+We instantiate an object of the ``PIVDataset`` class:
+
+.. code:: python
+
+    PIV_data = PIVDataset(image_IDs=image_IDs)
+
+Thanks to the ``__len__`` method, we can now execute the ``len()`` command on the object:
+
+.. code:: python
+
+    len(PIV_data)
+
+Also, thanks to the ``__getitem__`` method, we can access the data sample at a given index:
+
+.. code:: python
+
+    PIV_data[10]
