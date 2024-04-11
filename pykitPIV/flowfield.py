@@ -21,10 +21,10 @@ class FlowField:
 
     Two-dimensional velocity field is supported for the moment: :math:`\\vec{V} = [u, v]`, where
     :math:`u` and :math:`v` velocity components are represented as two-dimensional arrays
-    of shape :math:`(\\text{height} [\\text{px}] \\times \\text{width} [\\text{px}])`.
+    of shape (height [px] :math:`\\times` width [px]).
 
     Velocity magnitude is computed as :math:`|\\vec{V}| = \\sqrt{u^2 + v^2}` and is also represented as a two-dimensional array
-    of shape :math:`(\\text{height} [\\text{px}] \\times \\text{width} [\\text{px}])`.
+    of shape (height [px] :math:`\\times` width [px]).
 
     **Example:**
 

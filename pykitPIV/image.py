@@ -719,16 +719,24 @@ class Image:
 
     def save_to_h5(self,
                    tensors_dictionary,
-                   filename=None):
+                   save_individually=False,
+                   filename=None,
+                   verbose=False):
         """
         Saves the image pairs tensor and the associated flow targets tensor to ``.h5`` data format.
 
         :param tensors_dictionary:
             ``dict`` specifying the tensors to save.
+        :param save_individually: (optional)
+            ``bool`` specifying if each image pair and the associated targets should be saved to a separate file.
+            It is recommended to save individually for large datasets that will be uploaded by **PyTorch**, since at
+            any iteration of a machine learning algorithm, only a small batch of samples is uploaded to memory.
         :param filename: (optional)
             ``str`` specifying the path and filename to save the ``.h5`` data. Note that ``'-pair-#'`` will be added
             automatically to your filename for each saved image pair.
             If set to ``None``, a default name ``'PIV-dataset-pair-#.h5'`` will be used.
+        :param verbose: (optional)
+            ``bool`` for printing verbose details.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -738,20 +746,45 @@ class Image:
         if not isinstance(tensors_dictionary, dict):
             raise ValueError("Parameter `tensors_dict` has to be of type 'dict'.")
 
+        if not isinstance(save_individually, bool):
+            raise ValueError("Parameter `save_individually` has to be of type 'bool'.")
+
         if (filename is not None) and (not isinstance(filename, str)):
             raise ValueError("Parameter `filename` has to be of type 'str'.")
 
         if filename is None:
             filename = 'PIV-dataset.h5'
 
+        if not isinstance(verbose, bool):
+            raise ValueError("Parameter `verbose` has to be of type 'bool'.")
+
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        with h5py.File(filename, 'w', libver='latest') as f:
-            for name_tag, data_item in tensors_dictionary.items():
-                dataset = f.create_dataset(name_tag, data=data_item, compression='gzip', compression_opts=9)
-            f.close()
+        if save_individually:
 
-        print('Dataset saved.')
+            dictionary_keys = list(tensors_dictionary.keys())
+
+            n_images, _, _ ,_ = tensors_dictionary[dictionary_keys[0]].shape
+
+            for i in range(0,n_images):
+
+                individual_filename = filename.split('.')[0] + '-sample-' + str(i) + '.h5'
+
+                with h5py.File(individual_filename, 'w', libver='latest') as f:
+                    for name_tag, data_item in tensors_dictionary.items():
+                        dataset = f.create_dataset(name_tag, data=data_item[i], compression='gzip', compression_opts=9)
+                    f.close()
+
+                if verbose: print(individual_filename + '\tsaved.')
+
+        else:
+
+            with h5py.File(filename, 'w', libver='latest') as f:
+                for name_tag, data_item in tensors_dictionary.items():
+                    dataset = f.create_dataset(name_tag, data=data_item, compression='gzip', compression_opts=9)
+                f.close()
+
+            if verbose: print('Dataset saved.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
