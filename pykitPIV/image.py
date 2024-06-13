@@ -1025,7 +1025,7 @@ class Image:
         if (ylabel is not None) and (not isinstance(ylabel, str)):
             raise ValueError("Parameter `ylabel` has to be of type 'str'.")
 
-        if not isinstance(title, str):
+        if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
 
         check_two_element_tuple(figsize, 'figsize')
