@@ -37,6 +37,20 @@ pykitPIV exploits the idea that if the time separation between two PIV images is
 
 ## Installation
 
+Start with a new environment:
+
+```
+conda create -n pykitPIV
+```
+
+Requirements:
+
+```
+pip install jupyterlab
+pip install matplotlib
+pip install torch
+```
+
 To install, run the following in the main ``pykitPIV`` directory:
 
 ```
