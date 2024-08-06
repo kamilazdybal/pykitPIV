@@ -21,3 +21,4 @@ jupyter-notebooks/*.h5
 jupyter-notebooks/*.txt
 jupyter-notebooks/*.dat
 jupyter-notebooks/lightning_logs*
+dist/
