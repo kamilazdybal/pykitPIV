@@ -8,10 +8,6 @@ from pykitPIV.flowfield import FlowField
 from pykitPIV.motion import Motion
 from pykitPIV.particle import Particle
 
-# self.__LEF = self.__light_enhancement_factor[0] + np.random.rand(self.__n_images) * (
-#             self.__light_enhancement_factor[1] - self.__light_enhancement_factor[0])
-# self.__noise_s = self.__LEF / self.__SNR  # Not sure yet what that is...
-
 ########################################################################################################################
 ########################################################################################################################
 ####
@@ -728,6 +724,7 @@ class Image:
 
             \\widetilde{\mathbf{T}} = \mathbf{T} : \mathbf{k}
 
+        where :math:`:` denotes tensor contraction.
 
         Image filtering is done with ``torch.nn.functional.conv2d``.
 
