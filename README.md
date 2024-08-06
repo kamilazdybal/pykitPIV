@@ -49,12 +49,26 @@ Requirements:
 pip install jupyterlab
 pip install matplotlib
 pip install torch
+pip install pandas
+pip install scipy
+pip install Sphinx
+pip install sphinxcontrib-bibtex
+pip install furo
 ```
 
 To install, run the following in the main ``pykitPIV`` directory:
 
 ```
 python -m pip install .
+```
+
+## Local documentation build
+
+```
+cd docs
+sphinx-build -b html . builddir
+make html
+open _build/html/index.html
 ```
 
 ## Unit tests

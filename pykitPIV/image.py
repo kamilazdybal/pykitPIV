@@ -717,6 +717,53 @@ class Image:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def filter_images(self,
+                      images_tensor,
+                      filter='gaussian',
+                      padding='zeros'):
+        """
+        Filters PIV image pairs tensor by applying a convolution with specified kernel properties.
+
+        .. math::
+
+            \\widetilde{\mathbf{T}} = \mathbf{T} : \mathbf{k}
+
+
+        Image filtering is done with ``torch.nn.functional.conv2d``.
+
+        :param images_tensor:
+            ``numpy.ndarray`` specifying the PIV image pairs tensor.
+        :param filter:
+            ``str`` specifying the kernel type.
+        :param padding:
+            ``str`` specifying the type of padding.
+
+        :return:
+            - **filtered_images_tensor** - ``dict`` specifying the filtered flow targets tensor.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(images_tensor, np.ndarray):
+            raise ValueError("Parameter `images_tensor` has to be of type `numpy.ndarray`.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        filtered_images_tensor = np.zeros_like(images_tensor)
+
+
+
+
+
+
+
+
+        return filtered_images_tensor
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def save_to_h5(self,
                    tensors_dictionary,
                    save_individually=False,
