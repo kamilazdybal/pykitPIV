@@ -47,7 +47,7 @@ class FlowField:
     :param n_images:
         ``int`` specifying the number of image pairs to create.
     :param size: (optional)
-        ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, the second number is image width.
+        ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, :math:`h`, the second number is image width, :math:`w`.
     :param size_buffer: (optional)
         ``int`` specifying the buffer in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
         This number should be approximately equal to the maximum displacement that particles are subject to in order to allow for new particles to arrive into the image area.
@@ -267,13 +267,13 @@ class FlowField:
     def generate_chebyshev_velocity_field(self,
                                           order=1):
         """
-        Generates a velocity field using Chebyshev polynomials. Each velocity component is computed as:
+        Generates a velocity field using Chebyshev polynomials of the second kind. Each velocity component is computed as:
 
         .. math::
 
             u(h, w), v(h, w) = U_n(h) U_n(w) \\sin(n(h+w))
 
-        where :math:`U_n` is the Chebyshev polynomial of order :math:`n`.
+        where :math:`U_n` is the Chebyshev polynomial of the second kind and of order :math:`n`.
 
         **Example:**
 
@@ -319,7 +319,7 @@ class FlowField:
 
             u(h, w), v(h, w) = Y_n^k \\sin(n(h+w))
 
-        where :math:`Y_n^k` is the Legendre polynomial of order :math:`n` and degree :math:`k`.
+        where :math:`Y_n^k` is the spherical harmonics function of order :math:`n` and degree :math:`k`.
 
         **Example:**
 

@@ -46,7 +46,7 @@ class Particle:
     :param n_images:
         ``int`` specifying the number of image pairs to create.
     :param size: (optional)
-        ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`. The first number is image height, the second number is image width.
+        ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`. The first number is image height, :math:`h`, the second number is image width, :math:`w`.
     :param size_buffer: (optional)
         ``int`` specifying the buffer in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
         This number should be approximately equal to the maximum displacement that particles are subject to in order to allow new particles to arrive into the image area
