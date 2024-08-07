@@ -268,15 +268,23 @@ class FlowField:
                                           displacement=(0, 10),
                                           m=10,
                                           n=10,
-                                          rotation=0):
+                                          rotation=None):
         """
         Generates a checkered velocity field. Each velocity component is computed as:
 
         .. math::
 
+            u(h, w), v(h, w) = \\sin(m \cdot h) \cdot \\cos(n \cdot w)
+
+        where :math:`m` and :math:`n` free parameters.
+
+        Optionally, the checkered pattern can be rotated with the additional rotation term:
+
+        .. math::
+
             u(h, w), v(h, w) = \\sin(m \cdot h) \cdot \\cos(n \cdot w) \cdot \\sin(r \cdot (h + w))
 
-        where :math:`m`, :math:`n`, and :math:`r` are free parameters.
+        were :math:`r` is a free parameter.
 
         **Example:**
 
@@ -296,8 +304,11 @@ class FlowField:
                                   size_buffer=10,
                                   random_seed=100)
 
-            # Generate Chebyshev velocity field:
-            flowfield.generate_checkered_velocity_field(displacement=(0, 10), m=10, n=10, rotation=10)
+            # Generate checkered velocity field:
+            flowfield.generate_checkered_velocity_field(displacement=(0, 10),
+                                                        m=10,
+                                                        n=10,
+                                                        rotation=10)
 
         :param displacement: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement
@@ -316,6 +327,16 @@ class FlowField:
 
         check_two_element_tuple(displacement, 'displacement')
         check_min_max_tuple(displacement, 'displacement')
+
+        if (not isinstance(m, int)) and (not isinstance(m, float)):
+            raise ValueError("Parameter `m` has to be of type 'int' or 'float'.")
+
+        if (not isinstance(n, int)) and (not isinstance(n, float)):
+            raise ValueError("Parameter `n` has to be of type 'int' or 'float'.")
+
+        if rotation is not None:
+            if (not isinstance(rotation, int)) and (not isinstance(rotation, float)):
+                raise ValueError("Parameter `rotation` has to be of type 'int' or 'float'.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -389,12 +410,7 @@ class FlowField:
             ``int`` specifying the order of the Chebyshev polynomial.
         """
 
-
-
-
-
-
-        pass
+        raise ValueError("This function not implemented yet.")
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -433,11 +449,7 @@ class FlowField:
 
         """
 
-
-
-
-
-        pass
+        raise ValueError("This function not implemented yet.")
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
