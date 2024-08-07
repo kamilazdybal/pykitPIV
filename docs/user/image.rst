@@ -30,10 +30,6 @@ The following convention for indexing various image-related quantities applies t
 
 .. autofunction:: pykitPIV.image.Image.targets_to_tensor
 
-.. autofunction:: pykitPIV.image.Image.log_transform_images
-
-.. autofunction:: pykitPIV.image.Image.filter_images
-
 .. autofunction:: pykitPIV.image.Image.save_to_h5
 
 .. autofunction:: pykitPIV.image.Image.upload_from_h5

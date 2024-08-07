@@ -55,6 +55,7 @@ check the following references:
    user/flowfield
    user/motion
    user/image
+   user/postprocess
 
 .. toctree::
    :maxdepth: 2
