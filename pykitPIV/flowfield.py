@@ -179,7 +179,7 @@ class FlowField:
                                        gaussian_filters=(10,30),
                                        n_gaussian_filter_iter=6):
         """
-        Generates random velocity field.
+        Generates random velocity field by smoothing a random initialization of pixels with a series of Gaussian filters.
 
         **Example:**
 
@@ -261,6 +261,94 @@ class FlowField:
 
             self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2))
             self.__velocity_field.append((velocity_field_u, velocity_field_v))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def generate_chebyshev_velocity_field(self,
+                                          order=1):
+        """
+        Generates a velocity field using Chebyshev polynomials. Each velocity component is computed as:
+
+        .. math::
+
+            u(h, w), v(h, w) = U_n(h) U_n(w) \\sin(n(h+w))
+
+        where :math:`U_n` is the Chebyshev polynomial of order :math:`n`.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import FlowField
+
+            # We are going to generate 10 flow fields for 10 PIV image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (128,512)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images=n_images,
+                                  size=image_size,
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Generate Chebyshev velocity field:
+            flowfield.generate_chebyshev_velocity_field(order=50)
+
+        :param order: (optional)
+            ``int`` specifying the order of the Chebyshev polynomial.
+        """
+
+
+
+
+
+
+        pass
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def generate_spherical_harmonics_velocity_field(self,
+                                                    degree=1,
+                                                    order=1):
+        """
+        Generates a velocity field using spherical harmonics. Each velocity component is computed as:
+
+        .. math::
+
+            u(h, w), v(h, w) = Y_n^k \\sin(n(h+w))
+
+        where :math:`Y_n^k` is the Legendre polynomial of order :math:`n` and degree :math:`k`.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import FlowField
+
+            # We are going to generate 10 flow fields for 10 PIV image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (128,512)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images=n_images,
+                                  size=image_size,
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Generate Chebyshev velocity field:
+            flowfield.generate_spherical_harmonics_velocity_field(degree=1, order=1)
+
+        """
+
+
+
+
+
+        pass
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
