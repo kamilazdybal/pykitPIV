@@ -190,116 +190,6 @@ class Postprocess:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def save_to_h5(self,
-                   tensors_dictionary,
-                   save_individually=False,
-                   filename=None,
-                   verbose=False):
-        """
-        Saves the image pairs tensor and the associated flow targets tensor to ``.h5`` data format.
-
-        :param tensors_dictionary:
-            ``dict`` specifying the tensors to save.
-        :param save_individually: (optional)
-            ``bool`` specifying if each image pair and the associated targets should be saved to a separate file.
-            It is recommended to save individually for large datasets that will be uploaded by **PyTorch**, since at
-            any iteration of a machine learning algorithm, only a small batch of samples is uploaded to memory.
-        :param filename: (optional)
-            ``str`` specifying the path and filename to save the ``.h5`` data. Note that ``'-pair-#'`` will be added
-            automatically to your filename for each saved image pair.
-            If set to ``None``, a default name ``'PIV-dataset-pair-#.h5'`` will be used.
-        :param verbose: (optional)
-            ``bool`` for printing verbose details.
-        """
-
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-        # Input parameter check:
-
-        if not isinstance(tensors_dictionary, dict):
-            raise ValueError("Parameter `tensors_dict` has to be of type 'dict'.")
-
-        if not isinstance(save_individually, bool):
-            raise ValueError("Parameter `save_individually` has to be of type 'bool'.")
-
-        if (filename is not None) and (not isinstance(filename, str)):
-            raise ValueError("Parameter `filename` has to be of type 'str'.")
-
-        if filename is None:
-            filename = 'PIV-dataset.h5'
-
-        if not isinstance(verbose, bool):
-            raise ValueError("Parameter `verbose` has to be of type 'bool'.")
-
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-        if save_individually:
-
-            dictionary_keys = list(tensors_dictionary.keys())
-
-            n_images, _, _ ,_ = tensors_dictionary[dictionary_keys[0]].shape
-
-            for i in range(0,n_images):
-
-                individual_filename = filename.split('.')[0] + '-sample-' + str(i) + '.h5'
-
-                with h5py.File(individual_filename, 'w', libver='latest') as f:
-                    for name_tag, data_item in tensors_dictionary.items():
-                        dataset = f.create_dataset(name_tag, data=data_item[i], compression='gzip', compression_opts=9)
-                    f.close()
-
-                if verbose: print(individual_filename + '\tsaved.')
-
-        else:
-
-            with h5py.File(filename, 'w', libver='latest') as f:
-                for name_tag, data_item in tensors_dictionary.items():
-                    dataset = f.create_dataset(name_tag, data=data_item, compression='gzip', compression_opts=9)
-                f.close()
-
-            if verbose: print('Dataset saved.')
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    def upload_from_h5(self,
-                       filename=None):
-        """
-        Upload image pairs tensor and the associated flow targets tensor from ``.h5`` data format.
-
-        :param filename: (optional)
-            ``str`` specifying the path and filename to save the ``.h5`` data. Note that ``'-pair-#'`` will be added
-            automatically to your filename for each saved image pair.
-            If set to ``None``, a default name ``'PIV-dataset-pair-#.h5'`` will be used.
-
-        :return:
-            - **tensors_dictionary** - ``dict`` specifying the dataset tensors.
-        """
-
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-        # Input parameter check:
-
-        if (filename is not None) and (not isinstance(filename, str)):
-            raise ValueError("Parameter `filename` has to be of type 'str'.")
-
-        if filename is None:
-            filename = 'PIV-dataset.h5'
-
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-        tensors_dictionary = {}
-
-        f = h5py.File(filename, 'r')
-
-        for key in f.keys():
-            tensors_dictionary[key] = np.array(f[key])
-
-        f.close()
-
-        return tensors_dictionary
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
     # ##################################################################################################################
 
     # Plotting functions
@@ -309,18 +199,24 @@ class Postprocess:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def plot(self,
+             original,
              idx,
              instance=1,
              xlabel=None,
              ylabel=None,
              title=None,
+             vmin=None,
+             vmax=None,
              cmap='Greys_r',
+             cbar=False,
              figsize=(5,5),
              dpi=300,
              filename=None):
         """
         Plots a single, post-processed static image. For PIV images, the user can select between :math:`I_1` or :math:`I_2`.
 
+        :param original:
+            ``bool`` specifying whether the original or the post-processed image tensor should be plotted.
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
         :param instance: (optional)
@@ -348,6 +244,9 @@ class Postprocess:
 
         # Input parameter check:
 
+        if not isinstance(original, bool):
+            raise ValueError("Parameter `original` has to be of type 'bool'.")
+
         if not isinstance(idx, int):
             raise ValueError("Parameter `idx` has to be of type 'int'.")
         if idx < 0:
@@ -367,6 +266,15 @@ class Postprocess:
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
 
+        if (vmin is not None) and (not isinstance(vmin, int)) and (not isinstance(vmin, float)):
+            raise ValueError("Parameter `vmin` has to be of type 'int' or 'float'.")
+
+        if (vmax is not None) and (not isinstance(vmax, int)) and (not isinstance(vmax, float)):
+            raise ValueError("Parameter `vmax` has to be of type 'int' or 'float'.")
+
+        if not isinstance(cbar, bool):
+            raise ValueError("Parameter `cbar` has to be of type 'bool'.")
+
         check_two_element_tuple(figsize, 'figsize')
 
         if not isinstance(dpi, int):
@@ -385,13 +293,30 @@ class Postprocess:
 
             fig = plt.figure(figsize=figsize)
 
-            if self.__image_pair:
+            if original:
 
-                plt.imshow(self.processed_image_tensor[idx, instance-1, :, :], cmap=cmap, origin='lower')
+                if self.__image_pair:
+                    if vmin is None: vmin = np.min(self.image_tensor[idx, instance-1, :, :])
+                    if vmax is None: vmax = np.max(self.image_tensor[idx, instance-1, :, :])
+                    plt.imshow(self.image_tensor[idx, instance-1, :, :], cmap=cmap, origin='lower', vmin=vmin, vmax=vmax)
+                else:
+                    if vmin is None: vmin = np.min(self.image_tensor[idx, :, :])
+                    if vmax is None: vmax = np.max(self.image_tensor[idx, :, :])
+                    plt.imshow(self.image_tensor[idx, :, :], cmap=cmap, origin='lower', vmin=vmin, vmax=vmax)
 
             else:
 
-                plt.imshow(self.processed_image_tensor[idx, :, :], cmap=cmap, origin='lower')
+                if self.__image_pair:
+                    if vmin is None: vmin = np.min(self.processed_image_tensor[idx, instance-1, :, :])
+                    if vmax is None: vmax = np.max(self.processed_image_tensor[idx, instance-1, :, :])
+                    plt.imshow(self.processed_image_tensor[idx, instance-1, :, :], cmap=cmap, origin='lower', vmin=vmin, vmax=vmax)
+                else:
+                    if vmin is None: vmin = np.min(self.processed_image_tensor[idx, :, :])
+                    if vmax is None: vmax = np.max(self.processed_image_tensor[idx, :, :])
+                    plt.imshow(self.processed_image_tensor[idx, :, :], cmap=cmap, origin='lower', vmin=vmin, vmax=vmax)
+
+        if cbar:
+            plt.colorbar()
 
         if xlabel is not None:
             plt.xlabel(xlabel)
@@ -406,136 +331,5 @@ class Postprocess:
             plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
         return plt
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    def plot_image_pair(self,
-                        idx,
-                        with_buffer=False,
-                        xlabel=None,
-                        ylabel=None,
-                        title=None,
-                        cmap='Greys_r',
-                        figsize=(5,5),
-                        dpi=300,
-                        filename=None):
-        """
-        Plots an animated PIV image pair, :math:`\mathbf{I} = (I_1, I_2)^{\\top}`, at time :math:`t`
-        and :math:`t + \\Delta t` respectively.
-
-        :param idx:
-            ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
-        :param with_buffer:
-            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is marked with a red rectangle.
-        :param xlabel: (optional)
-            ``str`` specifying :math:`x`-label.
-        :param ylabel: (optional)
-            ``str`` specifying :math:`y`-label.
-        :param title: (optional)
-            ``str`` specifying figure title.
-        :param cmap: (optional)
-            ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
-        :param figsize: (optional)
-            ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
-        :param dpi: (optional)
-            ``int`` specifying the dpi for the image.
-        :param filename: (optional)
-            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
-
-        :return:
-            - **plt** - ``matplotlib.pyplot`` image handle.
-        """
-
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-        # Input parameter check:
-
-        if not isinstance(idx, int):
-            raise ValueError("Parameter `idx` has to be of type 'int'.")
-        if idx < 0:
-            raise ValueError("Parameter `idx` has to be non-negative.")
-
-        if not isinstance(with_buffer, bool):
-            raise ValueError("Parameter `with_buffer` has to be of type 'bool'.")
-
-        if (xlabel is not None) and (not isinstance(xlabel, str)):
-            raise ValueError("Parameter `xlabel` has to be of type 'str'.")
-
-        if (ylabel is not None) and (not isinstance(ylabel, str)):
-            raise ValueError("Parameter `ylabel` has to be of type 'str'.")
-
-        if (title is not None) and (not isinstance(title, str)):
-            raise ValueError("Parameter `title` has to be of type 'str'.")
-
-        check_two_element_tuple(figsize, 'figsize')
-
-        if not isinstance(dpi, int):
-            raise ValueError("Parameter `dpi` has to be of type 'int'.")
-
-        if (filename is not None) and (not isinstance(filename, str)):
-            raise ValueError("Parameter `filename` has to be of type 'str'.")
-
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-        imagelist = [self.images_I1[idx], self.images_I2[idx]]
-
-        if self.__motion is None:
-
-            print('Note: Movement of particles has not been added to the image yet!\n\n')
-
-        else:
-
-            fig = plt.figure(figsize=figsize)
-
-            # Check if particles were generated with a buffer:
-            if self.__particles.size_buffer == 0:
-
-                im = plt.imshow(imagelist[0], cmap=cmap, origin='lower', animated=True)
-
-            else:
-
-                if with_buffer:
-
-                    im = plt.imshow(imagelist[0], cmap=cmap, origin='lower', animated=True)
-
-                    # Extend the imshow area with the buffer:
-                    f = lambda pixel: pixel - self.__particles.size_buffer
-                    im.set_extent([f(x) for x in im.get_extent()])
-
-                    # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
-                    rect = patches.Rectangle((-0.5, -0.5), self.__particles.size[1], self.__particles.size[0], linewidth=1, edgecolor='r', facecolor='none')
-                    ax = plt.gca()
-                    ax.add_patch(rect)
-
-                else:
-
-                    im = plt.imshow(imagelist[0][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower', animated=True)
-
-        if xlabel is not None:
-            plt.xlabel(xlabel)
-
-        if ylabel is not None:
-            plt.ylabel(ylabel)
-
-        if title is not None:
-            plt.title(title)
-
-        def updatefig(j):
-
-            if self.__particles.size_buffer == 0:
-                im.set_array(imagelist[j])
-            else:
-                if with_buffer:
-                    im.set_array(imagelist[j])
-                else:
-                    im.set_array(imagelist[j][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer])
-
-            return [im]
-
-        anim = animation.FuncAnimation(fig, updatefig, frames=range(2), interval=50, blit=True)
-
-        anim.save(filename, fps=2, bitrate=-1, dpi=dpi, savefig_kwargs={'bbox_inches' : 'tight'})
-
-        return anim
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

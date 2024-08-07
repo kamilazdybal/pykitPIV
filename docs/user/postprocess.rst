@@ -16,10 +16,5 @@ The following convention for indexing various image-related quantities applies t
 
 .. autofunction:: pykitPIV.postprocess.Postprocess.filter_images
 
-.. autofunction:: pykitPIV.postprocess.Postprocess.save_to_h5
-
-.. autofunction:: pykitPIV.postprocess.Postprocess.upload_from_h5
-
 .. autofunction:: pykitPIV.postprocess.Postprocess.plot
 
-.. autofunction:: pykitPIV.postprocess.Postprocess.plot_image_pair

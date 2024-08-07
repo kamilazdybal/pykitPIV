@@ -264,6 +264,95 @@ class FlowField:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def generate_checkered_velocity_field(self,
+                                          displacement=(0, 10),
+                                          m=10,
+                                          n=10,
+                                          rotation=0):
+        """
+        Generates a checkered velocity field. Each velocity component is computed as:
+
+        .. math::
+
+            u(h, w), v(h, w) = \\sin(m \cdot h) \cdot \\cos(n \cdot w) \cdot \\sin(r \cdot (h + w))
+
+        where :math:`m`, :math:`n`, and :math:`r` are free parameters.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import FlowField
+
+            # We are going to generate 10 flow fields for 10 PIV image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (128,512)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images=n_images,
+                                  size=image_size,
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Generate Chebyshev velocity field:
+            flowfield.generate_checkered_velocity_field(displacement=(0, 10), m=10, n=10, rotation=10)
+
+        :param displacement: (optional)
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement
+        :param m: (optional)
+            ``int`` or ``float`` specifying the scaling for the sine function, :math:`m`.
+        :param n: (optional)
+            ``int`` or ``float`` specifying the scaling for the cosine function, :math:`n`.
+        :param rotation: (optional)
+            ``int`` or ``float`` specifying the scaling for the rotation with the sine function, :math:`r`. If set to ``None``,
+            the checkered pattern will not be rotated.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        check_two_element_tuple(displacement, 'displacement')
+        check_min_max_tuple(displacement, 'displacement')
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        self.__displacement = displacement
+        self.__velocity_field = []
+        self.__velocity_field_magnitude = []
+
+        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+
+        h = np.linspace(-1, 1, self.size_with_buffer[0])
+        w = np.linspace(-1, 1, self.size_with_buffer[1])
+
+        (grid_w, grid_h) = np.meshgrid(w, h)
+
+        for i in range(0, self.n_images):
+
+            if rotation is None:
+                velocity_field_u = np.sin(m * grid_w) * np.cos(n * grid_h)
+                velocity_field_v = np.sin(m * grid_w) * np.cos(n * grid_h)
+            else:
+                velocity_field_u = np.sin(m * grid_w) * np.cos(n * grid_h) * np.sin(rotation * (grid_w + grid_h))
+                velocity_field_v = np.sin(m * grid_w) * np.cos(n * grid_h) * np.sin(rotation * (grid_w + grid_h))
+
+            velocity_field_u = velocity_field_u - np.mean(velocity_field_u)
+            velocity_field_v = velocity_field_v - np.mean(velocity_field_v)
+
+            velocity_magnitude = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            velocity_magnitude_scale = self.__displacement_per_image[i] / np.max(velocity_magnitude)
+
+            velocity_field_u = velocity_magnitude_scale * velocity_field_u
+            velocity_field_v = velocity_magnitude_scale * velocity_field_v
+
+            self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2))
+            self.__velocity_field.append((velocity_field_u, velocity_field_v))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def generate_chebyshev_velocity_field(self,
                                           order=1):
         """
