@@ -2,6 +2,7 @@ import h5py
 import matplotlib.animation as animation
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
+import torch
 
 from pykitPIV.checks import *
 from pykitPIV.image import Image
