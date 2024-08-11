@@ -548,11 +548,11 @@ class Image:
 
             else:
 
-                self.__images_I1_no_buffer = []
+                self.__images_I1_no_buffer = np.zeros((self.__particles.n_images, 1, self.__particles.size[0], self.__particles.size[1]))
 
                 for i in range(0,self.__particles.n_images):
 
-                    self.__images_I1_no_buffer.append(self.images_I1[i][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer])
+                    self.__images_I1_no_buffer[i, 0, :, :] = self.images_I1[i, 0, self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer]
 
                 print('Buffers removed from images I1.')
 
@@ -562,11 +562,11 @@ class Image:
 
             else:
 
-                self.__images_I2_no_buffer = []
+                self.__images_I2_no_buffer = np.zeros((self.__particles.n_images, 1, self.__particles.size[0], self.__particles.size[1]))
 
                 for i in range(0,self.__particles.n_images):
 
-                    self.__images_I2_no_buffer.append(self.images_I2[i][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer])
+                    self.__images_I2_no_buffer[i, 0, :, :] = self.images_I2[i, 0, self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer]
 
                 print('Buffers removed from images I2.')
 
@@ -639,14 +639,17 @@ class Image:
 
         :return:
             - **images_tensor** - ``numpy.ndarray`` specifying the PIV image pairs tensor.
+              It has shape :math:`(N, 2, H, W)`, where :math:`N` is the number of PIV image pairs,
+              :math:`H` is the height and :math:`W` is the width of each PIV image.
+              The second index refers to images :math:`I_1` or :math:`I_2`, respectively.
         """
 
         images_tensor = np.zeros((self.__particles.n_images, 2, self.__particles.size[0], self.__particles.size[1]))
 
         for i in range(0, self.__particles.n_images):
 
-            images_tensor[i, 0, :, :] = self.images_I1_no_buffer[i]
-            images_tensor[i, 1, :, :] = self.images_I2_no_buffer[i]
+            images_tensor[i, 0, :, :] = self.images_I1_no_buffer[i, 0, :, :]
+            images_tensor[i, 1, :, :] = self.images_I2_no_buffer[i, 0, :, :]
 
         return images_tensor
 
@@ -879,11 +882,11 @@ class Image:
 
             if instance==1:
 
-                image_to_plot = self.__images_I1[idx,0,:,:]
+                image_to_plot = self.__images_I1[idx, 0, :, :]
 
             elif instance==2:
 
-                image_to_plot = self.__images_I2[idx,0,:,:]
+                image_to_plot = self.__images_I2[idx, 0, :, :]
 
             fig = plt.figure(figsize=figsize)
 
