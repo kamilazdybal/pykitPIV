@@ -1,16 +1,12 @@
-##############################
-Welcome to ``pykitPIV``!
-##############################
-
-**Py**\ thon **ki**\ nematic **t**\ raining for particle image velocimetry (**PIV**)
-
 .. image:: images/pykitPIV-logo.png
   :width: 300
 
+**Py**\ thon **ki**\ nematic **t**\ raining for **P**\ article **I**\ mage **V**\ elocimetry
+
 **pykitPIV** is a Python package for synthetic PIV image generation that exploits the kinematic relationship between two PIV images.
-The goal of this library is to give the user or a reinforcement learning (RL) agent a lot of flexibility in setting-up
-image generation. The generated image pairs and the associated flow targets can be directly used in training
-convolutional neural network (CNN) for flow estimation.
+The generated image pairs and the associated flow targets can be directly used in training convolutional neural network (CNN) for flow estimation.
+The PIV image processing is compatible with **PyTorch** and can easily port with convolutional layers (``torch.nn.Conv2d``) or with convolutional filters (``torch.nn.functional.conv2d``)
+The goal of this library is to give the user, or a reinforcement learning (RL) agent, a lot of flexibility in setting-up image generation.
 
 .. image:: images/example-image-I1-I2-no-buffer.gif
   :width: 1100
