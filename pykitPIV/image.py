@@ -493,7 +493,7 @@ class Image:
         # Add light to image I1:
         if self.__particles is not None:
 
-            images_I1 = []
+            images_I1 = np.zeros((self.__particles.n_images, 1, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
 
             for i in range(0,self.__particles.n_images):
 
@@ -502,7 +502,7 @@ class Image:
                                                                  self.__particles.particle_coordinates[i][1],
                                                                  image_instance=1)
 
-                images_I1.append(__clip_intensities(particles_with_gaussian_light, maximum_intensity))
+                images_I1[i, 0, :, :] = __clip_intensities(particles_with_gaussian_light, maximum_intensity)
 
                 self.__images_I1 = images_I1
 
@@ -511,7 +511,7 @@ class Image:
         # Add light to image I2:
         if self.__motion is not None:
 
-            images_I2 = []
+            images_I2 = np.zeros((self.__particles.n_images, 1, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
 
             for i in range(0,self.__particles.n_images):
 
@@ -520,7 +520,7 @@ class Image:
                                                                  self.__motion.particle_coordinates_I2[i][1],
                                                                  image_instance=2)
 
-                images_I2.append(__clip_intensities(particles_with_gaussian_light, maximum_intensity))
+                images_I2[i, 0, :, :] = __clip_intensities(particles_with_gaussian_light, maximum_intensity)
 
                 self.__images_I2 = images_I2
 
