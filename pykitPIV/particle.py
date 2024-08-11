@@ -44,9 +44,9 @@ class Particle:
                              random_seed=100)
 
     :param n_images:
-        ``int`` specifying the number of image pairs to create.
+        ``int`` specifying the number of PIV image pairs, :math:`N`, to create.
     :param size: (optional)
-        ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`. The first number is image height, :math:`h`, the second number is image width, :math:`w`.
+        ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`. The first number is the image height, :math:`H`, the second number is the image width, :math:`W`.
     :param size_buffer: (optional)
         ``int`` specifying the buffer in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
         This number should be approximately equal to the maximum displacement that particles are subject to in order to allow new particles to arrive into the image area
@@ -79,14 +79,26 @@ class Particle:
     - **seeding_mode** - (read-only) as per user input.
     - **random_seed** - (read-only) as per user input.
     - **size_with_buffer** - (read-only) ``tuple`` specifying the size of each image in pixels with buffer added.
-    - **diameter_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle diameters in pixels :math:`[\\text{px}]` for each image. Template diameters are random numbers between ``diameters[0]`` and ``diameters[1]``.
-    - **distance_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle distances in pixels :math:`[\\text{px}]` for each image. Template distances are random numbers between ``distances[0]`` and ``distances[1]``.
-    - **density_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle densities in particle per pixel :math:`[\\text{ppp}]` for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
-    - **SNR_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the signal-to-noise ratio for each image. Template signal-to-noise are random numbers between ``signal_to_noise[0]`` and ``signal_to_noise[1]``.
+    - **diameter_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle diameters in pixels
+      :math:`[\\text{px}]` for each image. Template diameters are random numbers between ``diameters[0]`` and ``diameters[1]``.
+    - **distance_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle distances in pixels
+      :math:`[\\text{px}]` for each image. Template distances are random numbers between ``distances[0]`` and ``distances[1]``.
+    - **density_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle densities in particle
+      per pixel :math:`[\\text{ppp}]` for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
+    - **SNR_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the signal-to-noise ratio for each
+      image. Template signal-to-noise are random numbers between ``signal_to_noise[0]`` and ``signal_to_noise[1]``.
     - **n_of_particles** - (read-only) ``list`` specifying the number of particles created for each image based on each template density.
-    - **particle_coordinates** - (read-only) ``list`` specifying the absolute coordinates of all particle centers for each image. The posititions are computed based on the ``seeding_mode``. The first element in each tuple are the coordinates along the image height, and the second element are the coordinates along the image width.
-    - **particle_positions** - (read-only) ``list`` specifying the position per pixel of all particle centers for each image. The posititions are computed based on the ``seeding_mode``.
-    - **particle_diameters** - (read-only) ``list`` specifying the diameters of all seeded particles in pixels :math:`[\\text{px}]` for each image based on each template diameter.
+    - **particle_coordinates** - (read-only) ``list`` specifying the absolute coordinates of all particle centers for each image.
+      The posititions are computed based on the ``seeding_mode``. The first element in each tuple are the coordinates
+      along the image height, and the second element are the coordinates along the image width.
+    - **particle_positions** - (read-only) ``numpy.ndarray`` specifying the position per pixel of all particle centers
+      for each image. The posititions are computed based on the ``seeding_mode``. If a particle's position falls into
+      a specific pixel coordinate, this pixel's value is increased by one. Zero entry indicates that no particles are present
+      inside that pixel.
+      This array has size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number PIV image pairs,
+      :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` the width of each PIV image.
+    - **particle_diameters** - (read-only) ``list`` specifying the diameters of all seeded particles in pixels :math:`[\\text{px}]`
+      for each image based on each template diameter.
    """
 
     def __init__(self,
@@ -167,12 +179,10 @@ class Particle:
 
         # Compute the seeding density for each image:
         if seeding_mode == 'random':
-
             self.__particle_density_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
 
         elif seeding_mode == 'poisson':
-
-            print('Poisson sampling is not supported yet.')
+            raise NotImplementedError('Poisson sampling is not supported yet.')
 
         # Compute the total number of particles for a given particle density on each image:
         n_of_particles = self.__size[0] * self.__size[1] * self.__particle_density_per_image
@@ -181,7 +191,7 @@ class Particle:
         # Initialize particle positions and particle diameters on each of the ``n_image`` images:
 
         particle_coordinates = []
-        particle_positions = []
+        particle_positions = np.zeros((self.n_images, 1, self.__height_with_buffer, self.__width_with_buffer))
         particle_diameters = []
 
         for i in range(0,self.n_images):
@@ -197,14 +207,13 @@ class Particle:
                 # Populate a matrix that shows particle locations per pixel of the image area:
                 seeded_array = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
                 for x, y in zip(np.floor(self.__x_coordinates).astype(int), np.floor(self.__y_coordinates).astype(int)):
-
                     seeded_array[y, x] += 1
 
-                particle_positions.append(seeded_array)
+                particle_positions[i,0,:,:] = seeded_array
 
             elif seeding_mode == 'poisson':
 
-                print('Poisson sampling is not supported yet.')
+                pass
 
             # Generate diameters for all particles in a current image:
             particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i]))
@@ -316,7 +325,7 @@ class Particle:
             - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
-        pass
+        raise NotImplementedError('This function not implemented yet.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -324,9 +333,8 @@ class Particle:
         """
         Plots statistical properties of the generated particles across all ``n_images`` images.
 
-
         :return:
             - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
-        pass
+        raise NotImplementedError('This function not implemented yet.')
