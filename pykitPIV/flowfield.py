@@ -45,7 +45,7 @@ class FlowField:
                               random_seed=100)
 
     :param n_images:
-        ``int`` specifying the number of image pairs to create.
+        ``int`` specifying the number of PIV image pairs, :math:`N`, to create.
     :param size: (optional)
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, :math:`h`, the second number is image width, :math:`w`.
     :param size_buffer: (optional)

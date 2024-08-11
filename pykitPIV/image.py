@@ -36,10 +36,10 @@ class Image:
     **Attributes:**
 
     - **random_seed** - (read-only) as per user input.
-    - **images_I1** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_1` of a given size. Only available after ``Image.add_particles()`` has been called.
-    - **images_I2** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_2` of a given size. Only available after ``Image.add_motion()`` has been called.
-    - **images_I1_no_buffer** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_1` of a given size, without the buffer. Only available after ``Image.add_particles()`` and ``Image.remove_buffer()`` have been called.
-    - **images_I2_no_buffer** - (read-only) ``list`` of ``numpy.ndarray``, where each element is the current version of a PIV image :math:`I_2` of a given size, without the buffer. Only available after ``Image.add_motion()`` and ``Image.remove_buffer()`` have been called.
+    - **images_I1** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`. Only available after ``Image.add_particles()`` has been called.
+    - **images_I2** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`. Only available after ``Image.add_motion()`` has been called.
+    - **images_I1_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`, without the buffer. Only available after ``Image.add_particles()`` and ``Image.remove_buffer()`` have been called.
+    - **images_I2_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`, without the buffer. Only available after ``Image.add_motion()`` and ``Image.remove_buffer()`` have been called.
     - **targets** - (read-only) ``list`` of ``tuple``, where each element contains the velocity field components, :math:`u` and :math:`v`, as ``numpy.ndarray``. Only available after ``Image.add_flowfield()`` has been called.
     - **targets_no_buffer** - (read-only) ``list`` of ``tuple``, where each element contains the velocity field components, :math:`u` and :math:`v`, as ``numpy.ndarray``, without the buffer. Only available after ``Image.add_flowfield()`` and ``Image.remove_buffer()`` have been called.
     - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image. Only available after ``Image.add_reflected_light`` has been called.
@@ -142,7 +142,7 @@ class Image:
         """
         Adds particles to the image. Particles should be defined using the ``Particle`` class.
 
-        Calling this function populates the private ``image.__particles`` attribute and the ``image.images_I1`` attribute.
+        Calling this function populates the private attribute ``image.__particles`` and the ``image.images_I1`` attribute.
 
         **Example:**
 
@@ -187,7 +187,7 @@ class Image:
         """
         Adds the flow field to the image. The flow field should be defined using the ``FlowField`` class.
 
-        Calling this function populates the private ``image.__flowfield`` attribute and the ``image.targets`` attribute.
+        Calling this function populates the private attribute ``image.__flowfield`` and the ``image.targets`` attribute.
 
         **Example:**
 
@@ -232,7 +232,7 @@ class Image:
         """
         Adds particle movement to the image. The movement should be defined using the ``Motion`` class.
 
-        Calling this function populates the private ``image.__motion`` attribute.
+        Calling this function populates the private attribute ``image.__motion``.
 
         **Example:**
 
@@ -879,11 +879,11 @@ class Image:
 
             if instance==1:
 
-                image_to_plot = self.__images_I1[idx]
+                image_to_plot = self.__images_I1[idx,0,:,:]
 
             elif instance==2:
 
-                image_to_plot = self.__images_I2[idx]
+                image_to_plot = self.__images_I2[idx,0,:,:]
 
             fig = plt.figure(figsize=figsize)
 
@@ -995,7 +995,7 @@ class Image:
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        imagelist = [self.images_I1[idx], self.images_I2[idx]]
+        imagelist = [self.images_I1[idx,0,:,:], self.images_I2[idx,0,:,:]]
 
         if self.__motion is None:
 
