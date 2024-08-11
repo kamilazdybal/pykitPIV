@@ -188,12 +188,12 @@ class Particle:
         n_of_particles = self.__size[0] * self.__size[1] * self.__particle_density_per_image
         self.__n_of_particles = [int(i) for i in n_of_particles]
 
-        # Initialize particle positions and particle diameters on each of the ``n_image`` images:
-
+        # Initialize particle coordinates, positions, and diameters on each of the ``n_image`` images:
         particle_coordinates = []
         particle_positions = np.zeros((self.n_images, 1, self.__height_with_buffer, self.__width_with_buffer))
         particle_diameters = []
 
+        # Populate particle data for each of the ``n_image`` images:
         for i in range(0,self.n_images):
 
             if seeding_mode == 'random':
@@ -209,13 +209,13 @@ class Particle:
                 for x, y in zip(np.floor(self.__x_coordinates).astype(int), np.floor(self.__y_coordinates).astype(int)):
                     seeded_array[y, x] += 1
 
+                # Populate the 4D tensor of shape (N, C_in, H, W):
                 particle_positions[i,0,:,:] = seeded_array
 
             elif seeding_mode == 'poisson':
-
                 pass
 
-            # Generate diameters for all particles in a current image:
+            # Generate diameters for all particles in the current image:
             particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i]))
 
         # Initialize particle coordinates:
