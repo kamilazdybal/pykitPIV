@@ -444,9 +444,14 @@ class Motion:
 
     def plot_particle_motion(self,
                              idx,
+                             s=10,
                              xlabel=None,
                              ylabel=None,
+                             xticks=True,
+                             yticks=True,
                              title=None,
+                             color_I1='k',
+                             color_I2='#ee6c4d',
                              figsize=(5,5),
                              dpi=300,
                              filename=None):
@@ -455,10 +460,16 @@ class Motion:
 
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
+        :param s: (optional)
+            ``int`` or ``float`` specifying the scatter point size.
         :param xlabel: (optional)
             ``str`` specifying :math:`x`-label.
         :param ylabel: (optional)
             ``str`` specifying :math:`y`-label.
+        :param xticks: (optional)
+            ``bool`` specifying if ticks along the :math:`x`-axis should be plotted.
+        :param yticks: (optional)
+            ``bool`` specifying if ticks along the :math:`y`-axis should be plotted.
         :param title: (optional)
             ``str`` specifying figure title.
         :param figsize: (optional)
@@ -487,6 +498,12 @@ class Motion:
         if (ylabel is not None) and (not isinstance(ylabel, str)):
             raise ValueError("Parameter `ylabel` has to be of type 'str'.")
 
+        if not isinstance(xticks, bool):
+            raise ValueError("Parameter `xticks` has to be of type 'bool'.")
+
+        if not isinstance(yticks, bool):
+            raise ValueError("Parameter `yticks` has to be of type 'bool'.")
+
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
 
@@ -508,8 +525,8 @@ class Motion:
 
             fig = plt.figure(figsize=figsize)
 
-            plt.scatter(self.particle_coordinates_I1[idx][1], self.particle_coordinates_I1[idx][0], c='k', s=2, zorder=10)
-            plt.scatter(self.particle_coordinates_I2[idx][1], self.particle_coordinates_I2[idx][0], c='#ee6c4d', s=1.5, zorder=20)
+            plt.scatter(self.particle_coordinates_I1[idx][1], self.particle_coordinates_I1[idx][0], c=color_I1, s=s, zorder=10)
+            plt.scatter(self.particle_coordinates_I2[idx][1], self.particle_coordinates_I2[idx][0], c=color_I2, s=s*2/3, zorder=20)
 
             plt.axis('equal')
 
@@ -518,6 +535,12 @@ class Motion:
 
             if ylabel is not None:
                 plt.ylabel(ylabel)
+
+            if not xticks:
+                plt.xticks([])
+
+            if not yticks:
+                plt.yticks([])
 
             if title is not None:
                 plt.title(title)

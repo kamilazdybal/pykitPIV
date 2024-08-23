@@ -801,6 +801,8 @@ class Image:
              with_buffer=False,
              xlabel=None,
              ylabel=None,
+             xticks=True,
+             yticks=True,
              title=None,
              cmap='Greys_r',
              figsize=(5,5),
@@ -819,6 +821,10 @@ class Image:
             ``str`` specifying :math:`x`-label.
         :param ylabel: (optional)
             ``str`` specifying :math:`y`-label.
+        :param xticks: (optional)
+            ``bool`` specifying if ticks along the :math:`x`-axis should be plotted.
+        :param yticks: (optional)
+            ``bool`` specifying if ticks along the :math:`y`-axis should be plotted.
         :param title: (optional)
             ``str`` specifying figure title.
         :param cmap: (optional)
@@ -856,6 +862,12 @@ class Image:
 
         if (ylabel is not None) and (not isinstance(ylabel, str)):
             raise ValueError("Parameter `ylabel` has to be of type 'str'.")
+
+        if not isinstance(xticks, bool):
+            raise ValueError("Parameter `xticks` has to be of type 'bool'.")
+
+        if not isinstance(yticks, bool):
+            raise ValueError("Parameter `yticks` has to be of type 'bool'.")
 
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
@@ -919,6 +931,12 @@ class Image:
 
         if ylabel is not None:
             plt.ylabel(ylabel)
+
+        if not xticks:
+            plt.xticks([])
+
+        if not yticks:
+            plt.yticks([])
 
         if title is not None:
             plt.title(title)
@@ -1255,9 +1273,12 @@ class Image:
                                       with_buffer=False,
                                       xlabel=None,
                                       ylabel=None,
+                                      xticks=True,
+                                      yticks=True,
                                       title=None,
                                       cmap='viridis',
                                       vmin_vmax=None,
+                                      cbar=True,
                                       add_quiver=False,
                                       quiver_step=10,
                                       quiver_color='k',
@@ -1280,6 +1301,10 @@ class Image:
             ``str`` specifying :math:`x`-label.
         :param ylabel: (optional)
             ``str`` specifying :math:`y`-label.
+        :param xticks: (optional)
+            ``bool`` specifying if ticks along the :math:`x`-axis should be plotted.
+        :param yticks: (optional)
+            ``bool`` specifying if ticks along the :math:`y`-axis should be plotted.
         :param title: (optional)
             ``str`` specifying figure title.
         :param cmap: (optional)
@@ -1326,6 +1351,12 @@ class Image:
 
         if (ylabel is not None) and (not isinstance(ylabel, str)):
             raise ValueError("Parameter `ylabel` has to be of type 'str'.")
+
+        if not isinstance(xticks, bool):
+            raise ValueError("Parameter `xticks` has to be of type 'bool'.")
+
+        if not isinstance(yticks, bool):
+            raise ValueError("Parameter `yticks` has to be of type 'bool'.")
 
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
@@ -1409,10 +1440,17 @@ class Image:
             if ylabel is not None:
                 plt.ylabel(ylabel)
 
+            if not xticks:
+                plt.xticks([])
+
+            if not yticks:
+                plt.yticks([])
+
             if title is not None:
                 plt.title(title)
 
-            plt.colorbar()
+            if cbar:
+                plt.colorbar()
 
             # Check if flowfield has been generated with a buffer:
             if self.__flowfield.size_buffer == 0:
