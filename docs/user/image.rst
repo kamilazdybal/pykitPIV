@@ -38,6 +38,8 @@ The following convention for indexing various image-related quantities applies t
 
 .. autofunction:: pykitPIV.image.Image.plot_image_pair
 
+.. autofunction:: pykitPIV.image.Image.animate_image_pair
+
 .. autofunction:: pykitPIV.image.Image.plot_velocity_field
 
 .. autofunction:: pykitPIV.image.Image.plot_velocity_field_magnitude

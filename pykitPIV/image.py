@@ -953,6 +953,155 @@ class Image:
                         with_buffer=False,
                         xlabel=None,
                         ylabel=None,
+                        xticks=True,
+                        yticks=True,
+                        title=None,
+                        cmap='Greys_r',
+                        figsize=(5,5),
+                        dpi=300,
+                        filename=None):
+        """
+        Plots a PIV image pair on single, static PIV image by superimposing :math:`I_1 - I_2`.
+
+        **Example:**
+
+        Given the following velocity field magnitude:
+
+        .. image:: ../images/Image_plot_velocity_field_magnitude.png
+            :width: 300
+
+        This function will produce the following image:
+
+        .. image:: ../images/Image_plot_image_pair.png
+            :width: 300
+
+        :param idx:
+            ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
+        :param with_buffer: (optional)
+            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is marked with a red rectangle.
+        :param xlabel: (optional)
+            ``str`` specifying :math:`x`-label.
+        :param ylabel: (optional)
+            ``str`` specifying :math:`y`-label.
+        :param xticks: (optional)
+            ``bool`` specifying if ticks along the :math:`x`-axis should be plotted.
+        :param yticks: (optional)
+            ``bool`` specifying if ticks along the :math:`y`-axis should be plotted.
+        :param title: (optional)
+            ``str`` specifying figure title.
+        :param cmap: (optional)
+            ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param figsize: (optional)
+            ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
+        :param dpi: (optional)
+            ``int`` specifying the dpi for the image.
+        :param filename: (optional)
+            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+
+        :return:
+            - **plt** - ``matplotlib.pyplot`` image handle.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(idx, int):
+            raise ValueError("Parameter `idx` has to be of type 'int'.")
+        if idx < 0:
+            raise ValueError("Parameter `idx` has to be non-negative.")
+
+        if not isinstance(with_buffer, bool):
+            raise ValueError("Parameter `with_buffer` has to be of type 'bool'.")
+
+        if (xlabel is not None) and (not isinstance(xlabel, str)):
+            raise ValueError("Parameter `xlabel` has to be of type 'str'.")
+
+        if (ylabel is not None) and (not isinstance(ylabel, str)):
+            raise ValueError("Parameter `ylabel` has to be of type 'str'.")
+
+        if not isinstance(xticks, bool):
+            raise ValueError("Parameter `xticks` has to be of type 'bool'.")
+
+        if not isinstance(yticks, bool):
+            raise ValueError("Parameter `yticks` has to be of type 'bool'.")
+
+        if (title is not None) and (not isinstance(title, str)):
+            raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        check_two_element_tuple(figsize, 'figsize')
+
+        if not isinstance(dpi, int):
+            raise ValueError("Parameter `dpi` has to be of type 'int'.")
+
+        if (filename is not None) and (not isinstance(filename, str)):
+            raise ValueError("Parameter `filename` has to be of type 'str'.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        if self.images_I1 is None:
+
+            print('Note: Particles have not been added to the image yet!\n\n')
+
+        if self.__images_I2 is None:
+
+            print('Note: Particles have not been advected yet!\n\n')
+
+        image_to_plot = self.__images_I1[idx, 0, :, :] - self.__images_I2[idx, 0, :, :]
+
+        fig = plt.figure(figsize=figsize)
+
+        # Check if particles were generated with a buffer:
+        if self.__particles.size_buffer == 0:
+
+            plt.imshow(image_to_plot, cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
+
+        else:
+
+            if with_buffer:
+
+                im = plt.imshow(image_to_plot, cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
+
+                # Extend the imshow area with the buffer:
+                f = lambda pixel: pixel - self.__particles.size_buffer
+                im.set_extent([f(x) for x in im.get_extent()])
+
+                # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
+                rect = patches.Rectangle((-0.5, -0.5), self.__particles.size[1], self.__particles.size[0], linewidth=1, edgecolor='r', facecolor='none')
+                ax = plt.gca()
+                ax.add_patch(rect)
+
+            else:
+
+                plt.imshow(image_to_plot[self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
+
+        if xlabel is not None:
+            plt.xlabel(xlabel)
+
+        if ylabel is not None:
+            plt.ylabel(ylabel)
+
+        if not xticks:
+            plt.xticks([])
+
+        if not yticks:
+            plt.yticks([])
+
+        if title is not None:
+            plt.title(title)
+
+        if filename is not None:
+            plt.savefig(filename, dpi=dpi, bbox_inches='tight')
+
+        return plt
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def animate_image_pair(self,
+                        idx,
+                        with_buffer=False,
+                        xlabel=None,
+                        ylabel=None,
                         title=None,
                         cmap='Greys_r',
                         figsize=(5,5),
