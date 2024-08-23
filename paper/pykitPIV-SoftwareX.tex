@@ -49,11 +49,11 @@
 
 \begin{document}
 
-\shorttitle{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for particle image velocimetry}
+\shorttitle{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for training flow estimation algorithms in particle image velocimetry}
 \shortauthors{Zdyba\l{} et~al.}
 
 
-\title [mode = title]{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for particle image velocimetry}
+\title [mode = title]{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for training flow estimation algorithms in particle image velocimetry}
 
 \author[EMPA]{Kamila Zdyba\l{}*}
 \ead{kamila.zdybal@gmail.com}
@@ -63,42 +63,70 @@
 
 \address[EMPA]{Laboratory for Computational Engineering, Swiss Federal Laboratories for Materials Science and Technology, Empa, Dübendorf, Switzerland}
 
-
 \begin{abstract} 
 We describe pykitPIV
+
+\lipsum[60]
 \end{abstract}
 
 \begin{keywords}
-progress variable; ammonia; parameterization; flamelet-like model; low-dimensional manifold; artificial neural network
+particle image velocimetry; flow estimation; convolutional neural networks; Python
 \end{keywords}
 
 \maketitle
 
 \section{Introduction\label{sec:introduction}}
 
-
-
-\begin{figure}[t]
-\centering
-\includegraphics[width=7cm]{pykitPIV-modules.pdf}
-\caption{Order of using pykitPIV modules.}
-\label{fig:pykitPIV-modules}
-\end{figure}
+\lipsum
 
 
 
 
-\section{Results and discussion} \label{sec:results}
 
+
+
+
+
+\section{Software overview} \label{sec:software}
+
+
+
+%\begin{figure}[t]
+%\centering
+%\includegraphics[width=7cm]{}
+%\caption{}
+%\label{fig:pykitPIV-modules}
+%\end{figure}
 
 \begin{figure*}[t]
 \centering
 \vspace{-0.4 in}
 \includegraphics[width=\textwidth]{pykitPIV-modules.pdf}
 \vspace{10 pt}
-\caption{\footnotesize The variety of operations on PIV images possible with the pykitPIV modules.}
+\caption{\footnotesize Order of using \texttt{pykitPIV} classes. At each stage of synthetic image generation, the user has freedom in selecting various parameters that would normally be available in an experimental setting such as particle seeding density, thickness of the laser plane, camera exposure, particle loss due to out-of-plane movement, or time separation between images.}
 \label{fig:operations}
 \end{figure*}
+
+The PIV image pair tensor has shape $(N, 2, H, W)$, where $N$ is the batch size, $H$ is image height and $W$ is image width. The second dimension can be thought of as the number of channels and those correspond to $I_1$ and $I_2$, respectively. This is compatible with tensor shape accepted by convolutional layers implemented in PyTorch.
+
+
+
+
+
+
+\section{Discussion} \label{sec:results}
+
+\lipsum
+
+%
+%\begin{figure*}[t]
+%\centering
+%\vspace{-0.4 in}
+%\includegraphics[width=\textwidth]{pykitPIV-modules.pdf}
+%\vspace{10 pt}
+%\caption{\footnotesize The variety of operations on PIV images possible with the pykitPIV modules.}
+%\label{fig:operations}
+%\end{figure*}
 
 
 \section{Conclusions}
