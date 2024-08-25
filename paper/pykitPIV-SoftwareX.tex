@@ -64,9 +64,7 @@
 \address[EMPA]{Laboratory for Computational Engineering, Swiss Federal Laboratories for Materials Science and Technology, Empa, Dübendorf, Switzerland}
 
 \begin{abstract} 
-We describe pykitPIV
-
-\lipsum[60]
+We describe \texttt{pykitPIV}, a PyTorch-compatible Python library for generating synthetic images that mimic those obtained from particle image velocimetry (PIV) experiments. The library can be readily ported to training machine learning algorithms, such as convolutional neural networks (CNNs), or reinforcement learning (RL). Our image generation exploits the kinematic relationship between two PIV snapshots and advects particles from one time frame at $t_1$, to the next at $t_1 + \Delta t$, with a second-order accurate numerical scheme. This results in paired image intensities, $I_1$ and $I_2$ that are separated by $\Delta t$ in time. The goal of this library is to give the user a lot of flexibility in selecting various parameters that would normally be available in an experimental setting such as particle seeding density, thickness of the laser plane, camera exposure, particle loss due to out-of-plane movement, or time separation between images. The richness of image generation can find application in training machine learning algorithms such as CNNs or RL.
 \end{abstract}
 
 \begin{keywords}
@@ -77,13 +75,15 @@ particle image velocimetry; flow estimation; convolutional neural networks; Pyth
 
 \section{Introduction\label{sec:introduction}}
 
-\lipsum
+The last decade has seen many advances in training convolutional neural networks (CNNs) for flow estimation, \textit{i.e.}, predicting motion information from consecutive static image frames. To date, numerous interesting network architectures have been developed. This includes various implementations of FlowNets \citep{dosovitskiy2015flownet, ilg2017flownet, hui2018liteflownet}, spatial pyramid network (SPyNet) \cite{ranjan2017optical}, and pyramid, warping and cost-volume network (PWC-Net) \cite{sun2018pwc}. In addition, the idea of the iterative residual refinement (IRR) \cite{hur2019iterative} allowed for significant reduction in the number of trainable parameters thanks to weight-sharing at several levels of successively upscaling image resolution. More recently, RAFT-PIV \cite{lagemann2021deep} and LIMA \citep{manickathan2023lightweight} were proposed as versions of CNNs that are specifically optimized for predicting flow targets from velocimetry experiments. Thanks to this targeted optimization of CNN architecture and training parameters, RAFT-PIV achieves high accuracy and LIMA is significantly lighter than its predecessors.
 
-
-
-
-
-
+To advance the accuracy of training CNNs for PIV applications, a number of research questions will have to be addressed next:
+\begin{enumerate}
+\item How rich does the training dataset need to be to remain applicable in a given experimental setting?
+\item What degree of data augmentation is sufficient to transfer knowledge from one trained CNN to the next when changing experimental settings?
+\item At what time separation, $\Delta t$, would the current CNN architectures fail?
+\end{enumerate}
+To help researchers answer those questions, we propose the present Python library, \texttt{pykitPIV} -- \textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}.
 
 
 
@@ -108,6 +108,33 @@ particle image velocimetry; flow estimation; convolutional neural networks; Pyth
 \end{figure*}
 
 The PIV image pair tensor has shape $(N, 2, H, W)$, where $N$ is the batch size, $H$ is image height and $W$ is image width. The second dimension can be thought of as the number of channels and those correspond to $I_1$ and $I_2$, respectively. This is compatible with tensor shape accepted by convolutional layers implemented in PyTorch.
+
+
+
+
+
+\subsection{Class: \texttt{Particle}} \label{sec:class-particle}
+
+
+
+
+\subsection{Class: \texttt{FlowField}} \label{sec:class-particle}
+
+The user also has the option of uploading an external velocity
+
+
+
+
+\subsection{Class: \texttt{Motion}} \label{sec:class-particle}
+
+
+
+
+\subsection{Class: \texttt{Image}} \label{sec:class-particle}
+
+
+
+\subsection{Class: \texttt{Postprocess}} \label{sec:class-particle}
 
 
 

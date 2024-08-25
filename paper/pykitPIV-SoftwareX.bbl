@@ -1,0 +1,49 @@
+\begin{thebibliography}{1}
+\expandafter\ifx\csname url\endcsname\relax
+  \def\url#1{\texttt{#1}}\fi
+\expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
+\expandafter\ifx\csname href\endcsname\relax
+  \def\href#1#2{#2} \def\path#1{#1}\fi
+
+\bibitem{dosovitskiy2015flownet}
+A.~Dosovitskiy, P.~Fischer, E.~Ilg, P.~Hausser, C.~Hazirbas, V.~Golkov, P.~Van
+  Der~Smagt, D.~Cremers, T.~Brox, Flownet: Learning optical flow with
+  convolutional networks, in: Proceedings of the IEEE international conference
+  on computer vision, 2015, pp. 2758--2766.
+
+\bibitem{ilg2017flownet}
+E.~Ilg, N.~Mayer, T.~Saikia, M.~Keuper, A.~Dosovitskiy, T.~Brox, Flownet 2.0:
+  Evolution of optical flow estimation with deep networks, in: Proceedings of
+  the IEEE conference on computer vision and pattern recognition, 2017, pp.
+  2462--2470.
+
+\bibitem{hui2018liteflownet}
+T.-W. Hui, X.~Tang, C.~C. Loy, Liteflownet: A lightweight convolutional neural
+  network for optical flow estimation, in: Proceedings of the IEEE conference
+  on computer vision and pattern recognition, 2018, pp. 8981--8989.
+
+\bibitem{ranjan2017optical}
+A.~Ranjan, M.~J. Black, Optical flow estimation using a spatial pyramid
+  network, in: Proceedings of the IEEE conference on computer vision and
+  pattern recognition, 2017, pp. 4161--4170.
+
+\bibitem{sun2018pwc}
+D.~Sun, X.~Yang, M.-Y. Liu, J.~Kautz, {PWC}-{N}et: {CNN}s for optical flow
+  using pyramid, warping, and cost volume, in: Proceedings of the IEEE
+  conference on computer vision and pattern recognition, 2018, pp. 8934--8943.
+
+\bibitem{hur2019iterative}
+J.~Hur, S.~Roth, Iterative residual refinement for joint optical flow and
+  occlusion estimation, in: Proceedings of the IEEE/CVF conference on computer
+  vision and pattern recognition, 2019, pp. 5754--5763.
+
+\bibitem{lagemann2021deep}
+C.~Lagemann, K.~Lagemann, S.~Mukherjee, W.~Schr{\"o}der, Deep recurrent optical
+  flow learning for particle image velocimetry data, Nature Machine
+  Intelligence 3~(7) (2021) 641--651.
+
+\bibitem{manickathan2023lightweight}
+L.~Manickathan, C.~Mucignat, I.~Lunati, A lightweight neural network designed
+  for fluid velocimetry, Experiments in Fluids 64~(10) (2023) 161.
+
+\end{thebibliography}
