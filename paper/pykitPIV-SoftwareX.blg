@@ -3,44 +3,46 @@ Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
 The top-level auxiliary file: pykitPIV-SoftwareX.aux
 The style file: pci.bst
 Database file #1: bibliography.bib
-You've used 8 entries,
+Warning--empty journal in paszke2017automatic
+You've used 11 entries,
             2952 wiz_defined-function locations,
-            717 strings with 6799 characters,
-and the built_in function-call counts, 3658 in all, are:
-= -- 348
-> -- 107
-< -- 6
-+ -- 41
-- -- 33
-* -- 215
-:= -- 449
-add.period$ -- 8
-call.type$ -- 8
-change.case$ -- 8
+            731 strings with 7585 characters,
+and the built_in function-call counts, 4754 in all, are:
+= -- 434
+> -- 179
+< -- 7
++ -- 67
+- -- 56
+* -- 289
+:= -- 615
+add.period$ -- 11
+call.type$ -- 11
+change.case$ -- 11
 chr.to.int$ -- 0
-cite$ -- 8
-duplicate$ -- 148
-empty$ -- 411
-format.name$ -- 41
-if$ -- 967
+cite$ -- 12
+duplicate$ -- 184
+empty$ -- 518
+format.name$ -- 67
+if$ -- 1243
 int.to.chr$ -- 0
-int.to.str$ -- 8
-missing$ -- 8
-newline$ -- 32
-num.names$ -- 8
-pop$ -- 70
+int.to.str$ -- 11
+missing$ -- 11
+newline$ -- 41
+num.names$ -- 11
+pop$ -- 93
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 270
+skip$ -- 339
 stack$ -- 0
-substring$ -- 274
-swap$ -- 68
-text.length$ -- 6
+substring$ -- 306
+swap$ -- 79
+text.length$ -- 7
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
-warning$ -- 0
-while$ -- 29
-width$ -- 9
-write$ -- 77
+warning$ -- 1
+while$ -- 35
+width$ -- 13
+write$ -- 102
+(There was 1 warning)

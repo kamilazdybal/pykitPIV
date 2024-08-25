@@ -1,4 +1,4 @@
-\begin{thebibliography}{1}
+\begin{thebibliography}{10}
 \expandafter\ifx\csname url\endcsname\relax
   \def\url#1{\texttt{#1}}\fi
 \expandafter\ifx\csname urlprefix\endcsname\relax\def\urlprefix{URL }\fi
@@ -7,12 +7,12 @@
 
 \bibitem{dosovitskiy2015flownet}
 A.~Dosovitskiy, P.~Fischer, E.~Ilg, P.~Hausser, C.~Hazirbas, V.~Golkov, P.~Van
-  Der~Smagt, D.~Cremers, T.~Brox, Flownet: Learning optical flow with
+  Der~Smagt, D.~Cremers, T.~Brox, {FlowNet}: Learning optical flow with
   convolutional networks, in: Proceedings of the IEEE international conference
   on computer vision, 2015, pp. 2758--2766.
 
 \bibitem{ilg2017flownet}
-E.~Ilg, N.~Mayer, T.~Saikia, M.~Keuper, A.~Dosovitskiy, T.~Brox, Flownet 2.0:
+E.~Ilg, N.~Mayer, T.~Saikia, M.~Keuper, A.~Dosovitskiy, T.~Brox, {FlowNet 2.0}:
   Evolution of optical flow estimation with deep networks, in: Proceedings of
   the IEEE conference on computer vision and pattern recognition, 2017, pp.
   2462--2470.
@@ -32,6 +32,11 @@ D.~Sun, X.~Yang, M.-Y. Liu, J.~Kautz, {PWC}-{N}et: {CNN}s for optical flow
   using pyramid, warping, and cost volume, in: Proceedings of the IEEE
   conference on computer vision and pattern recognition, 2018, pp. 8934--8943.
 
+\bibitem{teed2020raft}
+Z.~Teed, J.~Deng, Raft: Recurrent all-pairs field transforms for optical flow,
+  in: Computer Vision--ECCV 2020: 16th European Conference, Glasgow, UK, August
+  23--28, 2020, Proceedings, Part II 16, Springer, 2020, pp. 402--419.
+
 \bibitem{hur2019iterative}
 J.~Hur, S.~Roth, Iterative residual refinement for joint optical flow and
   occlusion estimation, in: Proceedings of the IEEE/CVF conference on computer
@@ -45,5 +50,16 @@ C.~Lagemann, K.~Lagemann, S.~Mukherjee, W.~Schr{\"o}der, Deep recurrent optical
 \bibitem{manickathan2023lightweight}
 L.~Manickathan, C.~Mucignat, I.~Lunati, A lightweight neural network designed
   for fluid velocimetry, Experiments in Fluids 64~(10) (2023) 161.
+
+\bibitem{paszke2017automatic}
+A.~Paszke, S.~Gross, S.~Chintala, G.~Chanan, E.~Yang, Z.~DeVito, Z.~Lin,
+  A.~Desmaison, L.~Antiga, A.~Lerer, Automatic differentiation in pytorch
+  (2017).
+
+\bibitem{paszke2019pytorch}
+A.~Paszke, S.~Gross, F.~Massa, A.~Lerer, J.~Bradbury, G.~Chanan, T.~Killeen,
+  Z.~Lin, N.~Gimelshein, L.~Antiga, et~al., {PyTorch}: An imperative style,
+  high-performance deep learning library, Advances in neural information
+  processing systems 32 (2019).
 
 \end{thebibliography}
