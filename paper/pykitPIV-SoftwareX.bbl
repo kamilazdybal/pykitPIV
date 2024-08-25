@@ -62,6 +62,25 @@ A.~Paszke, S.~Gross, F.~Massa, A.~Lerer, J.~Bradbury, G.~Chanan, T.~Killeen,
   high-performance deep learning library, Advances in neural information
   processing systems 32 (2019).
 
+\bibitem{saad2017scalable}
+T.~Saad, D.~Cline, R.~Stoll, J.~C. Sutherland, Scalable tools for generating
+  synthetic isotropic turbulence with arbitrary spectra, AIAA journal 55~(1)
+  (2017) 327--331.
+
+\bibitem{richards2018fast}
+A.~Richards, T.~Saad, J.~C. Sutherland, A fast turbulence generator using
+  graphics processing units, in: 2018 Fluid Dynamics Conference, 2018, p. 3559.
+
+\bibitem{olsen2000out}
+M.~Olsen, R.~Adrian, Out-of-focus effects on particle image visibility and
+  correlation in microscopic particle image velocimetry, Experiments in fluids
+  29~(Suppl 1) (2000) S166--S174.
+
+\bibitem{rabault2017performing}
+J.~Rabault, J.~Kolaas, A.~Jensen, Performing particle image velocimetry using
+  artificial neural networks: a proof-of-concept, Measurement Science and
+  Technology 28~(12) (2017) 125301.
+
 \bibitem{crameri2020misuse}
 F.~Crameri, G.~E. Shephard, P.~J. Heron, The misuse of colour in science
   communication, Nature communications 11~(1) (2020) 5444.

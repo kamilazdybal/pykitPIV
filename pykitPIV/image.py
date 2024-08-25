@@ -1428,6 +1428,7 @@ class Image:
                                       cmap='viridis',
                                       vmin_vmax=None,
                                       cbar=True,
+                                      cbar_fontsize=14,
                                       add_quiver=False,
                                       quiver_step=10,
                                       quiver_color='k',
@@ -1599,7 +1600,9 @@ class Image:
                 plt.title(title)
 
             if cbar:
-                plt.colorbar()
+                colorbar = plt.colorbar()
+                for t in colorbar.ax.get_yticklabels():
+                    t.set_fontsize(cbar_fontsize)
 
             # Check if flowfield has been generated with a buffer:
             if self.__flowfield.size_buffer == 0:
