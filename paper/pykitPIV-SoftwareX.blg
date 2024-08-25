@@ -4,45 +4,45 @@ The top-level auxiliary file: pykitPIV-SoftwareX.aux
 The style file: pci.bst
 Database file #1: bibliography.bib
 Warning--empty journal in paszke2017automatic
-You've used 11 entries,
+You've used 12 entries,
             2952 wiz_defined-function locations,
-            731 strings with 7585 characters,
-and the built_in function-call counts, 4754 in all, are:
-= -- 434
-> -- 179
+            737 strings with 7730 characters,
+and the built_in function-call counts, 5022 in all, are:
+= -- 458
+> -- 189
 < -- 7
-+ -- 67
-- -- 56
-* -- 289
-:= -- 615
-add.period$ -- 11
-call.type$ -- 11
-change.case$ -- 11
++ -- 71
+- -- 59
+* -- 310
+:= -- 653
+add.period$ -- 12
+call.type$ -- 12
+change.case$ -- 12
 chr.to.int$ -- 0
-cite$ -- 12
-duplicate$ -- 184
-empty$ -- 518
-format.name$ -- 67
-if$ -- 1243
+cite$ -- 13
+duplicate$ -- 192
+empty$ -- 548
+format.name$ -- 71
+if$ -- 1312
 int.to.chr$ -- 0
-int.to.str$ -- 11
-missing$ -- 11
-newline$ -- 41
-num.names$ -- 11
-pop$ -- 93
+int.to.str$ -- 12
+missing$ -- 12
+newline$ -- 44
+num.names$ -- 12
+pop$ -- 98
 preamble$ -- 1
 purify$ -- 0
 quote$ -- 0
-skip$ -- 339
+skip$ -- 357
 stack$ -- 0
-substring$ -- 306
-swap$ -- 79
+substring$ -- 318
+swap$ -- 80
 text.length$ -- 7
 text.prefix$ -- 0
 top$ -- 0
 type$ -- 0
 warning$ -- 1
-while$ -- 35
-width$ -- 13
-write$ -- 102
+while$ -- 37
+width$ -- 14
+write$ -- 110
 (There was 1 warning)
