@@ -1,6 +1,10 @@
 *.aux
 *.log
 *.out
+*.abs
+*.bbl
+*.blg
+*.spl
 *.synctex.gz
 *.toc
 *.ipynb_checkpoints
