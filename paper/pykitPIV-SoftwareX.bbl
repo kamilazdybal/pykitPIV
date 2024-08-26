@@ -51,6 +51,11 @@ C.~Lagemann, K.~Lagemann, S.~Mukherjee, W.~Schr{\"o}der, Deep recurrent optical
 L.~Manickathan, C.~Mucignat, I.~Lunati, A lightweight neural network designed
   for fluid velocimetry, Experiments in Fluids 64~(10) (2023) 161.
 
+\bibitem{mucignat2023lightweight}
+C.~Mucignat, L.~Manickathan, J.~Shah, T.~R{\"o}sgen, I.~Lunati, A lightweight
+  convolutional neural network to reconstruct deformation in bos recordings,
+  Experiments in Fluids 64~(4) (2023) 72.
+
 \bibitem{paszke2017automatic}
 A.~Paszke, S.~Gross, S.~Chintala, G.~Chanan, E.~Yang, Z.~DeVito, Z.~Lin,
   A.~Desmaison, L.~Antiga, A.~Lerer, Automatic differentiation in pytorch
@@ -84,5 +89,10 @@ J.~Rabault, J.~Kolaas, A.~Jensen, Performing particle image velocimetry using
 \bibitem{crameri2020misuse}
 F.~Crameri, G.~E. Shephard, P.~J. Heron, The misuse of colour in science
   communication, Nature communications 11~(1) (2020) 5444.
+
+\bibitem{manickathan2022kinematic}
+L.~Manickathan, C.~Mucignat, I.~Lunati, Kinematic training of convolutional
+  neural networks for particle image velocimetry, Measurement Science and
+  Technology 33~(12) (2022) 124006.
 
 \end{thebibliography}

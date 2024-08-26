@@ -43,17 +43,50 @@
 \hfuzz = 0 pt
 \vfuzz = 0 pt
 
+\usepackage{color}
+\definecolor{color-strings}{rgb}{0,0,0.5}
+\definecolor{color-keywords}{rgb}{0.6,0,0}
+\definecolor{color-comments}{rgb}{0,0.5,0}
+\definecolor{color-background}{rgb}{0.99,0.99,0.99}
+\definecolor{color-numbers}{rgb}{0.7,0.7,0.7}
+\definecolor{color-classes}{rgb}{0.2,0.3,0.4}
+
+\usepackage{listings}
+\lstdefinestyle{mystyle}{
+	basicstyle=\ttm,
+    backgroundcolor=\color{color-background},   
+    commentstyle=\color{color-comments},
+    keywordstyle=\color{color-keywords}\bfseries,
+    numberstyle=\tiny\color{color-numbers},
+    stringstyle=\color{color-strings},
+    basicstyle=\linespread{0.8}\ttfamily\scriptsize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    emph={Particle, FlowField, Image, Motion},
+    emphstyle=\bfseries\color{color-classes},
+}
+
+\lstset{style=mystyle} 
+
 \newcommand{ \kamila}[1]{\color{blue}{Kamila: #1} \color{black}}
 \newcommand{ \todump}[1]{\color{olive}{#1} \color{black}}
 \usepackage[normalem]{ulem}
 
 \begin{document}
 
-\shorttitle{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for training flow estimation algorithms for velocimetry}
+\shorttitle{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for training optical flow estimation algorithms for velocimetry}
 \shortauthors{Zdyba\l{} et~al.}
 
 
-\title [mode = title]{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for training flow estimation algorithms for velocimetry}
+\title [mode = title]{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for training optical flow estimation algorithms for velocimetry}
 
 \author[EMPA]{Kamila Zdyba\l{}*}
 \ead{kamila.zdybal@gmail.com}
@@ -73,14 +106,13 @@ particle image velocimetry; flow estimation; convolutional neural networks; mach
 
 \maketitle
 
-\section{Introduction\label{sec:introduction}}
+\section{Motivation and significance\label{sec:introduction}}
 
-The last decade has seen many advances in training convolutional neural networks (CNNs) for optical flow estimation, \textit{i.e.}, predicting motion information from consecutive image frames. To date, numerous interesting network architectures have been developed, along with general advancements in training case-specific CNNs. This includes various implementations of FlowNets \citep{dosovitskiy2015flownet, ilg2017flownet, hui2018liteflownet}, spatial pyramid network (SPyNet) \cite{ranjan2017optical}, pyramid, warping and cost-volume network (PWC-Net) \cite{sun2018pwc}, and recurrent all-pairs field transforms (RAFT) \cite{teed2020raft}. In addition, the idea of the iterative residual refinement (IRR) \cite{hur2019iterative} allowed for significant reduction in the number of trainable parameters thanks to weight-sharing at several levels of successively upscaling image resolution.
+The last decade has seen many advances in training convolutional neural networks (CNNs) for optical flow estimation, \textit{i.e.}, predicting motion information from consecutive image frames separated by $\Delta t$ in time. To date, numerous interesting network architectures have been developed, along with general advancements in training case-specific CNNs. This includes various implementations of FlowNets \citep{dosovitskiy2015flownet, ilg2017flownet, hui2018liteflownet}, spatial pyramid network (SPyNet) \cite{ranjan2017optical}, pyramid, warping and cost-volume network (PWC-Net) \cite{sun2018pwc}, and recurrent all-pairs field transforms (RAFT) \cite{teed2020raft}. In addition, the idea of the iterative residual refinement (IRR) \cite{hur2019iterative} allowed for significant reduction in the number of trainable parameters thanks to weight-sharing at several levels of successively upscaling image resolution.
 
-Particle image velocimetry (PIV) can especially profit from those architectures, since its main goal is to predict flow targets, such as velocity components, velocity magnitude, or vorticity, from paired snapshots of illuminated tracer particles injected into the flow. Recently, RAFT-PIV \cite{lagemann2021deep} and lightweight image-matching architecture (LIMA) \citep{manickathan2023lightweight} were proposed as versions of CNNs that are specifically optimized for predicting flow targets from velocimetry experiments. Thanks to this targeted CNN architecture and optimization of training parameters, both RAFT-PIV and LIMA achieve high accuracy and per-pixel spatial resolution. LIMA is also significantly leaner in terms of trainable parameters than its predecessors.
+Particle image velocimetry (PIV) can especially profit from those architectures, since its main goal is to predict flow targets, such as displacement fields, velocity components, velocity magnitude, or vorticity, from paired snapshots of illuminated tracer particles injected into the flow. Recently, RAFT-PIV \cite{lagemann2021deep} and lightweight image-matching architecture (LIMA) \citep{manickathan2023lightweight} were proposed as versions of CNNs that are specifically optimized for predicting flow targets from velocimetry experiments. Thanks to this targeted CNN architecture and optimization of training parameters, both RAFT-PIV and LIMA achieve high accuracy and per-pixel spatial resolution. LIMA is also significantly leaner in terms of the number of trainable parameters than its predecessors. Such networks can be trained on GPUs within the matter of hours and then ported to laboratory hardware to make flow predictions in real-time.
 
-The successes of RAFT-PIV and LIMA has been demonstrated on a number of classic experimental fluid dynamics settings such as flow behind a cylinder or boundary layer flows.
-However, to advance the accuracy of training CNNs for more complex PIV applications, a number of research questions will have to be addressed next:
+The successes of RAFT-PIV and LIMA have been demonstrated on a number of classic experimental fluid dynamics settings such as flow behind a cylinder, boundary layer flows, or convective flows of a hot air plume \cite{mucignat2023lightweight}. However, to advance the accuracy of training CNNs for more complex PIV applications, a number of research questions will have to be addressed next:
 \begin{enumerate}
 \item How rich does the training dataset need to be to remain applicable in a given experimental setting?
 \item What degree of data augmentation is sufficient to transfer knowledge from one trained CNN to the next when changing experimental settings?
@@ -88,11 +120,12 @@ However, to advance the accuracy of training CNNs for more complex PIV applicati
 \end{enumerate}
 
 
-To help researchers answer those questions, we propose the present Python library \texttt{pykitPIV} -- \textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}. Our library is compatible with PyTorch \cite{paszke2017automatic, paszke2019pytorch} to allow for easier porting with machine learning algorithms.
+To help researchers answer those questions, we propose the present Python library \texttt{pykitPIV} -- \textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}. Our library is compatible with PyTorch \cite{paszke2017automatic, paszke2019pytorch} to allow for easier porting with machine learning algorithms. The format for generated image tensors is consistent with the input required by the classic convolutional layers available in PyTorch (\texttt{torch.nn.Conv2d}). The high flexibility in the types of images to create can also port very well with reinforcement learning (RL) algorithms, where an agent may learn to augment the training dataset in real-time to account for changes in experimental settings.
 
-\kamila{It would be great if we could extend image generation to synthetic event-based camera datasets. This would make the software truly novel.}
 
-\section{Software overview} \label{sec:software}
+\section{Software description} \label{sec:software}
+
+\subsection{Software architecture}
 
 All functionalities of \texttt{pykitPIV} are organized in five classes: \texttt{Particle}, \texttt{FlowField}, \texttt{Motion}, \texttt{Image}, and \texttt{Postprocess}, each achieving its own role in generating PIV image pairs and the corresponding flow targets. Fig.~\ref{fig:pykitPIV-overview} illustrates the hierarchy of using \texttt{pykitPIV} classes and briefly describes what can be achieved with each class. The user selects the number of image pairs to generate (batch size) and their dimensions (height and width). At each stage of image generation, the user can fix random seeds to assure that data generation is reproducible.
 
@@ -105,12 +138,13 @@ All functionalities of \texttt{pykitPIV} are organized in five classes: \texttt{
 \label{fig:pykitPIV-overview}
 \end{figure*}
 
-\subsection{Class: \texttt{Particle}} \label{sec:class-Particle}
+\subsection{Software functionalities}
 
-The \texttt{Particle} class seeds the two-dimensional flow domain with particles. The user can steer the range of particle diameters and the seeding density.
+\subsubsection{Class: \texttt{Particle}} \label{sec:class-Particle}
 
+The \texttt{Particle} class seeds the two-dimensional flow domain with tracer particles. The user can steer the range of particle diameters and their standard deviation, the seeding density, or the average distances between particles. The initial particle positions are those appearing on snapshots $I_1$.
 
-\subsection{Class: \texttt{FlowField}} \label{sec:class-FlowField}
+\subsubsection{Class: \texttt{FlowField}} \label{sec:class-FlowField}
 
 The \texttt{FlowField} class allows to generate the velocity field to be applied on the two-dimensional domain. We implemented several methods to generate velocity fields, such as random smooth field, checkered field, Chebyshev polynomial field, or simple harmonics field. Those are illustratively visualized in Fig.~\ref{fig:velocity-fields}a-d. This variety of velocity fields span cases with smooth and sharp velocity gradients and can help put machine learning algorithms to test.
 
@@ -123,38 +157,135 @@ The user also has the option of uploading an external velocity field, \textit{e.
 \label{fig:velocity-fields}
 \end{figure}
 
-\subsection{Class: \texttt{Motion}} \label{sec:class-Motion}
+\subsubsection{Class: \texttt{Motion}} \label{sec:class-Motion}
 
-The \texttt{Motion} class applies the flow field to the particles. It uses RK-4 numeric scheme to advect particles by a user-specified time separation, $\Delta t$. The main output of this class are paired PIV images, $I_1$ and $I_2$.
+The \texttt{Motion} class applies the flow field to the particles. It uses a forward Euler or the Runge-Kutta 4th order numeric scheme to advect particles by a user-specified time separation, $\Delta t$. Velocity components in-between the grid points are interpolated with a regular grid interpolation. The main output of this class are particle positions that will appear on snapshots $I_2$, paired with each snapshot $I_1$.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=9cm]{motion-image.pdf}
+\includegraphics[width=8cm]{motion-image.pdf}
 \caption{Example visualization of particle motion resulting from superimposing $I_1$ and $-I_2$ on one image and given the velocity magnitude, $|\vec{V}|$.}
 \label{fig:particle-motion}
 \end{figure}
 
-\subsection{Class: \texttt{Image}} \label{sec:class-Image}
+\subsubsection{Class: \texttt{Image}} \label{sec:class-Image}
 
 The \texttt{Image} class generates image intensities. It adds the reflected laser light to the generated PIV image pairs. The core functionality is to add a Gaussian intensity to each particle \citep{olsen2000out, rabault2017performing}. The user has a lot of flexibility in setting up the laser plane and camera properties. The user can also steer the amount of particles lost between frame $I_1$ and $I_2$ due to out-of-plane movement.
 
 The PIV image pair tensor has shape $(N, 2, H, W)$, where $N$ is the batch size, $H$ is image height and $W$ is image width. The second dimension can be thought of as the number of channels and those correspond to $I_1$ and $I_2$, respectively. This is compatible with tensor shape accepted by convolutional layers implemented in PyTorch. Note that the whole batch of $N$ images is generated all at once. The \texttt{Image} class contains convenient functions for saving images to \texttt{.h5} files and for plotting or animating image pairs. \texttt{pykitPIV} uses sequential colormaps by Crameri et al. \cite{crameri2020misuse}.
 
-\subsection{Class: \texttt{Postprocess}} \label{sec:class-Postprocess}
+\subsubsection{Class: \texttt{Postprocess}} \label{sec:class-Postprocess}
 
-The \texttt{Postprocess} class contains functions that apply transformations to generated images. It can be especially useful for data augmentation.
+The \texttt{Postprocess} class contains functions that apply transformations to generated images. It can be especially useful for data augmentation, where the training dataset is extended with images with various levels of noise or illumination levels.
 
-\section{Discussion} \label{sec:results}
+\section{Illustrative examples} \label{sec:examples}
 
-%
-%\begin{figure*}[t]
-%\centering
-%\vspace{-0.4 in}
-%\includegraphics[width=\textwidth]{pykitPIV-modules.pdf}
-%\vspace{10 pt}
-%\caption{\footnotesize The variety of operations on PIV images possible with the pykitPIV modules.}
-%\label{fig:operations}
-%\end{figure*}
+Below, we present the most straightforward workflow for generating a batch of $N=100$ PIV image pairs and their associated targets and we save the resulting tensors for later use in PyTorch. Each image is 256px $\times$ 256px. We create a 10px boundary buffer during image generation to allow for new particles to enter the image area and hence to prevent spurious disappearance of particles near image boundaries.
+
+We import \texttt{pykitPIV}'s classes and specify the global parameters:
+\lstset{language=Python}
+\begin{lstlisting}
+from pykitPIV import Particle, FlowField, Motion, Image
+
+n_images = 100
+image_size = (256, 256)
+size_buffer = 10
+random_seed = 100
+\end{lstlisting}
+We instantiate an object of the \texttt{Particle} class:
+\lstset{language=Python}
+\begin{lstlisting}
+particles = Particle(n_images,
+                     size=image_size,
+                     size_buffer=size_buffer,
+                     diameters=(4,4.1),
+                     distances=(1,2),
+                     densities=(0.05,0.1),
+                     signal_to_noise=(5,20),
+                     diameter_std=0.2,
+                     seeding_mode='random',
+                     random_seed=random_seed)
+\end{lstlisting}
+We instantiate an object of the FlowField class and we generate random smooth velocity fields for each of the $N=100$ image pairs:
+\lstset{language=Python}
+\begin{lstlisting}
+flowfield = FlowField(n_images,
+                      size=image_size,
+                      size_buffer=size_buffer,
+                      random_seed=random_seed)
+
+flowfield.generate_random_velocity_field(
+				gaussian_filters=(10,11),
+				n_gaussian_filter_iter=20,
+				displacement=(0,10))
+\end{lstlisting}
+We instantiate an object of the \texttt{Motion} class and we run a forward Euler numerical scheme to advect the particles:
+\lstset{language=Python}
+\begin{lstlisting}
+motion = Motion(particles, 
+                flowfield, 
+                time_separation=0.1)
+                
+motion.forward_euler(n_steps=10)
+\end{lstlisting}
+Finally, we instantiate an object of the \texttt{Image} class, add particles, flow field, and motion objects and add reflected light with the specific laser plane properties:
+\lstset{language=Python}
+\begin{lstlisting}
+image = Image(random_seed=random_seed)
+
+# Add particles to images:
+image.add_particles(particles)
+
+# Add flow field to images:
+image.add_flowfield(flowfield)
+
+# Add motion to images:        
+image.add_motion(motion)
+
+# Add reflected light to images:
+image.add_reflected_light(exposures=(0.7,0.8),
+                          maximum_intensity=2**16-1,
+                          laser_beam_thickness=1,
+                          laser_over_exposure=1,
+                          laser_beam_shape=0.95,
+                          alpha=1/10)
+\end{lstlisting}
+Once all images are created, we can remove buffers from the images, convert image pairs and the flow targets to tensors, and save tensors to \texttt{.h5} files for future use:
+\lstset{language=Python}
+\begin{lstlisting}
+# Remove image buffers:
+image.remove_buffers()
+
+# Prepare image tensors:
+image_pairs = image.image_pairs_to_tensor()
+targets = image.targets_to_tensor()
+
+# Save images to .h5:
+image.save_to_h5({'I': image_pairs, 
+							'targets': targets}, 
+							filename='PIV-dataset.h5')
+\end{lstlisting}
+
+\section{Impact} \label{sec:results}
+
+The kinematic training methodology \cite{manickathan2022kinematic}, which is the core concept behind generating PIV image pairs with \texttt{pykitPIV}, has been used in our group to train LIMA \cite{manickathan2023lightweight, mucignat2023lightweight}. The approach proved successful, which suggests that for small $\Delta t$, learning the kinematic relationship between two consecutive PIV snapshots, as opposed to knowing the full dynamic relationship, is sufficient to train CNNs.
+
+
+
+
+\kamila{It would be great if we could extend image generation to synthetic event-based camera datasets. This would make the software truly novel.}
+
+\kamila{Perhaps a nice novelty would be to allow the user to add solid boundaries into the image?}
+
+
+\subsection{Porting with convolutional neural networks}
+
+\kamila{Here we can describe what can be achieved in terms of training a CNN.}
+
+\subsection{Porting with reinforcement learning}
+
+\kamila{Here we can describe what can be achieved in terms of training an RL agent, e.g. in the context of autonomous experimentation. Maybe the agent will learn to augment the dataset in real time to account for a changing experimental settings.}
+
 
 \section{Conclusions}
 
@@ -171,11 +302,6 @@ The authors declare that they have no known competing financial interests or per
 \section*{Acknowledgments}
 
 
-
-
-
-
-\newpage
 
 \bibliographystyle{pci}
 \bibliography{bibliography}
