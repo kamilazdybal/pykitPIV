@@ -159,7 +159,7 @@ The user also has the option of uploading an external velocity field, \textit{e.
 
 \subsubsection{Class: \texttt{Motion}} \label{sec:class-Motion}
 
-The \texttt{Motion} class applies the flow field to the particles. It uses a forward Euler or the Runge-Kutta 4th order numeric scheme to advect particles by a user-specified time separation, $\Delta t$. Velocity components in-between the grid points are interpolated with a regular grid interpolation. The main output of this class are particle positions that will appear on snapshots $I_2$, paired with each snapshot $I_1$.
+The \texttt{Motion} class applies the flow field to the particles. It uses a forward Euler or the Runge-Kutta 4th order numeric scheme to advect particles by a user-specified time separation, $\Delta t$. Velocity components in-between the grid points are interpolated with a regular grid interpolation. The main output of this class are particle positions that will appear on snapshots $I_2$, each paired with a respective snapshot $I_1$.
 
 \begin{figure}[t]
 \centering
