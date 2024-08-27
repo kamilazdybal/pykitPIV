@@ -410,6 +410,12 @@ class FlowField:
             # Generate Chebyshev velocity field:
             flowfield.generate_chebyshev_velocity_field(order=10)
 
+        :param displacement: (optional)
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement.
+        :param start: (optional)
+            ``int`` or ``float`` specifying the start value for generating the coordinate grid.
+        :param stop: (optional)
+            ``int`` or ``float`` specifying the end value for generating the coordinate grid.
         :param order: (optional)
             ``int`` specifying the order of the Chebyshev polynomial.
         """
@@ -462,8 +468,11 @@ class FlowField:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def generate_spherical_harmonics_velocity_field(self,
-                                                    degree=1,
-                                                    order=1):
+                                                    displacement=(0, 10),
+                                                    start=0.3,
+                                                    stop=0.8,
+                                                    order=1,
+                                                    degree=1):
         """
         Generates a velocity field using spherical harmonics. Each velocity component is computed as:
 
@@ -491,12 +500,69 @@ class FlowField:
                                   size_buffer=10,
                                   random_seed=100)
 
-            # Generate Chebyshev velocity field:
+            # Generate spherical harmonics velocity field:
             flowfield.generate_spherical_harmonics_velocity_field(degree=1, order=1)
 
+        :param displacement: (optional)
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement.
+        :param start: (optional)
+            ``int`` or ``float`` specifying the start value for generating the azimuthal/polar coordinate grid.
+        :param stop: (optional)
+            ``int`` or ``float`` specifying the end value for generating the azimuthal/polar coordinate grid.
+        :param order: (optional)
+            ``int`` specifying the order, :math:`n`, of the spherical harmonics.
+        :param degree: (optional)
+            ``int`` specifying the degree, :math:`k`, of the spherical harmonics.
         """
 
-        raise ValueError("This function not implemented yet.")
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        check_two_element_tuple(displacement, 'displacement')
+        check_min_max_tuple(displacement, 'displacement')
+
+        if (not isinstance(start, int)) and (not isinstance(start, float)):
+            raise ValueError("Parameter `start` has to be of type 'int' or 'float'.")
+
+        if (not isinstance(stop, int)) and (not isinstance(stop, float)):
+            raise ValueError("Parameter `stop` has to be of type 'int' or 'float'.")
+
+        if (not isinstance(order, int)):
+            raise ValueError("Parameter `order` has to be of type 'int'.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        self.__displacement = displacement
+        self.__velocity_field = []
+        self.__velocity_field_magnitude = []
+        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+
+        h = np.linspace(start, stop, self.size_with_buffer[0])
+        w = np.linspace(start, stop, self.size_with_buffer[1])
+
+        # Rescale the azimuthal coordinate:
+        h = (h - h.min()) / (h.max() - h.min()) * np.pi * .2 + np.pi * .4
+
+        # Rescale the polar coordinate:
+        w = (w - w.min()) / (w.max() - w.min()) * np.pi * .2 / 6 * 5 + (np.pi * .5 - np.pi * .2 / 6 * 5 / 2)
+
+        (grid_w, grid_h) = np.meshgrid(w, h)
+
+        for i in range(0, self.n_images):
+
+            # Generate a 2D field:
+            velocity_field_u = np.real(sph_harm(order, degree, grid_h, grid_w)) * np.sin((grid_h + grid_w) * degree)
+            velocity_field_v = np.real(sph_harm(order, degree, grid_h, grid_w)) * np.sin((grid_h + grid_w) * degree)
+
+            velocity_magnitude = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            velocity_magnitude_scale = self.__displacement_per_image[i] / np.max(velocity_magnitude)
+
+            velocity_field_u = velocity_magnitude_scale * velocity_field_u
+            velocity_field_v = velocity_magnitude_scale * velocity_field_v
+
+            self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2))
+            self.__velocity_field.append((velocity_field_u, velocity_field_v))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
