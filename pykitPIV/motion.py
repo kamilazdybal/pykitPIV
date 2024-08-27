@@ -472,6 +472,10 @@ class Motion:
             ``bool`` specifying if ticks along the :math:`y`-axis should be plotted.
         :param title: (optional)
             ``str`` specifying figure title.
+        :param color_I1: (optional)
+            ``str`` specifying the color for particles in image :math:`I_1`.
+        :param color_I2: (optional)
+            ``str`` specifying the color for particles in image :math:`I_2`.
         :param figsize: (optional)
             ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
         :param dpi: (optional)
