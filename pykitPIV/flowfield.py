@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from scipy.special import chebyu, sph_harm
 import random
 import copy
 import scipy
@@ -375,7 +376,10 @@ class FlowField:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def generate_chebyshev_velocity_field(self,
-                                          order=1):
+                                          displacement=(0, 10),
+                                          start=0.3,
+                                          stop=0.8,
+                                          order=10):
         """
         Generates a velocity field using Chebyshev polynomials of the second kind. Each velocity component is computed as:
 
@@ -404,13 +408,56 @@ class FlowField:
                                   random_seed=100)
 
             # Generate Chebyshev velocity field:
-            flowfield.generate_chebyshev_velocity_field(order=50)
+            flowfield.generate_chebyshev_velocity_field(order=10)
 
         :param order: (optional)
             ``int`` specifying the order of the Chebyshev polynomial.
         """
 
-        raise ValueError("This function not implemented yet.")
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        check_two_element_tuple(displacement, 'displacement')
+        check_min_max_tuple(displacement, 'displacement')
+
+        if (not isinstance(start, int)) and (not isinstance(start, float)):
+            raise ValueError("Parameter `start` has to be of type 'int' or 'float'.")
+
+        if (not isinstance(stop, int)) and (not isinstance(stop, float)):
+            raise ValueError("Parameter `stop` has to be of type 'int' or 'float'.")
+
+        if (not isinstance(order, int)):
+            raise ValueError("Parameter `order` has to be of type 'int'.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        self.__displacement = displacement
+        self.__velocity_field = []
+        self.__velocity_field_magnitude = []
+        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+
+        h = np.linspace(start, stop, self.size_with_buffer[0])
+        w = np.linspace(start, stop, self.size_with_buffer[1])
+        (grid_w, grid_h) = np.meshgrid(w, h)
+
+        # Generate Chebyshev polynomials:
+        un = chebyu(order)
+
+        for i in range(0, self.n_images):
+
+            # Generate a 2D field:
+            velocity_field_u = un(grid_h) * un(grid_w) * np.sin((grid_h + grid_w) * order)
+            velocity_field_v = un(grid_h) * un(grid_w) * np.sin((grid_h + grid_w) * order)
+
+            velocity_magnitude = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            velocity_magnitude_scale = self.__displacement_per_image[i] / np.max(velocity_magnitude)
+
+            velocity_field_u = velocity_magnitude_scale * velocity_field_u
+            velocity_field_v = velocity_magnitude_scale * velocity_field_v
+
+            self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2))
+            self.__velocity_field.append((velocity_field_u, velocity_field_v))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
