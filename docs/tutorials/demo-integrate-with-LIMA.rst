@@ -6,20 +6,31 @@ Integrate synthetic image generation with training a convolutional neural networ
 Introduction
 ************************************************************
 
+In this tutorial, we show how the synthetic PIV image generation can be integrated with training the
+lightweight image matching architecture (LIMA) model in one Python workflow.
+
+.. code:: python
+
+    import numpy as np
+    import cmcrameri.cm as cmc
+    from pykitPIV import Particle, FlowField, Motion, Image
+
+************************************************************
+Generate synthetic images with ``pykitPIV``
+************************************************************
+
 We define the PIV image sizes (128 :math:`\text{px}` by 128 :math:`\text{px}`)
 and we specify a 10 :math:`\text{px}` buffer for the image size.
-The buffer prevents particles from artificially disappearing near image boundaries during particle movement, *i.e.*, particles that reside within
-the 10 :math:`\text{px}` outline at image frame :math:`I_1` are able to enter the proper image area in image frame :math:`I_2`.
+The buffer prevents particle density to artificially decrease near image boundaries due to particle movement
+towards the interior of an image.
+With the buffer, particles that reside within the 10 :math:`\text{px}` outline from the boundary of image frame :math:`I_1`
+are able to enter the proper image area in image frame :math:`I_2`.
 
 .. code:: python
 
     image_size = (128,128)
 
     size_buffer = 10
-
-************************************************************
-Generate synthetic images with ``pykitPIV``
-************************************************************
 
 Below, we define a function for generating train and test PIV image pairs and the flow targets (velocity components :math:`u` and :math:`v`).
 
