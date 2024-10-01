@@ -72,7 +72,7 @@ class TestParticleClass(unittest.TestCase):
         self.assertTrue(isinstance(particles.SNR_per_image, np.ndarray))
 
         self.assertTrue(isinstance(particles.n_of_particles, list))
-        self.assertTrue(isinstance(particles.particle_positions, list))
+        self.assertTrue(isinstance(particles.particle_positions, np.ndarray))
         self.assertTrue(isinstance(particles.particle_diameters, list))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -348,8 +348,8 @@ class TestParticleClass(unittest.TestCase):
 
         self.assertTrue(particles.size_with_buffer[0] == 120)
         self.assertTrue(particles.size_with_buffer[1] == 220)
-        self.assertTrue(particles.particle_positions[0].shape[0] == 120)
-        self.assertTrue(particles.particle_positions[0].shape[1] == 220)
+        self.assertTrue(particles.particle_positions.shape[2] == 120)
+        self.assertTrue(particles.particle_positions.shape[3] == 220)
 
         particles = Particle(1,
                              size=(100, 200),
@@ -359,8 +359,8 @@ class TestParticleClass(unittest.TestCase):
 
         self.assertTrue(particles.size_with_buffer[0] == 100)
         self.assertTrue(particles.size_with_buffer[1] == 200)
-        self.assertTrue(particles.particle_positions[0].shape[0] == 100)
-        self.assertTrue(particles.particle_positions[0].shape[1] == 200)
+        self.assertTrue(particles.particle_positions.shape[2] == 100)
+        self.assertTrue(particles.particle_positions.shape[3] == 200)
 
         particles = Particle(1,
                              size=(100, 200),
@@ -370,8 +370,8 @@ class TestParticleClass(unittest.TestCase):
 
         self.assertTrue(particles.size_with_buffer[0] == 104)
         self.assertTrue(particles.size_with_buffer[1] == 204)
-        self.assertTrue(particles.particle_positions[0].shape[0] == 104)
-        self.assertTrue(particles.particle_positions[0].shape[1] == 204)
+        self.assertTrue(particles.particle_positions.shape[2] == 104)
+        self.assertTrue(particles.particle_positions.shape[3] == 204)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
