@@ -8,7 +8,7 @@
 
 ## Introduction
 
-**pykitPIV** (**Py**\ thon **ki**\ nematic **t**\ raining for **P**\ article **I**\ mage **V**\ elocimetry) is a Python 
+**pykitPIV** (**Py**thon **ki**nematic **t**raining for **P**article **I**mage **V**elocimetry) is a Python 
 package for synthetic PIV image generation that exploits the kinematic relationship between two consecutive PIV images.
 
 The generated image pairs and the associated flow targets can be directly used in training convolutional neural networks 
