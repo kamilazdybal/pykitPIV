@@ -49,26 +49,44 @@ check the following references:
 
 ## Installation
 
-Start with a new environment:
+Start with a new Python environment:
 
 ```
-conda create -n pykitPIV
+conda create -n pykitPIV python=3.10
 ```
 
-Requirements:
+```
+conda activate pykitPIV
+```
+
+Install requirements:
 
 ```
 pip install jupyterlab
 pip install matplotlib
+pip install h5py
 pip install torch
 pip install pandas
 pip install scipy
 pip install Sphinx
 pip install sphinxcontrib-bibtex
 pip install furo
+ 
 ```
 
-To install, run the following in the main ``pykitPIV`` directory:
+Clone the pykitPIV repository:
+
+```
+git clone https://gitlab.empa.ch/kamila.zdybal/pykitPIV.git
+```
+
+and move there:
+
+```
+cd pykitPIV
+```
+
+Install ``pykitPIV``:
 
 ```
 python -m pip install .
@@ -76,10 +94,17 @@ python -m pip install .
 
 ## Local documentation build
 
+Build documentation:
+
 ```
 cd docs
 sphinx-build -b html . builddir
 make html
+```
+
+Open documentation in a web browser:
+
+```
 open _build/html/index.html
 ```
 

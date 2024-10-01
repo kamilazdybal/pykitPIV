@@ -44,6 +44,12 @@ check the following references:
 
 .. toctree::
    :maxdepth: 5
+   :caption: Installation
+
+   installation/instruction
+
+.. toctree::
+   :maxdepth: 5
    :caption: User Guide
 
    user/particle
