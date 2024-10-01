@@ -8,18 +8,28 @@
 
 ## Introduction
 
-**pykitPIV** is a Python package for synthetic PIV image generation that exploits the kinematic relationship between two PIV images. 
-The generated image pairs and the associated flow targets can be directly used in training convolutional neural network (CNN) for flow estimation.
-The PIV image processing is compatible with PyTorch and can easily port with convolutional layers (`torch.nn.Conv2d`) or with convolutional filters (`torch.nn.functional.conv2d`)
-The goal of this library is to give the user, or a reinforcement learning (RL) agent, a lot of flexibility in setting-up image generation.
+**pykitPIV** (**Py**\ thon **ki**\ nematic **t**\ raining for **P**\ article **I**\ mage **V**\ elocimetry) is a Python 
+package for synthetic PIV image generation that exploits the kinematic relationship between two consecutive PIV images.
 
-The graph below shows the possible workflows constructed from the four main classes:
+The generated image pairs and the associated flow targets can be directly used in training convolutional neural networks 
+(CNNs) for flow estimation.
+The PIV image processing is compatible with **PyTorch** and can easily port with convolutional layers 
+(``torch.nn.Conv2d``) or with convolutional filters (``torch.nn.functional.conv2d``). The goal of this library is to 
+give the user, or a machine learning algorithm, a lot of flexibility in setting-up image generation.
+
+<p align="center">
+    <img src="docs/images/pykitPIV-workflow.svg" width="800">
+</p>
+
+The graph above shows the possible workflows constructed from the five main classes:
 
 - The class **Particle** can be used to initialize particle properties and particle positions on an image.
 
-- The class **FlowField** can be used to create velocity field to advect the particles.
+- The class **FlowField** can be used to create a velocity field to advect the particles.
 
-- The class **Motion** takes an object of class **Particle** and applies an object of class **FlowField** to it to advect the particles and generate an image pair at time $t$ and $t + \Delta t$.
+- The class **Motion** takes an object of class **Particle** and applies an object of class **FlowField** to it to
+  advect the particles and generate an image pair, $\mathbf{I} = (I_1, I_2)^{\top}$, at time $t$ and
+  $t + T$ respectively. Here $T$ denotes the time separation between two PIV images.
 
 - The class **Image** can be used to apply laser and camera properties on any standalone image, as well as on a series of images of advected particles.
 
@@ -27,11 +37,10 @@ The graph below shows the possible workflows constructed from the four main clas
 
 At each stage, the user can enforce reproducible image generation through fixing random seeds.
 
-<p align="center">
-    <img src="docs/images/pykitPIV-workflow.png" width="400">
-</p>
-
-pykitPIV exploits the idea that if the time separation between two PIV images is small, kinematic relationship between particles is sufficient to determine particle displacement fields. For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please check the following references:
+**pykitPIV** exploits the idea that if the time separation between two PIV images is small,
+kinematic relationship between particles is sufficient to determine particle displacement fields.
+For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please
+check the following references:
 
 - [Kinematic training of convolutional neural networks for particle image velocimetry](https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae/meta)
 
