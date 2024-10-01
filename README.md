@@ -1,9 +1,7 @@
 # Welcome to `pykitPIV`!
 
-**Py**thon **ki**nematic **t**raining for particle image velocimetry (**PIV**)
-
 <p align="center">
-    <img src="docs/images/pykitPIV-logo.png" width="200">
+    <img src="docs/images/pykitPIV-logo.png" width="300">
 </p>
 
 ## Introduction
