@@ -1,16 +1,23 @@
 .. image:: images/pykitPIV-logo.png
   :width: 300
 
-**pykitPIV** (**Py**\ thon **ki**\ nematic **t**\ raining for **P**\ article **I**\ mage **V**\ elocimetry) is a Python package for synthetic PIV image generation that exploits the kinematic relationship between two consecutive PIV images.
+**pykitPIV** (**Py**\ thon **ki**\ nematic **t**\ raining for **P**\ article **I**\ mage **V**\ elocimetry) is a
+Python package for synthetic PIV image generation.
+It exploits the idea that if the time separation between two PIV images is small,
+kinematic relationship between two consecutive PIV images is sufficient to determine particle displacement fields.
 
-The generated image pairs and the associated flow targets can be directly used in training convolutional neural networks (CNNs) for flow estimation.
-The PIV image processing is compatible with **PyTorch** and can easily port with convolutional layers (``torch.nn.Conv2d``) or with convolutional filters (``torch.nn.functional.conv2d``). The goal of this library is to give the user, or a machine learning algorithm, a lot of flexibility in setting-up image generation.
+The generated image pairs, and the associated flow targets, can be directly used in training
+convolutional neural networks (CNNs) for optical flow estimation.
+The PIV images are compatible with **PyTorch** and can easily port with convolutional layers
+(``torch.nn.Conv2d``) or with convolutional filters (``torch.nn.functional.conv2d``).
+The goal of this library is to give the user, or a machine learning algorithm, a lot of flexibility in setting-up
+image generation. **pykitPIV** thus provides images of varying complexity in order to exhaust challenging training scenarios.
+
+The graph below shows the possible workflows constructed from the five main classes:
 
 .. image:: images/pykitPIV-workflow.svg
   :width: 900
   :align: center
-
-The graph above shows the possible workflows constructed from the five main classes:
 
 - The class **Particle** can be used to initialize particle properties and particle positions on an image.
 
@@ -26,8 +33,6 @@ The graph above shows the possible workflows constructed from the five main clas
 
 At each stage, the user can enforce reproducible image generation through fixing random seeds.
 
-**pykitPIV** exploits the idea that if the time separation between two PIV images is small,
-kinematic relationship between particles is sufficient to determine particle displacement fields.
 For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please
 check the following references:
 
