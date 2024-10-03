@@ -1,5 +1,6 @@
 import numpy as np
 import argparse
+import time
 from pykitPIV import Particle, FlowField, Motion, Image
 
 #################################################################################################################################
@@ -28,6 +29,8 @@ image_size = (image_height, image_width)
 #################################################################################################################################
 ## Generate images
 #################################################################################################################################
+
+tic = time.perf_counter()
 
 particles = Particle(n_images, 
                      size=image_size, 
@@ -78,6 +81,10 @@ tensors_dictionary = {"I"      : images_tensor,
                       "targets": targets_tensor}
 
 image.save_to_h5(tensors_dictionary, 
-                 filename='pykitPIV-dataset-' + str(n_images) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '.h5')
+                 filename='pykitPIV-dataset-' + str(n_images) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '.h5',
+                 verbose=True)
+
+toc = time.perf_counter()
+print(f'Images generated and saved in {(toc - tic)/60:0.1f} minutes.\n')
 
 #################################################################################################################################
