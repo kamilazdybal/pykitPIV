@@ -805,7 +805,7 @@ class Image:
              yticks=True,
              title=None,
              cmap='Greys_r',
-             origin='upper',
+             origin='lower',
              figsize=(5,5),
              dpi=300,
              filename=None):
@@ -963,7 +963,7 @@ class Image:
                         yticks=True,
                         title=None,
                         cmap='Greys_r',
-                        origin='upper',
+                        origin='lower',
                         figsize=(5,5),
                         dpi=300,
                         filename=None):
@@ -1110,15 +1110,16 @@ class Image:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def animate_image_pair(self,
-                        idx,
-                        with_buffer=False,
-                        xlabel=None,
-                        ylabel=None,
-                        title=None,
-                        cmap='Greys_r',
-                        figsize=(5,5),
-                        dpi=300,
-                        filename=None):
+                           idx,
+                           with_buffer=False,
+                           xlabel=None,
+                           ylabel=None,
+                           title=None,
+                           cmap='Greys_r',
+                           origin='lower',
+                           figsize=(5,5),
+                           dpi=300,
+                           filename=None):
         """
         Plots an animated PIV image pair, :math:`\mathbf{I} = (I_1, I_2)^{\\top}`, at time :math:`t`
         and :math:`t + \\Delta t` respectively.
@@ -1135,6 +1136,8 @@ class Image:
             ``str`` specifying figure title.
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param origin: (optional)
+            ``str`` specifying the origin location. It can be ``'upper'`` or ``'lower'``.
         :param figsize: (optional)
             ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
         :param dpi: (optional)
@@ -1166,6 +1169,9 @@ class Image:
 
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        if not isinstance(origin, str):
+            raise ValueError("Parameter `origin` has to be of type 'str'.")
 
         check_two_element_tuple(figsize, 'figsize')
 
@@ -1248,7 +1254,7 @@ class Image:
                             title=None,
                             cmap='viridis',
                             vmin_vmax=None,
-                            origin='upper',
+                            origin='lower',
                             figsize=(5,5),
                             dpi=300,
                             filename=None):
@@ -1453,7 +1459,7 @@ class Image:
                                       add_streamplot=False,
                                       streamplot_density=1,
                                       streamplot_color='k',
-                                      origin='upper',
+                                      origin='lower',
                                       figsize=(5,5),
                                       dpi=300,
                                       filename=None):
