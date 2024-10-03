@@ -805,6 +805,7 @@ class Image:
              yticks=True,
              title=None,
              cmap='Greys_r',
+             origin='upper',
              figsize=(5,5),
              dpi=300,
              filename=None):
@@ -829,6 +830,8 @@ class Image:
             ``str`` specifying figure title.
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param origin: (optional)
+            ``str`` specifying the origin location. It can be ``'upper'`` or ``'lower'``.
         :param figsize: (optional)
             ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
         :param dpi: (optional)
@@ -872,6 +875,9 @@ class Image:
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
 
+        if not isinstance(origin, str):
+            raise ValueError("Parameter `origin` has to be of type 'str'.")
+
         check_two_element_tuple(figsize, 'figsize')
 
         if not isinstance(dpi, int):
@@ -905,13 +911,13 @@ class Image:
             # Check if particles were generated with a buffer:
             if self.__particles.size_buffer == 0:
 
-                plt.imshow(image_to_plot, cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
+                plt.imshow(image_to_plot, cmap=cmap, origin=origin, vmin=0, vmax=self.maximum_intensity)
 
             else:
 
                 if with_buffer:
 
-                    im = plt.imshow(image_to_plot, cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
+                    im = plt.imshow(image_to_plot, cmap=cmap, origin=origin, vmin=0, vmax=self.maximum_intensity)
 
                     # Extend the imshow area with the buffer:
                     f = lambda pixel: pixel - self.__particles.size_buffer
@@ -924,7 +930,7 @@ class Image:
 
                 else:
 
-                    plt.imshow(image_to_plot[self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
+                    plt.imshow(image_to_plot[self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin=origin, vmin=0, vmax=self.maximum_intensity)
 
         if xlabel is not None:
             plt.xlabel(xlabel)
@@ -957,6 +963,7 @@ class Image:
                         yticks=True,
                         title=None,
                         cmap='Greys_r',
+                        origin='upper',
                         figsize=(5,5),
                         dpi=300,
                         filename=None):
@@ -991,6 +998,8 @@ class Image:
             ``str`` specifying figure title.
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param origin: (optional)
+            ``str`` specifying the origin location. It can be ``'upper'`` or ``'lower'``.
         :param figsize: (optional)
             ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
         :param dpi: (optional)
@@ -1029,6 +1038,9 @@ class Image:
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
 
+        if not isinstance(origin, str):
+            raise ValueError("Parameter `origin` has to be of type 'str'.")
+
         check_two_element_tuple(figsize, 'figsize')
 
         if not isinstance(dpi, int):
@@ -1054,13 +1066,13 @@ class Image:
         # Check if particles were generated with a buffer:
         if self.__particles.size_buffer == 0:
 
-            plt.imshow(image_to_plot, cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
+            plt.imshow(image_to_plot, cmap=cmap, origin=origin, vmin=0, vmax=self.maximum_intensity)
 
         else:
 
             if with_buffer:
 
-                im = plt.imshow(image_to_plot, cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
+                im = plt.imshow(image_to_plot, cmap=cmap, origin=origin, vmin=0, vmax=self.maximum_intensity)
 
                 # Extend the imshow area with the buffer:
                 f = lambda pixel: pixel - self.__particles.size_buffer
@@ -1073,7 +1085,7 @@ class Image:
 
             else:
 
-                plt.imshow(image_to_plot[self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower', vmin=0, vmax=self.maximum_intensity)
+                plt.imshow(image_to_plot[self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin=origin, vmin=0, vmax=self.maximum_intensity)
 
         if xlabel is not None:
             plt.xlabel(xlabel)
@@ -1178,13 +1190,13 @@ class Image:
             # Check if particles were generated with a buffer:
             if self.__particles.size_buffer == 0:
 
-                im = plt.imshow(imagelist[0], cmap=cmap, origin='lower', animated=True)
+                im = plt.imshow(imagelist[0], cmap=cmap, origin=origin, animated=True)
 
             else:
 
                 if with_buffer:
 
-                    im = plt.imshow(imagelist[0], cmap=cmap, origin='lower', animated=True)
+                    im = plt.imshow(imagelist[0], cmap=cmap, origin=origin, animated=True)
 
                     # Extend the imshow area with the buffer:
                     f = lambda pixel: pixel - self.__particles.size_buffer
@@ -1197,7 +1209,7 @@ class Image:
 
                 else:
 
-                    im = plt.imshow(imagelist[0][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin='lower', animated=True)
+                    im = plt.imshow(imagelist[0][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin=origin, animated=True)
 
         if xlabel is not None:
             plt.xlabel(xlabel)
@@ -1236,6 +1248,7 @@ class Image:
                             title=None,
                             cmap='viridis',
                             vmin_vmax=None,
+                            origin='upper',
                             figsize=(5,5),
                             dpi=300,
                             filename=None):
@@ -1256,6 +1269,8 @@ class Image:
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
         :param vmin_vmax: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) fixed bounds for the colorbar.
+        :param origin: (optional)
+            ``str`` specifying the origin location. It can be ``'upper'`` or ``'lower'``.
         :param figsize: (optional)
             ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
         :param dpi: (optional)
@@ -1292,6 +1307,9 @@ class Image:
             check_two_element_tuple(vmin_vmax, 'vmin_vmax')
             check_min_max_tuple(vmin_vmax)
 
+        if not isinstance(origin, str):
+            raise ValueError("Parameter `origin` has to be of type 'str'.")
+
         check_two_element_tuple(figsize, 'figsize')
 
         if not isinstance(dpi, int):
@@ -1316,9 +1334,9 @@ class Image:
             if self.__flowfield.size_buffer == 0:
 
                 if vmin_vmax is not None:
-                    plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                    plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                 else:
-                    plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, origin='lower')
+                    plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, origin=origin)
 
             else:
 
@@ -1326,9 +1344,9 @@ class Image:
 
                     if vmin_vmax is not None:
                         im = plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, vmin=vmin_vmax[0],
-                                   vmax=vmin_vmax[1], origin='lower')
+                                   vmax=vmin_vmax[1], origin=origin)
                     else:
-                        im = plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, origin='lower')
+                        im = plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, origin=origin)
 
                     # Extend the imshow area with the buffer:
                     f = lambda pixel: pixel - self.__flowfield.size_buffer
@@ -1342,9 +1360,9 @@ class Image:
                 else:
 
                     if vmin_vmax is not None:
-                        plt.imshow(self.__flowfield.velocity_field[idx][0][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                        plt.imshow(self.__flowfield.velocity_field[idx][0][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                     else:
-                        plt.imshow(self.__flowfield.velocity_field[idx][0][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin='lower')
+                        plt.imshow(self.__flowfield.velocity_field[idx][0][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin=origin)
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
@@ -1369,9 +1387,9 @@ class Image:
             if self.__flowfield.size_buffer == 0:
 
                 if vmin_vmax is not None:
-                    plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                    plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                 else:
-                    plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, origin='lower')
+                    plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, origin=origin)
 
             else:
 
@@ -1379,9 +1397,9 @@ class Image:
 
                     if vmin_vmax is not None:
                         im = plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0],
-                                   vmax=vmin_vmax[1], origin='lower')
+                                   vmax=vmin_vmax[1], origin=origin)
                     else:
-                        im = plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, origin='lower')
+                        im = plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, origin=origin)
 
                     # Extend the imshow area with the buffer:
                     f = lambda pixel: pixel - self.__flowfield.size_buffer
@@ -1395,9 +1413,9 @@ class Image:
                 else:
 
                     if vmin_vmax is not None:
-                        plt.imshow(self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                        plt.imshow(self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                     else:
-                        plt.imshow(self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin='lower')
+                        plt.imshow(self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin=origin)
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
@@ -1435,6 +1453,7 @@ class Image:
                                       add_streamplot=False,
                                       streamplot_density=1,
                                       streamplot_color='k',
+                                      origin='upper',
                                       figsize=(5,5),
                                       dpi=300,
                                       filename=None):
@@ -1473,6 +1492,8 @@ class Image:
             ``float`` or ``int`` specifying the streamplot density.
         :param streamplot_color: (optional)
             ``str`` specifying the streamlines color.
+        :param origin: (optional)
+            ``str`` specifying the origin location. It can be ``'upper'`` or ``'lower'``.
         :param figsize: (optional)
             ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
         :param dpi: (optional)
@@ -1533,6 +1554,9 @@ class Image:
         if not isinstance(streamplot_color, str):
             raise ValueError("Parameter `streamplot_color` has to be of type 'str'.")
 
+        if not isinstance(origin, str):
+            raise ValueError("Parameter `origin` has to be of type 'str'.")
+
         check_two_element_tuple(figsize, 'figsize')
 
         if not isinstance(dpi, int):
@@ -1555,18 +1579,18 @@ class Image:
             if self.__flowfield.size_buffer == 0:
 
                 if vmin_vmax is not None:
-                    plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                    plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                 else:
-                    plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, origin='lower')
+                    plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, origin=origin)
 
             else:
 
                 if with_buffer:
 
                     if vmin_vmax is not None:
-                        im = plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                        im = plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                     else:
-                        im = plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, origin='lower')
+                        im = plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, origin=origin)
 
                     # Extend the imshow area with the buffer:
                     f = lambda pixel: pixel - self.__flowfield.size_buffer
@@ -1580,9 +1604,9 @@ class Image:
                 else:
 
                     if vmin_vmax is not None:
-                        plt.imshow(self.__flowfield.velocity_field_magnitude[idx][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                        plt.imshow(self.__flowfield.velocity_field_magnitude[idx][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                     else:
-                        plt.imshow(self.__flowfield.velocity_field_magnitude[idx][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin='lower')
+                        plt.imshow(self.__flowfield.velocity_field_magnitude[idx][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin=origin)
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
