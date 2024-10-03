@@ -42,6 +42,9 @@ class Particle:
                              seeding_mode='random',
                              random_seed=100)
 
+        # Access particle coordinates on the first image:
+        (height_coordinates, width_coordinates) = particles.particle_coordinates[0]
+
     :param n_images:
         ``int`` specifying the number of PIV image pairs, :math:`N`, to create.
     :param size: (optional)
