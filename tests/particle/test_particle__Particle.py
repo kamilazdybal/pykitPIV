@@ -45,7 +45,6 @@ class TestParticleClass(unittest.TestCase):
             particles.diameters
             particles.distances
             particles.densities
-            particles.signal_to_noise
             particles.diameter_std
             particles.seeding_mode
             particles.random_seed
@@ -58,7 +57,6 @@ class TestParticleClass(unittest.TestCase):
             particles.diameter_per_image
             particles.distance_per_image
             particles.density_per_image
-            particles.SNR_per_image
             particles.n_of_particles
             particles.particle_positions
             particles.particle_diameters
@@ -69,7 +67,6 @@ class TestParticleClass(unittest.TestCase):
         self.assertTrue(isinstance(particles.diameter_per_image, np.ndarray))
         self.assertTrue(isinstance(particles.distance_per_image, np.ndarray))
         self.assertTrue(isinstance(particles.density_per_image, np.ndarray))
-        self.assertTrue(isinstance(particles.SNR_per_image, np.ndarray))
 
         self.assertTrue(isinstance(particles.n_of_particles, list))
         self.assertTrue(isinstance(particles.particle_positions, np.ndarray))
@@ -99,9 +96,6 @@ class TestParticleClass(unittest.TestCase):
             particles = Particle(1, densities=[])
 
         with self.assertRaises(ValueError):
-            particles = Particle(1, signal_to_noise=[])
-
-        with self.assertRaises(ValueError):
             particles = Particle(1, diameter_std=[])
 
         with self.assertRaises(ValueError):
@@ -123,9 +117,6 @@ class TestParticleClass(unittest.TestCase):
         with self.assertRaises(ValueError):
             particles = Particle(1, densities=(10,))
 
-        with self.assertRaises(ValueError):
-            particles = Particle(1, signal_to_noise=(10,))
-
         # Not a min-max tuple:
         with self.assertRaises(ValueError):
             particles = Particle(1, diameters=(10,1))
@@ -135,9 +126,6 @@ class TestParticleClass(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             particles = Particle(1, densities=(10, 1))
-
-        with self.assertRaises(ValueError):
-            particles = Particle(1, signal_to_noise=(10, 1))
 
         # Not allowed string:
         with self.assertRaises(ValueError):
@@ -166,9 +154,6 @@ class TestParticleClass(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             particles.densities = (0.05, 0.1)
-
-        with self.assertRaises(AttributeError):
-            particles.signal_to_noise = (5, 20)
 
         with self.assertRaises(AttributeError):
             particles.diameter_std = 0.1
@@ -244,28 +229,6 @@ class TestParticleClass(unittest.TestCase):
 
             self.assertTrue(np.min(particles.density_per_image) >= 0.1)
             self.assertTrue(np.max(particles.density_per_image) <= 0.5)
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    def test_particle__Particle__SNR_per_image(self):
-
-        for i in range(0,loop_for):
-
-            particles = Particle(100,
-                                 size=(200, 200),
-                                 signal_to_noise=(1.5, 10.5))
-
-            self.assertTrue(np.min(particles.SNR_per_image) >= 1.5)
-            self.assertTrue(np.max(particles.SNR_per_image) <= 10.5)
-
-        for i in range(0,loop_for):
-
-            particles = Particle(100,
-                                 size=(200, 200),
-                                 signal_to_noise=(5.5, 20))
-
-            self.assertTrue(np.min(particles.SNR_per_image) >= 5.5)
-            self.assertTrue(np.max(particles.SNR_per_image) <= 20)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

@@ -38,7 +38,6 @@ class Particle:
                              diameters=(2,4),
                              distances=(1,2),
                              densities=(0.01,0.05),
-                             signal_to_noise=(5,20),
                              diameter_std=1,
                              seeding_mode='random',
                              random_seed=100)
@@ -59,8 +58,6 @@ class Particle:
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle seeding density on an image in particle per pixel :math:`[\\text{ppp}]` to randomly sample from. Only used when ``seeding_mode`` is ``'random'``.
     :param diameter_std: (optional)
         ``float`` or ``int`` specifying the standard deviation in pixels :math:`[\\text{px}]` for the distribution of particle diameters.
-    :param signal_to_noise: (optional)
-        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) signal-to-noise ratio for particle generation. [Kamila] I still wonder if this should rather be a property of Motion class. Maybe not, Motion can always access this class attribute.
     :param seeding_mode: (optional)
         ``str`` specifying the seeding mode for initializing particles in the image domain. It can be one of the following: ``'random'``, ``'poisson'``.
     :param random_seed: (optional)
@@ -75,7 +72,6 @@ class Particle:
     - **distances** - (read-only) as per user input.
     - **densities** - (read-only) as per user input.
     - **diameter_std** - (read-only) as per user input.
-    - **signal_to_noise** - (read-only) as per user input.
     - **seeding_mode** - (read-only) as per user input.
     - **random_seed** - (read-only) as per user input.
     - **size_with_buffer** - (read-only) ``tuple`` specifying the size of each image in pixels with buffer added.
@@ -85,8 +81,6 @@ class Particle:
       :math:`[\\text{px}]` for each image. Template distances are random numbers between ``distances[0]`` and ``distances[1]``.
     - **density_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle densities in particle
       per pixel :math:`[\\text{ppp}]` for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
-    - **SNR_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the signal-to-noise ratio for each
-      image. Template signal-to-noise are random numbers between ``signal_to_noise[0]`` and ``signal_to_noise[1]``.
     - **n_of_particles** - (read-only) ``list`` specifying the number of particles created for each image based on each template density.
     - **particle_coordinates** - (read-only) ``list`` specifying the absolute coordinates of all particle centers for each image.
       The posititions are computed based on the ``seeding_mode``. The first element in each tuple are the coordinates
@@ -108,7 +102,6 @@ class Particle:
                  diameters=(3,6),
                  distances=(0.5,2),
                  densities=(0.05,0.1),
-                 signal_to_noise=(5,20),
                  diameter_std=0.1,
                  seeding_mode='random',
                  random_seed=None):
@@ -137,8 +130,6 @@ class Particle:
         check_min_max_tuple(distances, 'distances')
         check_two_element_tuple(densities, 'densities')
         check_min_max_tuple(densities, 'densities')
-        check_two_element_tuple(signal_to_noise, 'signal_to_noise')
-        check_min_max_tuple(signal_to_noise, 'signal_to_noise')
 
         if (not isinstance(diameter_std, float)) and (not isinstance(diameter_std, int)):
             raise ValueError("Parameter `diameter_std` has to be of type 'float' or 'int'.")
@@ -162,7 +153,6 @@ class Particle:
         self.__diameters = diameters
         self.__distances = distances
         self.__densities = densities
-        self.__signal_to_noise = signal_to_noise
         self.__diameter_std = diameter_std
         self.__seeding_mode = seeding_mode
         self.__random_seed = random_seed
@@ -175,7 +165,6 @@ class Particle:
         # Initialize parameters for particle generation:
         self.__particle_diameter_per_image = np.random.rand(self.__n_images) * (self.__diameters[1] - self.__diameters[0]) + self.__diameters[0]
         self.__particle_distance_per_image = np.random.rand(self.__n_images) * (self.__distances[1] - self.__distances[0]) + self.__distances[0]
-        self.__particle_SNR_per_image = np.random.rand(self.__n_images) * (self.__signal_to_noise[1] - self.__signal_to_noise[0]) + self.__signal_to_noise[0]
 
         # Compute the seeding density for each image:
         if seeding_mode == 'random':
@@ -255,10 +244,6 @@ class Particle:
         return self.__densities
 
     @property
-    def signal_to_noise(self):
-        return self.__signal_to_noise
-
-    @property
     def diameter_std(self):
         return self.__diameter_std
 
@@ -286,10 +271,6 @@ class Particle:
     @property
     def density_per_image(self):
         return self.__particle_density_per_image
-
-    @property
-    def SNR_per_image(self):
-        return self.__particle_SNR_per_image
 
     @property
     def n_of_particles(self):
