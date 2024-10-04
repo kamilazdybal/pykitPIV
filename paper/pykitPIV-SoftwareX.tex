@@ -1,4 +1,4 @@
-\documentclass[a4paper,fleqn]{cas-dc}
+ \documentclass[a4paper,fleqn]{cas-dc}
 
 %%%Author definitions
 \def\tsc#1{\csdef{#1}{\textsc{\lowercase{#1}}\xspace}}
@@ -86,7 +86,7 @@
 \shortauthors{Zdyba\l{} et~al.}
 
 
-\title [mode = title]{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for training optical flow estimation algorithms for velocimetry}
+\title [mode = title]{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for training optical flow estimation ML algorithms for velocimetry}
 
 \author[EMPA]{Kamila Zdyba\l{}*}
 \ead{kamila.zdybal@gmail.com}
@@ -120,8 +120,9 @@ The successes of RAFT-PIV and LIMA have been demonstrated on a number of classic
 \end{enumerate}
 
 
-To help researchers answer those questions, we propose the present Python library \texttt{pykitPIV} -- \textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}. Our library is compatible with PyTorch \cite{paszke2017automatic, paszke2019pytorch} to allow for easier porting with machine learning algorithms. The format for generated image tensors is consistent with the input required by the classic convolutional layers available in PyTorch (\texttt{torch.nn.Conv2d}). The high flexibility in the types of images to create can also port very well with reinforcement learning (RL) algorithms, where an agent may learn to augment the training dataset in real-time to account for changes in experimental settings.
+To help researchers answer those questions, we propose the present Python library \texttt{pykitPIV} -- \textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}. Our library is compatible with PyTorch \cite{paszke2017automatic, paszke2019pytorch} to allow for easier porting with machine learning (ML) algorithms. The format for generated image tensors is consistent with the input required by the classic convolutional layers available in PyTorch (\texttt{torch.nn.Conv2d}). The high flexibility in the types of created images can also port very well with reinforcement learning (RL) algorithms, where an agent may learn to augment the training dataset in real-time to account for changes in experimental settings.
 
+To date, synthetic PIV image generation software has been MATLAB-based \citep{ben2020openpiv, mendes2020piv}. This makes porting to Python interfaces more difficult. With the emerging ML applications, a package that readily ports to libraries such as PyTorch, TensorFlow, or Keras is the ideal solution. This allows the ML algorithm to interact with the image generation process. The most interesting future applications will be to use variational approaches to inform training data collection, or train a RL agent to construct necessary support data in new environments.
 
 \section{Software description} \label{sec:software}
 
