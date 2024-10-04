@@ -68,7 +68,7 @@ check the following references:
    :caption: Tutorials & Demos
 
    tutorials/demo-generate-images
-   tutorials/demo-generate-pytorch-dataset
+   tutorials/demo-PyTorch-dataloader
    tutorials/demo-import-external-velocity-field
    tutorials/demo-image-statistics
    tutorials/demo-integrate-with-LIMA
