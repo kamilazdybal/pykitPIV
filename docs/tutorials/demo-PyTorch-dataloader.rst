@@ -20,6 +20,7 @@ You can learn more about the methodology of using Datasets and DataLoaders
     from torch.utils.data import Dataset
     from torch.utils.data import DataLoader
     from torchvision import transforms
+    import matplotlib.pyplot as plt
 
 ************************************************************
 Upload **pykitPIV**-generated images
@@ -63,14 +64,14 @@ If you don't have the desired PIV dataset yet, you can use the generic script,
 Create a **pykitPIV** ``Dataset`` class
 ************************************************************
 
-We first create a ``PIVDataset`` class that inherits after the ``torch.utils.data.Dataset`` class.
+We first create a ``PIVDataset`` class that is a subclass of the ``torch.utils.data.Dataset`` class.
 We implement three standard methods: ``__init__``, ``__len__``, and ``__getitem__``.
 
 .. code:: python
 
     class PIVDataset(Dataset):
         """
-        Loads the pykitPIV-generated dataset and accesses a user-specified sample.
+        Loads and stores the pykitPIV-generated dataset.
         """
 
         def __init__(self, path, transform=None):
@@ -135,6 +136,35 @@ or, at multiple indices:
 .. code:: python
 
     (I, target) = PIV_data[2:7]
+
+
+You can use the indexing to visualize the first few samples from the dataset:
+
+.. code:: python
+
+    n_samples = 5
+
+.. code:: python
+
+    fig = plt.figure(figsize=(n_samples*3, 5))
+    spec = fig.add_gridspec(ncols=n_samples,
+                            nrows=1,
+                            width_ratios=[1 for i in range(0,n_samples)],
+                            height_ratios=[1])
+
+    for i in range(0,n_samples):
+
+        I, target = PIV_data[i]
+
+        f = fig.add_subplot(spec[0,i])
+        plt.imshow(I[0,:,:], cmap='Greys_r')
+        plt.title('Sample #' + str(i))
+
+    plt.savefig('PIV-samples.png', dpi=300, bbox_inches='tight')
+
+.. image:: ../images/Dataset-PIV-samples.png
+    :width: 800
+    :align: center
 
 ************************************************************************
 Create a **pykitPIV** DataLoaders with train and test samples
