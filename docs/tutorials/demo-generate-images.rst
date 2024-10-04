@@ -59,7 +59,6 @@ Instantiate an object of the ``Particle`` class that defines particles with spec
                          diameters=(2,4),
                          distances=(1,2),
                          densities=(0.05,0.1),
-                         signal_to_noise=(5,20),
                          diameter_std=0.5,
                          seeding_mode='random',
                          random_seed=100)

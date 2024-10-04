@@ -26,7 +26,6 @@ Generate particles
                          diameters=(3,3.1),
                          distances=(1,2),
                          densities=(0.05,0.1),
-                         signal_to_noise=(5,20),
                          diameter_std=0.2,
                          seeding_mode='random',
                          random_seed=100)

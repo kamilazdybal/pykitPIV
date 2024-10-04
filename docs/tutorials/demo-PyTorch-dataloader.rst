@@ -56,7 +56,7 @@ We implement three standard methods: ``__init__``, ``__len__``, and ``__getitem_
 
 .. code:: python
 
-    class pykitPIVDatasetFromPath(Dataset):
+    class PIVDataset(Dataset):
         """Load pykitPIV-generated dataset"""
 
         def __init__(self, path, transform=None, n_samples=None, pin_to_ram=False):
@@ -102,13 +102,16 @@ We instantiate an object of the ``PIVDataset`` class:
 
     PIV_data = PIVDataset(image_IDs=image_IDs)
 
-Thanks to the ``__len__`` method, we can now execute the ``len()`` command on the object:
+Using the ``__len__`` method, we can now execute the ``len()`` command on the object:
 
 .. code:: python
 
     len(PIV_data)
 
-Also, thanks to the ``__getitem__`` method, we can access the data sample at a given index:
+
+
+
+Using the ``__getitem__`` method, we can access the data sample at a given index:
 
 .. code:: python
 
@@ -139,13 +142,13 @@ Create a **pykitPIV** ``DataLoader`` with train and test samples
            ])
 
         # Create train, test, reference datasets:
-        train_dataset = pykitPIVDatasetFromPath(path = args.dataset_train_test,
+        train_dataset = PIVDataset(path = args.dataset_train_test,
                                                 transform=transform)
 
-        test_dataset = pykitPIVDatasetFromPath(path = args.dataset_train_test,
+        test_dataset = PIVDataset(path = args.dataset_train_test,
                                                transform=transform)
 
-        ref_dataset = pykitPIVDatasetFromPath(path = args.dataset_referece,
+        ref_dataset = PIVDataset(path = args.dataset_referece,
                                               transform=transformref)
 
         # Create data loaders:
