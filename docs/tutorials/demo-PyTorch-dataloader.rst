@@ -176,15 +176,7 @@ train and test datasets. For more information on
 .. code:: python
 
     # Create a custom composition of data transforms to augment the training datasets:
-    transform = transforms.Compose([
-        datatransform.RandomAffine(degrees=17, translate=(0.2, 0.2), scale=(0.9, 2.0)),
-        datatransform.RandomHorizontalFlip(),
-        datatransform.RandomVerticalFlip(),
-        datatransform.ToTensor(),
-        datatransform.NormalizeBounded(bit_depth=16),
-        datatransform.RandomBrightness(factor=(0.5, 2)),
-        datatransform.RandomNoise(std=(0, args.noise_std)),
-    ])
+    transform = transforms.Compose([transforms.ToTensor()])
 
 
 .. code:: python
@@ -197,10 +189,9 @@ train and test datasets. For more information on
 
     # Create train and test data loaders:
     train_loader = DataLoader(train_dataset,
-                              batch_size=batch_size,
-                              shuffle=True,
-                              num_workers=args.num_workers,
-                              pin_memory=True)
+                              batch_size=4,
+                              shuffle=True)
 
     test_loader = DataLoader(test_dataset,
-                             batch_size=batch_size)
+                             batch_size=4,
+                             shuffle=True)
