@@ -141,3 +141,34 @@ class TestFlowFieldClass(unittest.TestCase):
 
         with self.assertRaises(AttributeError):
             flowfield.random_seed = None
+
+    def test_flowfield__Flowfield__upload_velocity_field(self):
+
+        n_images = 10
+        image_size = (128, 512)
+
+        flowfield = FlowField(n_images=n_images,
+                              size=image_size,
+                              size_buffer=10,
+                              random_seed=100)
+
+        try:
+            velocity_field = np.ones((10, 2, 148, 532))
+            flowfield.upload_velocity_field(velocity_field)
+
+            velocity_field = np.ones((1, 2, 148, 532))
+            flowfield.upload_velocity_field(velocity_field)
+        except Exception:
+            self.assertTrue(False)
+
+        with self.assertRaises(ValueError):
+            velocity_field = []
+            flowfield.upload_velocity_field(velocity_field)
+
+        with self.assertRaises(ValueError):
+            velocity_field = np.ones((2, 148, 532))
+            flowfield.upload_velocity_field(velocity_field)
+
+        with self.assertRaises(ValueError):
+            velocity_field = np.ones((11, 2, 148, 532))
+            flowfield.upload_velocity_field(velocity_field)

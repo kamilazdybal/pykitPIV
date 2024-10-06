@@ -609,10 +609,10 @@ class FlowField:
 
         # Input parameter check:
 
-        if not isinstance(velocity_field_tuple, np.ndarray):
-            raise ValueError("Parameter `velocity_field_tuple` has to be of type 'numpy.ndarray'.")
+        if not isinstance(velocity_field, np.ndarray):
+            raise ValueError("Parameter `velocity_field` has to be of type 'numpy.ndarray'.")
 
-        (N, n_velocity_components, H, W) = np.shape(velocity_field_tuple)
+        (N, n_velocity_components, H, W) = np.shape(velocity_field)
 
         if N == 1 and self.n_images != 1:
             print('The same velocity field will be applied to all PIV image pairs.')
@@ -642,11 +642,11 @@ class FlowField:
         for i in range(0, self.n_images):
 
             if N == 1:
-                velocity_field_u = velocity_field_tuple[0,0,:,:]
-                velocity_field_v = velocity_field_tuple[0,1,:,:]
+                velocity_field_u = velocity_field[0,0,:,:]
+                velocity_field_v = velocity_field[0,1,:,:]
             else:
-                velocity_field_u = velocity_field_tuple[i,0,:,:]
-                velocity_field_v = velocity_field_tuple[i,1,:,:]
+                velocity_field_u = velocity_field[i,0,:,:]
+                velocity_field_v = velocity_field[i,1,:,:]
 
             self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2))
             self.__velocity_field.append((velocity_field_u, velocity_field_v))
