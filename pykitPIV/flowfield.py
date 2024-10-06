@@ -566,9 +566,9 @@ class FlowField:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def upload_velocity_field(self, velocity_field_tuple):
+    def upload_velocity_field(self, velocity_field):
         """
-        Uploads a custom velocity field, e.g., generated from synthetic turbulence.
+        Uploads a custom velocity field, *e.g.*, generated from synthetic turbulence.
 
         **Example:**
 
@@ -576,7 +576,7 @@ class FlowField:
 
             from pykitPIV import FlowField
 
-            # We are going to generate 10 flow fields for 10 PIV image pairs:
+            # We are going to use 10 flow fields for 10 PIV image pairs:
             n_images = 10
 
             # Specify size in pixels for each image:
@@ -588,24 +588,51 @@ class FlowField:
                                   size_buffer=10,
                                   random_seed=100)
 
-            # Importing external velocity field file:
+            # Importing an external velocity field file:
             # ...
             # ...
-            # ...
+
+            # Prepare the velocity_field variable that has shape (10, 2, 148, 532):
+            # velocity_field = ...
 
             # Upload velocity field:
-            flowfield.upload_velocity_field(velocity_field_tuple)
+            flowfield.upload_velocity_field(velocity_field)
 
-        :param velocity_field_tuple:
-            ``tuple`` of two ``numpy.ndarray`` specifying the velocity components.
+        :param velocity_field:
+            ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
+            where :math:`N` is the number PIV image pairs, :math:`2` refers to each velocity component,
+            :math:`H` is the height and :math:`W` is the width of each PIV image. It can also be of size :math:`(1, 2, H, W)`,
+            in which case the same velocity field will be applied to all PIV image pairs.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Input parameter check:
 
-        if not isinstance(velocity_field_tuple, tuple):
-            raise ValueError("Parameter `velocity_field_tuple` has to be of type 'tuple'.")
+        if not isinstance(velocity_field_tuple, np.ndarray):
+            raise ValueError("Parameter `velocity_field_tuple` has to be of type 'numpy.ndarray'.")
+
+        (N, n_velocity_components, H, W) = np.shape(velocity_field_tuple)
+
+        if N == 1 and self.n_images != 1:
+            print('The same velocity field will be applied to all PIV image pairs.')
+        else:
+            if N != self.n_images:
+                raise ValueError("The number of PIV image pairs does not match the value at class initialization.")
+
+        if n_velocity_components != 2:
+            raise ValueError("The number of velocity components has to be equal to 2.")
+
+        if self.size_buffer > 0:
+            if H != self.__height_with_buffer:
+                raise ValueError("Improper height of the velocity field. It should be equal to " + str(self.__height_with_buffer) + '.')
+            if W != self.__width_with_buffer:
+                raise ValueError("Improper width of the velocity field. It should be equal to " + str(self.__width_with_buffer) + '.')
+        else:
+            if H != self.size[0]:
+                raise ValueError("Improper height of the velocity field. It should be equal to " + str(self.size[0]) + '.')
+            if W != self.size[1]:
+                raise ValueError("Improper width of the velocity field. It should be equal to " + str(self.size[1]) + '.')
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -614,8 +641,12 @@ class FlowField:
 
         for i in range(0, self.n_images):
 
-            velocity_field_u = velocity_field_tuple[0][:,:,i]
-            velocity_field_v = velocity_field_tuple[1][:,:,i]
+            if N == 1:
+                velocity_field_u = velocity_field_tuple[0,0,:,:]
+                velocity_field_v = velocity_field_tuple[0,1,:,:]
+            else:
+                velocity_field_u = velocity_field_tuple[i,0,:,:]
+                velocity_field_v = velocity_field_tuple[i,1,:,:]
 
             self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2))
             self.__velocity_field.append((velocity_field_u, velocity_field_v))
