@@ -79,7 +79,7 @@ targets_tensor = image.targets_to_tensor()
 tensors_dictionary = {"I"      : images_tensor, 
                       "targets": targets_tensor}
 
-num, decimal = [int(part) for part in str(time_separation).split('.')]
+num, decimal = [part for part in str(time_separation).split('.')]
 
 image.save_to_h5(tensors_dictionary, 
                  filename='pykitPIV-dataset-' + str(n_images) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '-dt-' + str(num) + 'p' + str(decimal) + '.h5',
