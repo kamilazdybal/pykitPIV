@@ -13,6 +13,7 @@ parser.add_argument('--n_images',           type=int,  default=10, metavar='NIMA
 parser.add_argument('--size_buffer',        type=int,  default=10, metavar='SIZEBUFFER', help='Image buffer size')
 parser.add_argument('--image_height',       type=int,  default=100, metavar='H', help='Image height')
 parser.add_argument('--image_width',        type=int,  default=100, metavar='W', help='Image width')
+parser.add_argument('--dt',                 type=float,  default=1.0, metavar='DT', help='Time separation between two image frames')
 
 args = parser.parse_args()
 
@@ -23,6 +24,7 @@ n_images = vars(args).get('n_images')
 size_buffer = vars(args).get('size_buffer')
 image_height = vars(args).get('image_height')
 image_width = vars(args).get('image_width')
+time_separation = vars(args).get('dt')
 
 image_size = (image_height, image_width)
 
@@ -59,7 +61,7 @@ image.add_flowfield(flowfield)
 
 motion = Motion(particles, 
                 flowfield, 
-                time_separation=2)
+                time_separation=time_separation)
 
 motion.runge_kutta_4th(n_steps=10)
 
@@ -81,7 +83,7 @@ tensors_dictionary = {"I"      : images_tensor,
                       "targets": targets_tensor}
 
 image.save_to_h5(tensors_dictionary, 
-                 filename='pykitPIV-dataset-' + str(n_images) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '.h5',
+                 filename='pykitPIV-dataset-' + str(n_images) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '-dt-' + str(time_separation) + '.h5',
                  verbose=True)
 
 toc = time.perf_counter()
