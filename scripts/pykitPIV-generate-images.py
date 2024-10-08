@@ -44,10 +44,6 @@ particles = Particle(n_images,
                      seeding_mode='random', 
                      random_seed=100)
 
-image = Image(random_seed=100)
-
-image.add_particles(particles)
-
 flowfield = FlowField(n_images,
                       size=image_size,
                       size_buffer=size_buffer,
@@ -57,16 +53,17 @@ flowfield.generate_random_velocity_field(gaussian_filters=(10,11),
                                          n_gaussian_filter_iter=20,
                                          displacement=(0,10))
 
-image.add_flowfield(flowfield)
-
 motion = Motion(particles, 
                 flowfield, 
                 time_separation=time_separation)
 
 motion.runge_kutta_4th(n_steps=10)
 
-image.add_motion(motion)
+image = Image(random_seed=100)
 
+image.add_particles(particles)
+image.add_flowfield(flowfield)
+image.add_motion(motion)
 image.add_reflected_light(exposures=(0.6,0.65),
                           maximum_intensity=2**16-1,
                           laser_beam_thickness=1,

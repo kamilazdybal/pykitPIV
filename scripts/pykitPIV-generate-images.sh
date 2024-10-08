@@ -1,8 +1,8 @@
 #!/bin/bash -l
 #
 #SBATCH --account=em13
-#SBATCH --partition=normal
-#SBATCH --time=4:00:00
+#SBATCH --partition=debug
+#SBATCH --time=00:30:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=kamilazdybal@gmail.com
 #SBATCH --job-name=pykitPIV-generate-images-dt-1
