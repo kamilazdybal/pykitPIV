@@ -20,12 +20,15 @@ class FlowField:
     """
     Generates or uploads velocity field(s) to advect particles between two consecutive PIV images.
 
-    Two-dimensional velocity field is supported for the moment: :math:`\\vec{V} = [u, v]`, where
-    :math:`u` and :math:`v` velocity components are represented as two-dimensional arrays
-    of shape (height [px] :math:`\\times` width [px]).
+    The velocity vector, :math:`\\vec{V} = [u, v]`, is represented as a four-dimensional tensor array
+    of size :math:`(N, 2, H, W)`, where the second index corresponds to :math:`u` and :math:`v` velocity component, respectively.
 
-    Velocity magnitude is computed as :math:`|\\vec{V}| = \\sqrt{u^2 + v^2}` and is also represented as a two-dimensional array
-    of shape (height [px] :math:`\\times` width [px]).
+    The velocity magnitude is computed as :math:`|\\vec{V}| = \\sqrt{u^2 + v^2}`
+    and is also represented as a four-dimensional tensor array of size :math:`(N, 1, H, W)`.
+
+    .. note::
+
+        Only two-dimensional velocity fields are supported at the moment.
 
     **Example:**
 
@@ -37,7 +40,7 @@ class FlowField:
         n_images = 10
 
         # Specify size in pixels for each image:
-        image_size = (128,512)
+        image_size = (128, 512)
 
         # Initialize a flow field object:
         flowfield = FlowField(n_images=n_images,
@@ -66,8 +69,8 @@ class FlowField:
     - **gaussian_filters** - (read-only) as per user input.
     - **n_gaussian_filter_iter** - (read-only) as per user input.
     - **gaussian_filter_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the Gaussian filter sizes in pixels :math:`[\\text{px}]` for each image. Template diameters are random numbers between ``gaussian_filters[0]`` and ``gaussian_filters[1]``.
-    - **velocity_field** - (read-only) ``list`` of two-element ``tuple`` specifying the velocity field components per each image, :math:`u` and :math:`v`. The first element of each tuple is :math:`u` and the second element of each tuple is :math:`v`. Both elements have shapes :math:`(\\text{height} [\\text{px}] \\times \\text{width} [\\text{px}])]`.
-    - **velocity_field_magnitude** - (read-only) ``list`` of ``numpy.ndarray`` specifying the velocity field magnitude per each image. Each array has shape :math:`(\\text{height} [\\text{px}] \\times \\text{width} [\\text{px}])]`.
+    - **velocity_field** - (read-only) ``numpy.ndarray`` specifying the velocity vector, :math:`\\vec{V} = [u, v]`, per each image. It has size :math:`(N, 2, H, W)`. The second index corresponds to :math:`u` and :math:`v` velocity component, respectively.
+    - **velocity_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the velocity field magnitude, :math:`|\\vec{V}| = \\sqrt{u^2 + v^2}`, per each image. It has size :math:`(N, 1, H, W)`.
     - **size_with_buffer** - (read-only) ``tuple`` specifying the size of each image in pixels with buffer added.
     """
 
@@ -233,8 +236,8 @@ class FlowField:
         self.__displacement = displacement
         self.__gaussian_filters = gaussian_filters
         self.__n_gaussian_filter_iter = n_gaussian_filter_iter
-        self.__velocity_field = []
-        self.__velocity_field_magnitude = []
+        self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
+        self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
 
         self.__gaussian_filter_per_image = np.random.rand(self.__n_images) * (
                     self.__gaussian_filters[1] - self.__gaussian_filters[0]) + self.__gaussian_filters[0]
@@ -260,8 +263,9 @@ class FlowField:
             velocity_field_u = velocity_magnitude_scale * velocity_field_u
             velocity_field_v = velocity_magnitude_scale * velocity_field_v
 
-            self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2))
-            self.__velocity_field.append((velocity_field_u, velocity_field_v))
+            self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            self.__velocity_field[i, 0, :, :] = velocity_field_u
+            self.__velocity_field[i, 1, :, :] = velocity_field_v
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -342,8 +346,8 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-        self.__velocity_field = []
-        self.__velocity_field_magnitude = []
+        self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
+        self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
 
         self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
@@ -370,8 +374,9 @@ class FlowField:
             velocity_field_u = velocity_magnitude_scale * velocity_field_u
             velocity_field_v = velocity_magnitude_scale * velocity_field_v
 
-            self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2))
-            self.__velocity_field.append((velocity_field_u, velocity_field_v))
+            self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            self.__velocity_field[i, 0, :, :] = velocity_field_u
+            self.__velocity_field[i, 1, :, :] = velocity_field_v
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -439,8 +444,8 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-        self.__velocity_field = []
-        self.__velocity_field_magnitude = []
+        self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
+        self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
         self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         h = np.linspace(start, stop, self.size_with_buffer[0])
@@ -462,8 +467,9 @@ class FlowField:
             velocity_field_u = velocity_magnitude_scale * velocity_field_u
             velocity_field_v = velocity_magnitude_scale * velocity_field_v
 
-            self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2))
-            self.__velocity_field.append((velocity_field_u, velocity_field_v))
+            self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            self.__velocity_field[i, 0, :, :] = velocity_field_u
+            self.__velocity_field[i, 1, :, :] = velocity_field_v
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -534,18 +540,18 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-        self.__velocity_field = []
-        self.__velocity_field_magnitude = []
+        self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
+        self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
         self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         h = np.linspace(start, stop, self.size_with_buffer[0])
         w = np.linspace(start, stop, self.size_with_buffer[1])
 
         # Rescale the azimuthal coordinate:
-        h = (h - h.min()) / (h.max() - h.min()) * np.pi * .2 + np.pi * .4
+        h = (h - h.min()) / (h.max() - h.min()) * np.pi * 0.2 + np.pi * 0.4
 
         # Rescale the polar coordinate:
-        w = (w - w.min()) / (w.max() - w.min()) * np.pi * .2 / 6 * 5 + (np.pi * .5 - np.pi * .2 / 6 * 5 / 2)
+        w = (w - w.min()) / (w.max() - w.min()) * np.pi * 0.2 / 6 * 5 + (np.pi * 0.5 - np.pi * 0.2 / 6 * 5 / 2)
 
         (grid_w, grid_h) = np.meshgrid(w, h)
 
@@ -561,8 +567,9 @@ class FlowField:
             velocity_field_u = velocity_magnitude_scale * velocity_field_u
             velocity_field_v = velocity_magnitude_scale * velocity_field_v
 
-            self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2))
-            self.__velocity_field.append((velocity_field_u, velocity_field_v))
+            self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            self.__velocity_field[i, 0, :, :] = velocity_field_u
+            self.__velocity_field[i, 1, :, :] = velocity_field_v
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -636,19 +643,19 @@ class FlowField:
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        self.__velocity_field = []
-        self.__velocity_field_magnitude = []
+        if N == 1:
 
-        for i in range(0, self.n_images):
+            self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
 
-            if N == 1:
-                velocity_field_u = velocity_field[0,0,:,:]
-                velocity_field_v = velocity_field[0,1,:,:]
-            else:
-                velocity_field_u = velocity_field[i,0,:,:]
-                velocity_field_v = velocity_field[i,1,:,:]
+            for i in range(0, self.__n_images):
+                self.__velocity_field[i, 0, :, :] = velocity_field[0, 0, :, :]
+                self.__velocity_field[i, 1, :, :] = velocity_field[0, 1, :, :]
 
-            self.__velocity_field_magnitude.append(np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2))
-            self.__velocity_field.append((velocity_field_u, velocity_field_v))
+            self.__velocity_field_magnitude = np.sqrt(self.__velocity_field[:, 0, :, :] ** 2 + self.__velocity_field[:, 1, :, :] ** 2)
+
+        else:
+
+            self.__velocity_field = velocity_field
+            self.__velocity_field_magnitude = np.sqrt(velocity_field[:, 0, :, :] ** 2 + velocity_field[:, 1, :, :] ** 2)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
