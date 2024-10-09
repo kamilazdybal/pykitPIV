@@ -4,10 +4,10 @@
 Class: ``Postprocess``
 #######################
 
-The following convention for indexing various image-related quantities applies throughout the **pykitPIV** modules:
+The following convention for indexing various quantities applies throughout the **pykitPIV** modules:
 
 .. image:: ../images/pykitPIV-image-indexing.svg
-    :width: 500
+    :width: 400
     :align: center
 
 .. autoclass:: pykitPIV.postprocess.Postprocess
