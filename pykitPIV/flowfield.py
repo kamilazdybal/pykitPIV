@@ -18,7 +18,8 @@ from pykitPIV.checks import *
 
 class FlowField:
     """
-    Generates or uploads velocity field(s) to advect particles between two consecutive PIV images.
+    Generates or uploads velocity field(s) for a set of ``n_images`` number of PIV image pairs.
+    The velocity field(s) can later be used to advect particles between two consecutive PIV images.
 
     The velocity vector, :math:`\\vec{V} = [u, v]`, is represented as a four-dimensional tensor array
     of size :math:`(N, 2, H, W)`, where the second index corresponds to :math:`u` and :math:`v` velocity component, respectively.
