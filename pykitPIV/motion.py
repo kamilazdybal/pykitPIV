@@ -34,7 +34,7 @@ class Motion:
 
     .. code:: python
 
-        from pykitPIV import Particle, Flowfield, Motion
+        from pykitPIV import Particle, FlowField, Motion
 
         # We are going to generate 10 PIV image pairs:
         n_images = 10
@@ -49,7 +49,6 @@ class Motion:
                              diameters=(2,4),
                              distances=(1,2),
                              densities=(0.01,0.05),
-                             signal_to_noise=(5,20),
                              diameter_std=1,
                              seeding_mode='random',
                              random_seed=100)
@@ -58,11 +57,6 @@ class Motion:
         flowfield = FlowField(n_images=n_images,
                               size=image_size,
                               size_buffer=10,
-                              flow_mode='random',
-                              gaussian_filters=(8,10),
-                              n_gaussian_filter_iter=10,
-                              sin_period=(30,300),
-                              displacement=(0,10),
                               random_seed=100)
 
         # Initialize a motion object:
@@ -87,6 +81,8 @@ class Motion:
     - **particle_loss** - (read-only) as per user input.
     - **particle_coordinates_I1** - (read-only) ``list`` of ``tuple`` specifying the coordinates of particles in image :math:`I_1`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **particle_coordinates_I2** - (read-only) ``list`` of ``tuple`` specifying the  coordinates of particles in image :math:`I_2`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
+    - **updated_particle_diameters** - (read-only) ``list`` of ``numpy.ndarray`` specifying the updated particle diameters for each PIV image pair.
+    - **displacement_field** - (read-only) ``numpy.ndarray`` specifying the displacement field, :math:`ds`, in the :math:`x` and :math:`y` direction. It is computed as the velocity component multiplied by time separation and has a unit of :math:`px`.
     """
 
     def __init__(self,
@@ -137,6 +133,13 @@ class Motion:
         # Initialize updated particle diameters:
         self.__updated_particle_diameters = None
 
+        # Compute the displacement field:
+        self.__displacement_field = np.zeros((self.__particles.n_images, 2, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
+
+        for i in range(0, self.__particles.n_images):
+            self.__displacement_field[i,0,:,:] = self.__flowfield.velocity_field[i][0] * time_separation
+            self.__displacement_field[i,1,:,:] = self.__flowfield.velocity_field[i][1] * time_separation
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
@@ -160,6 +163,10 @@ class Motion:
     @property
     def updated_particle_diameters(self):
         return self.__updated_particle_diameters
+
+    @property
+    def displacement_field(self):
+        return self.__displacement_field
 
     # Setters:
     @time_separation.setter
