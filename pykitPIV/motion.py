@@ -135,10 +135,8 @@ class Motion:
 
         # Compute the displacement field:
         self.__displacement_field = np.zeros((self.__particles.n_images, 2, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
-
-        for i in range(0, self.__particles.n_images):
-            self.__displacement_field[i,0,:,:] = self.__flowfield.velocity_field[i][0] * time_separation
-            self.__displacement_field[i,1,:,:] = self.__flowfield.velocity_field[i][1] * time_separation
+        self.__displacement_field[:, 0, :, :] = self.__flowfield.velocity_field[:, 0, :, :] * time_separation
+        self.__displacement_field[:, 1, :, :] = self.__flowfield.velocity_field[:, 1, :, :] * time_separation
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -239,8 +237,8 @@ class Motion:
             grid = (np.linspace(0, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[0]),
                     np.linspace(0, self.__particles.size_with_buffer[1], self.__particles.size_with_buffer[1]))
 
-            interpolate_u_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i][0])
-            interpolate_v_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i][1])
+            interpolate_u_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i, 0, :, :])
+            interpolate_v_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i, 1, :, :])
 
             # Retrieve the old particle coordinates (at time t):
             particle_coordinates_old = np.hstack((self.__particles.particle_coordinates[i][0][:, None],
@@ -364,8 +362,8 @@ class Motion:
             grid = (np.linspace(0, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[0]),
                     np.linspace(0, self.__particles.size_with_buffer[1], self.__particles.size_with_buffer[1]))
 
-            interpolate_u_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i][0], bounds_error=False, fill_value=None)
-            interpolate_v_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i][1], bounds_error=False, fill_value=None)
+            interpolate_u_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i, 0, :, :], bounds_error=False, fill_value=None)
+            interpolate_v_component = RegularGridInterpolator(grid, self.__flowfield.velocity_field[i, 1, :, :], bounds_error=False, fill_value=None)
 
             # Retrieve the old particle coordinates (at time t):
             particle_coordinates_old = np.hstack((self.__particles.particle_coordinates[i][0][:, None],
