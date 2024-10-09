@@ -33,6 +33,12 @@ The graph below shows the possible workflows constructed from the five main clas
 
 At each stage, the user can enforce reproducible image generation through fixing random seeds.
 
+The following convention for indexing various quantities applies throughout the **pykitPIV** modules:
+
+.. image:: images/pykitPIV-image-indexing.svg
+    :width: 500
+    :align: center
+
 For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please
 check the following references:
 

@@ -4,12 +4,6 @@
 Class: ``FlowField``
 ####################
 
-The following convention for indexing various quantities applies throughout the **pykitPIV** modules:
-
-.. image:: ../images/pykitPIV-image-indexing.svg
-    :width: 400
-    :align: center
-
 .. autoclass:: pykitPIV.flowfield.FlowField
 
 .. autofunction:: pykitPIV.flowfield.FlowField.generate_random_velocity_field
