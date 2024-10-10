@@ -189,6 +189,13 @@ class Motion:
             else:
                 self.__time_separation = new_time_separation
 
+                # Re-compute the displacement field:
+                self.__displacement_field = np.zeros((self.__particles.n_images, 2, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
+                self.__displacement_field[:, 0, :, :] = self.__flowfield.velocity_field[:, 0, :, :] * new_time_separation
+                self.__displacement_field[:, 1, :, :] = self.__flowfield.velocity_field[:, 1, :, :] * new_time_separation
+
+                self.__displacement_field_magnitude = np.sqrt(self.displacement_field[:, 0, :, :] ** 2 + self.displacement_field[:, 1, :, :] ** 2)
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def forward_euler(self,
