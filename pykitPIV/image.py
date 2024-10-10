@@ -36,10 +36,10 @@ class Image:
     **Attributes:**
 
     - **random_seed** - (read-only) as per user input.
-    - **images_I1** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`. Only available after ``Image.add_particles()`` has been called.
-    - **images_I2** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`. Only available after ``Image.add_motion()`` has been called.
-    - **images_I1_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`, without image buffers. Only available after ``Image.add_particles()`` and ``Image.remove_buffer()`` have been called.
-    - **images_I2_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`, without image buffers. Only available after ``Image.add_motion()`` and ``Image.remove_buffer()`` have been called.
+    - **images_I1** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`. Only available after ``Image.add_particles()`` has been called.
+    - **images_I2** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`. Only available after ``Image.add_motion()`` has been called.
+    - **images_I1_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`, without image buffers. Only available after ``Image.add_particles()`` and ``Image.remove_buffer()`` have been called.
+    - **images_I2_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`, without image buffers. Only available after ``Image.add_motion()`` and ``Image.remove_buffer()`` have been called.
     - **targets** - (read-only) ``list`` of ``tuple``, where each element contains the velocity field components, :math:`u` and :math:`v`, as ``numpy.ndarray``. Only available after ``Image.add_flowfield()`` has been called.
     - **targets_no_buffer** - (read-only) ``numpy.ndarray`` specifying the flow targets per each image, without image buffers. It has size :math:`(N, C_{out}, H, W)`. Only available after ``Image.add_flowfield()`` and then ``Image.remove_buffer()`` have been called.
     - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image. Only available after ``Image.add_reflected_light`` has been called.
@@ -625,26 +625,21 @@ class Image:
 
     def image_pairs_to_tensor(self):
         """
-        Prepares a 4-dimensional array with dimensions: ``(n_images, 2, image_height, image_width)`` that stores
-        the image pairs.
+        Prepares a four-dimensional tensor array of size :math:`(N, 2, H, W)` that stores
+        the PIV image pairs, :math:`I_1` and :math:`I_2`, concatenated along the second dimension.
 
-        The second dimension represents the image pair, :math:`I_1` and :math:`I_2`.
+        .. note::
+
+            This function assumes that you have removed image buffers using ``Image.remove_buffers``.
 
         :return:
             - **images_tensor** - ``numpy.ndarray`` specifying the PIV image pairs tensor.
-              It has shape :math:`(N, 2, H, W)`, where :math:`N` is the number of PIV image pairs,
+              It has size :math:`(N, 2, H, W)`, where :math:`N` is the number of PIV image pairs,
               :math:`H` is the height and :math:`W` is the width of each PIV image.
-              The second index refers to images :math:`I_1` or :math:`I_2`, respectively.
+              The second dimension refers to images :math:`I_1` or :math:`I_2`, respectively.
         """
 
-        images_tensor = np.zeros((self.__particles.n_images, 2, self.__particles.size[0], self.__particles.size[1]))
-
-        for i in range(0, self.__particles.n_images):
-
-            images_tensor[i, 0, :, :] = self.images_I1_no_buffer[i, 0, :, :]
-            images_tensor[i, 1, :, :] = self.images_I2_no_buffer[i, 0, :, :]
-
-        return images_tensor
+        return np.concatenate((self.images_I1_no_buffer, self.images_I2_no_buffer), axis=1)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

@@ -50,7 +50,7 @@ class Particle:
     :param size: (optional)
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`. The first number is the image height, :math:`H`, the second number is the image width, :math:`W`.
     :param size_buffer: (optional)
-        ``int`` specifying the buffer in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
+        ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
         This number should be approximately equal to the maximum displacement that particles are subject to in order to allow new particles to arrive into the image area
         and old particles to exit the image area.
     :param diameters: (optional)
@@ -86,14 +86,16 @@ class Particle:
       per pixel :math:`[\\text{ppp}]` for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
     - **n_of_particles** - (read-only) ``list`` specifying the number of particles created for each image based on each template density.
     - **particle_coordinates** - (read-only) ``list`` specifying the absolute coordinates of all particle centers for each image.
-      The posititions are computed based on the ``seeding_mode``. The first element in each tuple are the coordinates
+      The positions are computed based on the ``seeding_mode``. The first element in each tuple are the coordinates
       along the image height, and the second element are the coordinates along the image width.
-    - **particle_positions** - (read-only) ``numpy.ndarray`` specifying the position per pixel of all particle centers
-      for each image. The posititions are computed based on the ``seeding_mode``. If a particle's position falls into
+    - **particle_positions** - (read-only) ``numpy.ndarray`` specifying the starting position per pixel of all particle centers
+      for each image; these positions will later populate the first PIV image frame, :math:`I_1`.
+      The positions are computed based on the ``seeding_mode``. If a particle's position falls into
       a specific pixel coordinate, this pixel's value is increased by one. Zero entry indicates that no particles are present
       inside that pixel.
-      This array has size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number PIV image pairs,
-      :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` the width of each PIV image.
+      This array has size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs,
+      :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height
+      and :math:`W` the width of each PIV image, and :math:`b` is an optional image buffer.
     - **particle_diameters** - (read-only) ``list`` specifying the diameters of all seeded particles in pixels :math:`[\\text{px}]`
       for each image based on each template diameter.
    """
