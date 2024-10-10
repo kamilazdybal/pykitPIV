@@ -81,6 +81,10 @@ class TestImageClass(unittest.TestCase):
         image = Image(random_seed=100)
         flowfield = FlowField(1)
 
+        flowfield.generate_random_velocity_field(gaussian_filters=(10, 11),
+                                                 n_gaussian_filter_iter=20,
+                                                 displacement=(0, 10))
+
         try:
             image.add_flowfield(flowfield)
         except Exception:
@@ -126,25 +130,17 @@ class TestImageClass(unittest.TestCase):
 
         self.assertTrue(image.images_I2 is None)
 
-        self.assertTrue(image.images_I1_no_buffer is None)
-        self.assertTrue(image.images_I2_no_buffer is None)
+        images_I1_no_buffer = image.remove_buffers(image.images_I1)
 
-        image.remove_buffers()
-
-        self.assertTrue(image.images_I1_no_buffer is not None)
-        self.assertTrue(image.images_I2_no_buffer is None)
-
-        self.assertTrue(image.images_I1_no_buffer.shape[2] == 100)
-        self.assertTrue(image.images_I1_no_buffer.shape[3] == 80)
+        self.assertTrue(images_I1_no_buffer.shape[2] == 100)
+        self.assertTrue(images_I1_no_buffer.shape[3] == 80)
 
         self.assertTrue(image.images_I1.shape[2] == 110)
         self.assertTrue(image.images_I1.shape[3] == 90)
 
-        self.assertTrue(image.images_I2 is None)
-
         # Check that the image without buffer is equal to the interior part of the image with buffer:
 
-        self.assertTrue(np.array_equal(image.images_I1[0,0,size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], image.images_I1_no_buffer[0,0,:,:]))
+        self.assertTrue(np.array_equal(image.images_I1[0,0,size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], images_I1_no_buffer[0,0,:,:]))
 
     def test_image__Image__removing_buffers_with_light_no_motion(self):
 
@@ -171,25 +167,17 @@ class TestImageClass(unittest.TestCase):
 
         self.assertTrue(image.images_I2 is None)
 
-        self.assertTrue(image.images_I1_no_buffer is None)
-        self.assertTrue(image.images_I2_no_buffer is None)
+        images_I1_no_buffer = image.remove_buffers(image.images_I1)
 
-        image.remove_buffers()
-
-        self.assertTrue(image.images_I1_no_buffer is not None)
-        self.assertTrue(image.images_I2_no_buffer is None)
-
-        self.assertTrue(image.images_I1_no_buffer.shape[2] == 100)
-        self.assertTrue(image.images_I1_no_buffer.shape[3] == 80)
+        self.assertTrue(images_I1_no_buffer.shape[2] == 100)
+        self.assertTrue(images_I1_no_buffer.shape[3] == 80)
 
         self.assertTrue(image.images_I1.shape[2] == 110)
         self.assertTrue(image.images_I1.shape[3] == 90)
 
-        self.assertTrue(image.images_I2 is None)
-
         # Check that the image without buffer is equal to the interior part of the image with buffer:
 
-        self.assertTrue(np.array_equal(image.images_I1[0,0,size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], image.images_I1_no_buffer[0,0,:,:]))
+        self.assertTrue(np.array_equal(image.images_I1[0,0,size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], images_I1_no_buffer[0,0,:,:]))
 
     def test_image__Image__removing_buffers_with_light_with_motion(self):
 
@@ -244,18 +232,13 @@ class TestImageClass(unittest.TestCase):
         self.assertTrue(image.images_I2.shape[2] == 110)
         self.assertTrue(image.images_I2.shape[3] == 90)
 
-        self.assertTrue(image.images_I1_no_buffer is None)
-        self.assertTrue(image.images_I2_no_buffer is None)
+        images_I1_no_buffer = image.remove_buffers(image.images_I1)
+        images_I2_no_buffer = image.remove_buffers(image.images_I2)
 
-        image.remove_buffers()
-
-        self.assertTrue(image.images_I1_no_buffer is not None)
-        self.assertTrue(image.images_I2_no_buffer is not None)
-
-        self.assertTrue(image.images_I1_no_buffer.shape[2] == 100)
-        self.assertTrue(image.images_I1_no_buffer.shape[3] == 80)
-        self.assertTrue(image.images_I2_no_buffer.shape[2] == 100)
-        self.assertTrue(image.images_I2_no_buffer.shape[3] == 80)
+        self.assertTrue(images_I1_no_buffer.shape[2] == 100)
+        self.assertTrue(images_I1_no_buffer.shape[3] == 80)
+        self.assertTrue(images_I2_no_buffer.shape[2] == 100)
+        self.assertTrue(images_I2_no_buffer.shape[3] == 80)
 
         self.assertTrue(image.images_I1.shape[2] == 110)
         self.assertTrue(image.images_I1.shape[3] == 90)
@@ -264,8 +247,8 @@ class TestImageClass(unittest.TestCase):
 
         # Check that the image without buffer is equal to the interior part of the image with buffer:
 
-        self.assertTrue(np.array_equal(image.images_I1[0,0,size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], image.images_I1_no_buffer[0,0,:,:]))
-        self.assertTrue(np.array_equal(image.images_I2[0,0,size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], image.images_I2_no_buffer[0,0,:,:]))
+        self.assertTrue(np.array_equal(image.images_I1[0,0,size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], images_I1_no_buffer[0,0,:,:]))
+        self.assertTrue(np.array_equal(image.images_I2[0,0,size_buffer:size[0]+size_buffer,size_buffer:size[1]+size_buffer], images_I2_no_buffer[0,0,:,:]))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

@@ -589,8 +589,17 @@ class Image:
     def remove_buffers(self, input_tensor):
         """
         Removes image buffers from the input tensor. If the input tensor is a four-dimensional array of size
-        :math:`(N, _, H+2b, W+2b)`, then the output is a four-dimensional tensor array of size :math:`(N, _, H, W)`.
+        :math:`(N, \_, H+2b, W+2b)`, then the output is a four-dimensional tensor array of size :math:`(N, \_, H, W)`.
         """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        try:
+            (N, _, H, W) = np.shape(input_tensor)
+        except:
+            raise ValueError("Parameter `input_tensor` has to be a four-dimensional tensor array.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -643,7 +652,7 @@ class Image:
 
         :return:
             - **input_tensor_tuple** - ``tuple`` of ``numpy.ndarray`` specifying the four-dimensional tensors to concatenate.
-              Each ``numpy.ndarray`` should have size :math:`(N, _, H, W)`, where :math:`N` is the number of PIV image pairs,
+              Each ``numpy.ndarray`` should have size :math:`(N, \_, H, W)`, where :math:`N` is the number of PIV image pairs,
               :math:`H` is the height and :math:`W` is the width of each PIV image.
               The second dimension refers to items being concatenated.
         """
