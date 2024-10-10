@@ -40,8 +40,8 @@ Class: ``Image``
 
 .. autofunction:: pykitPIV.image.Image.animate_image_pair
 
-.. autofunction:: pykitPIV.image.Image.plot_velocity_field
+.. autofunction:: pykitPIV.image.Image.plot_field
 
-.. autofunction:: pykitPIV.image.Image.plot_velocity_field_magnitude
+.. autofunction:: pykitPIV.image.Image.plot_field_magnitude
 
 .. autofunction:: pykitPIV.image.Image.plot_image_histogram
