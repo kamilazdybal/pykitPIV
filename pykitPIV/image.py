@@ -588,14 +588,19 @@ class Image:
 
     def remove_buffers(self, input_tensor):
         """
-        Removes image buffers from the input tensors. If the input tensor is a four-dimensional array of size
-        :math:`(N, C_in, H+2b, W+2b)`, then the output is a four-dimensional array of size :math:`(N, C_in, H, W)`.
+        Removes image buffers from the input tensor. If the input tensor is a four-dimensional array of size
+        :math:`(N, _, H+2b, W+2b)`, then the output is a four-dimensional tensor array of size :math:`(N, _, H, W)`.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+        if self.__particles.size_buffer > 0:
 
-        return input_tesor_no_buffers
+            return input_tensor[:, :, self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer]
+
+        else:
+
+            print('The buffer size was set to 0. Images do not have a buffer to remove!')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
