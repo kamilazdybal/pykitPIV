@@ -10,7 +10,7 @@ from pykitPIV import Particle, FlowField, Motion, Image
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--n_images',           type=int,  default=333, metavar='NIMAGES', help='Number of images')
-parser.add_argument('--size_buffer',        type=int,  default=10, metavar='SIZEBUFFER', help='Image buffer size')
+parser.add_argument('--size_buffer',        type=int,  default=80, metavar='SIZEBUFFER', help='Image buffer size')
 parser.add_argument('--image_height',       type=int,  default=100, metavar='H', help='Image height')
 parser.add_argument('--image_width',        type=int,  default=100, metavar='W', help='Image width')
 
