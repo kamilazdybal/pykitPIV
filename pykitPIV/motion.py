@@ -194,7 +194,7 @@ class Motion:
                 self.__displacement_field[:, 0, :, :] = self.__flowfield.velocity_field[:, 0, :, :] * new_time_separation
                 self.__displacement_field[:, 1, :, :] = self.__flowfield.velocity_field[:, 1, :, :] * new_time_separation
 
-                self.__displacement_field_magnitude = np.sqrt(self.displacement_field[:, 0, :, :] ** 2 + self.displacement_field[:, 1, :, :] ** 2)
+                self.__displacement_field_magnitude = np.sqrt(self.displacement_field[:, 0:1, :, :] ** 2 + self.displacement_field[:, 1:2, :, :] ** 2)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

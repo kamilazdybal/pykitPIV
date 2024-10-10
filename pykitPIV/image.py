@@ -1468,33 +1468,36 @@ class Image:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def plot_field_magnitude(self,
-                              idx,
-                              with_buffer=False,
-                              xlabel=None,
-                              ylabel=None,
-                              xticks=True,
-                              yticks=True,
-                              title=None,
-                              cmap='viridis',
-                              vmin_vmax=None,
-                              cbar=True,
-                              cbar_fontsize=14,
-                              add_quiver=False,
-                              quiver_step=10,
-                              quiver_color='k',
-                              add_streamplot=False,
-                              streamplot_density=1,
-                              streamplot_color='k',
-                              figsize=(5,5),
-                              dpi=300,
-                              filename=None):
+                             idx,
+                             field='velocity',
+                             with_buffer=False,
+                             xlabel=None,
+                             ylabel=None,
+                             xticks=True,
+                             yticks=True,
+                             title=None,
+                             cmap='viridis',
+                             vmin_vmax=None,
+                             cbar=True,
+                             cbar_fontsize=14,
+                             add_quiver=False,
+                             quiver_step=10,
+                             quiver_color='k',
+                             add_streamplot=False,
+                             streamplot_density=1,
+                             streamplot_color='k',
+                             figsize=(5,5),
+                             dpi=300,
+                             filename=None):
         """
-        Plots a velocity field magnitude.
-        In addition, velocity vectors can be visualized by setting ``add_quiver=True``,
-        and velocity streamlines can be visualized by setting ``add_streamplot=True``.
+        Plots a magnitude of the velocity or displacement field.
+        In addition, a vector field can be visualized by setting ``add_quiver=True``,
+        and streamlines can be visualized by setting ``add_streamplot=True``.
 
         :param idx:
             ``int`` specifying the index of the velocity field to plot out of ``n_images`` number of images.
+        :param field:
+            ``str`` specifying which field should be plotted. It can be ``'velocity'`` or ``'displacement'``.
         :param with_buffer:
             ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is marked with a red rectangle.
         :param xlabel: (optional)
@@ -1542,6 +1545,12 @@ class Image:
             raise ValueError("Parameter `idx` has to be of type 'int'.")
         if idx < 0:
             raise ValueError("Parameter `idx` has to be non-negative.")
+
+        if not isinstance(field, str):
+            raise ValueError("Parameter `field` has to be of type 'str'.")
+
+        if field not in ['velocity', 'displacement']:
+            raise ValueError("Parameter `field` has to be 'velocity' or 'displacement'.")
 
         if not isinstance(with_buffer, bool):
             raise ValueError("Parameter `with_buffer` has to be of type 'bool'.")
@@ -1591,124 +1600,142 @@ class Image:
         if (filename is not None) and (not isinstance(filename, str)):
             raise ValueError("Parameter `filename` has to be of type 'str'.")
 
+        if self.__flowfield is None:
+            raise AttributeError("Flow field has not been added to the image yet! Use the `Image.add_flowfield()` method first.")
+
+        if field == 'displacement' and self.__motion is None:
+            raise AttributeError("Motion has not been added to the image yet! Use the `Image.add_motion()` method first.")
+
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        if self.__flowfield is None:
+        if field == 'velocity':
 
-            print('Note: Flow field has not been added to the image yet!\n\n')
+            quantity_to_plot = self.__flowfield.velocity_field_magnitude
+
+        elif field == 'displacement':
+
+            quantity_to_plot = self.__motion.displacement_field_magnitude
+
+        if add_quiver or add_streamplot:
+
+            if field == 'velocity':
+
+                vector_to_plot = self.__flowfield.velocity_field
+
+            elif field == 'displacement':
+
+                vector_to_plot = self.__motion.displacement_field
+
+        fig = plt.figure(figsize=figsize)
+
+        # Check if flowfield has been generated with a buffer:
+        if self.__flowfield.size_buffer == 0:
+
+            if vmin_vmax is not None:
+                plt.imshow(quantity_to_plot[idx, 0, :, :], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+            else:
+                plt.imshow(quantity_to_plot[idx, 0, :, :], cmap=cmap, origin='lower')
 
         else:
 
-            fig = plt.figure(figsize=figsize)
-
-            # Check if flowfield has been generated with a buffer:
-            if self.__flowfield.size_buffer == 0:
+            if with_buffer:
 
                 if vmin_vmax is not None:
-                    plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, :, :], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
+                    im = plt.imshow(quantity_to_plot[idx, 0, :, :], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
                 else:
-                    plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, :, :], cmap=cmap, origin='lower')
+                    im = plt.imshow(quantity_to_plot[idx, 0, :, :], cmap=cmap, origin='lower')
+
+                # Extend the imshow area with the buffer:
+                f = lambda pixel: pixel - self.__flowfield.size_buffer
+                im.set_extent([f(x) for x in im.get_extent()])
+
+                # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
+                rect = patches.Rectangle((-0.5, -0.5), self.__flowfield.size[1], self.__flowfield.size[0], linewidth=1, edgecolor='r', facecolor='none')
+                ax = plt.gca()
+                ax.add_patch(rect)
 
             else:
 
-                if with_buffer:
-
-                    if vmin_vmax is not None:
-                        im = plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, :, :], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
-                    else:
-                        im = plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, :, :], cmap=cmap, origin='lower')
-
-                    # Extend the imshow area with the buffer:
-                    f = lambda pixel: pixel - self.__flowfield.size_buffer
-                    im.set_extent([f(x) for x in im.get_extent()])
-
-                    # Visualize a rectangle that separates the proper PIV image area and the artificial buffer outline:
-                    rect = patches.Rectangle((-0.5, -0.5), self.__flowfield.size[1], self.__flowfield.size[0], linewidth=1, edgecolor='r', facecolor='none')
-                    ax = plt.gca()
-                    ax.add_patch(rect)
-
+                if vmin_vmax is not None:
+                    plt.imshow(quantity_to_plot[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
                 else:
+                    plt.imshow(quantity_to_plot[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin='lower')
 
-                    if vmin_vmax is not None:
-                        plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin='lower')
-                    else:
-                        plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin='lower')
+        if xlabel is not None:
+            plt.xlabel(xlabel)
 
-            if xlabel is not None:
-                plt.xlabel(xlabel)
+        if ylabel is not None:
+            plt.ylabel(ylabel)
 
-            if ylabel is not None:
-                plt.ylabel(ylabel)
+        if not xticks:
+            plt.xticks([])
 
-            if not xticks:
-                plt.xticks([])
+        if not yticks:
+            plt.yticks([])
 
-            if not yticks:
-                plt.yticks([])
+        if title is not None:
+            plt.title(title)
 
-            if title is not None:
-                plt.title(title)
+        if cbar:
+            colorbar = plt.colorbar()
+            for t in colorbar.ax.get_yticklabels():
+                t.set_fontsize(cbar_fontsize)
 
-            if cbar:
-                colorbar = plt.colorbar()
-                for t in colorbar.ax.get_yticklabels():
-                    t.set_fontsize(cbar_fontsize)
+        # Check if flowfield has been generated with a buffer:
+        if self.__flowfield.size_buffer == 0:
 
-            # Check if flowfield has been generated with a buffer:
-            if self.__flowfield.size_buffer == 0:
+            if add_quiver:
+                X = np.arange(0,self.__flowfield.size[1],quiver_step)
+                Y = np.arange(0,self.__flowfield.size[0],quiver_step)
+                plt.quiver(X, Y, vector_to_plot[idx, 0, ::quiver_step, ::quiver_step], vector_to_plot[idx, 1, ::quiver_step, ::quiver_step], color=quiver_color)
+
+            if add_streamplot:
+                X = np.arange(0,self.__flowfield.size[1],1)
+                Y = np.arange(0,self.__flowfield.size[0],1)
+                plt.streamplot(X, Y, vector_to_plot[idx, 0, :, :], vector_to_plot[idx, 1, :, :], density=streamplot_density, color=streamplot_color)
+
+        else:
+
+            if with_buffer:
 
                 if add_quiver:
-                    X = np.arange(0,self.__flowfield.size[1],quiver_step)
-                    Y = np.arange(0,self.__flowfield.size[0],quiver_step)
-                    plt.quiver(X, Y, self.__flowfield.velocity_field[idx, 0, ::quiver_step, ::quiver_step], self.__flowfield.velocity_field[idx, 1, ::quiver_step, ::quiver_step], color=quiver_color)
+                    X = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer, quiver_step)
+                    Y = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer, quiver_step)
+
+                    plt.quiver(X, Y, vector_to_plot[idx, 0, ::quiver_step, ::quiver_step], vector_to_plot[idx, 1, ::quiver_step, ::quiver_step], color=quiver_color)
+
+                    plt.xlim([-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer])
+                    plt.ylim([-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer])
 
                 if add_streamplot:
-                    X = np.arange(0,self.__flowfield.size[1],1)
-                    Y = np.arange(0,self.__flowfield.size[0],1)
-                    plt.streamplot(X, Y, self.__flowfield.velocity_field[idx, 0, :, :], self.__flowfield.velocity_field[idx, 1, :, :], density=streamplot_density, color=streamplot_color)
+                    X = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer, 1)
+                    Y = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer, 1)
+                    plt.streamplot(X, Y, vector_to_plot[idx, 0, :, :], vector_to_plot[idx, 1, :, :], density=streamplot_density, color=streamplot_color)
+
+                    plt.xlim([-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer])
+                    plt.ylim([-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer])
 
             else:
 
-                if with_buffer:
+                if add_quiver:
+                    X = np.arange(0, self.__flowfield.size[1], quiver_step)
+                    Y = np.arange(0, self.__flowfield.size[0], quiver_step)
 
-                    if add_quiver:
-                        X = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer, quiver_step)
-                        Y = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer, quiver_step)
+                    velocity_field_u_subset = vector_to_plot[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer]
+                    velocity_field_v_subset = vector_to_plot[idx, 1, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer]
 
-                        plt.quiver(X, Y, self.__flowfield.velocity_field[idx, 0, ::quiver_step, ::quiver_step], self.__flowfield.velocity_field[idx, 1, ::quiver_step, ::quiver_step], color=quiver_color)
+                    plt.quiver(X, Y, velocity_field_u_subset[::quiver_step, ::quiver_step], velocity_field_v_subset[::quiver_step, ::quiver_step], color=quiver_color)
 
-                        plt.xlim([-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer])
-                        plt.ylim([-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer])
+                if add_streamplot:
+                    X = np.arange(0, self.__flowfield.size[1], 1)
+                    Y = np.arange(0, self.__flowfield.size[0], 1)
 
-                    if add_streamplot:
-                        X = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer, 1)
-                        Y = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer, 1)
-                        plt.streamplot(X, Y, self.__flowfield.velocity_field[idx, 0, :, :], self.__flowfield.velocity_field[idx, 1, :, :], density=streamplot_density, color=streamplot_color)
+                    plt.streamplot(X, Y, vector_to_plot[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer],
+                                   vector_to_plot[idx, 1, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], density=streamplot_density, color=streamplot_color)
 
-                        plt.xlim([-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer])
-                        plt.ylim([-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer])
+        if filename is not None:
 
-                else:
-
-                    if add_quiver:
-                        X = np.arange(0, self.__flowfield.size[1], quiver_step)
-                        Y = np.arange(0, self.__flowfield.size[0], quiver_step)
-
-                        velocity_field_u_subset = self.__flowfield.velocity_field[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer]
-                        velocity_field_v_subset = self.__flowfield.velocity_field[idx, 1, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer]
-
-                        plt.quiver(X, Y, velocity_field_u_subset[::quiver_step, ::quiver_step], velocity_field_v_subset[::quiver_step, ::quiver_step], color=quiver_color)
-
-                    if add_streamplot:
-                        X = np.arange(0, self.__flowfield.size[1], 1)
-                        Y = np.arange(0, self.__flowfield.size[0], 1)
-
-                        plt.streamplot(X, Y, self.__flowfield.velocity_field[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer],
-                                       self.__flowfield.velocity_field[idx, 1, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], density=streamplot_density, color=streamplot_color)
-
-            if filename is not None:
-
-                plt.savefig(filename, dpi=dpi, bbox_inches='tight')
+            plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
         return plt
 
