@@ -46,6 +46,16 @@ class TestMotionClass(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def test_motion__Motion__no_velocity_field_generated(self):
+
+        particles = Particle(1)
+        flowfield = FlowField(1)
+
+        with self.assertRaises(AttributeError):
+            motion = Motion(particles, flowfield)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_motion__Motion__attributes_available_after_class_init(self):
 
         particles = Particle(1)

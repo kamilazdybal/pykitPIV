@@ -93,6 +93,11 @@ class TestImageClass(unittest.TestCase):
         image = Image(random_seed=100)
         particles = Particle(1)
         flowfield = FlowField(1)
+
+        flowfield.generate_random_velocity_field(gaussian_filters=(10, 11),
+                                                 n_gaussian_filter_iter=20,
+                                                 displacement=(0, 10))
+
         motion = Motion(particles, flowfield)
 
         try:
