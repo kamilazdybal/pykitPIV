@@ -71,13 +71,15 @@ image.add_reflected_light(exposures=(0.6,0.65),
                           laser_beam_shape=0.95,
                           alpha=1/10)
 
-image.remove_buffers()
 
-images_tensor = image.image_pairs_to_tensor()
-targets_tensor = image.targets_to_tensor()
+images_I1 = image.remove_buffers(image.images_I1)
+images_I2 = image.remove_buffers(image.images_I2)
+images_tensor = image.concatenate_tensors((images_I1, images_I2))
+
+targets_tensor = image.remove_buffers(image.get_displacement_field())
 
 tensors_dictionary = {"I"      : images_tensor, 
-                      "targets": targets_tensor}
+                      "target" : targets_tensor}
 
 num, decimal = [part for part in str(time_separation).split('.')]
 
