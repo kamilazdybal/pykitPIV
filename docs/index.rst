@@ -2,16 +2,17 @@
   :width: 300
 
 **pykitPIV** (**Py**\ thon **ki**\ nematic **t**\ raining for **P**\ article **I**\ mage **V**\ elocimetry) is a
-Python package for synthetic PIV image generation.
+PyTorch-compatible, Python package for synthetic PIV image generation.
 It exploits the idea that if the time separation between two PIV images is small,
 kinematic relationship between two consecutive PIV images is sufficient to determine particle displacement fields.
 
+**pykitPIV** provides images of varying complexity in order to exhaust challenging training scenarios.
 The generated image pairs, and the associated flow targets, can be directly used in training
 convolutional neural networks (CNNs) for optical flow estimation.
-The PIV images are compatible with **PyTorch** and can easily port with convolutional layers
+The PIV images are compatible with PyTorch and can easily port with convolutional layers
 (``torch.nn.Conv2d``) or with convolutional filters (``torch.nn.functional.conv2d``).
 The goal of this library is to give the user, or a machine learning algorithm, a lot of flexibility in setting-up
-image generation. **pykitPIV** thus provides images of varying complexity in order to exhaust challenging training scenarios.
+image generation.
 
 The graph below shows the possible workflows constructed from the five main classes:
 
@@ -24,20 +25,14 @@ The graph below shows the possible workflows constructed from the five main clas
 - The class **FlowField** can be used to create a velocity field to advect the particles.
 
 - The class **Motion** takes an object of class **Particle** and applies an object of class **FlowField** to it to
-  advect the particles and generate an image pair, :math:`\mathbf{I} = (I_1, I_2)^{\top}`, at time :math:`t` and
-  :math:`t + T` respectively. Here :math:`T` denotes the time separation between two PIV images.
+  advect the particles and generate an image pair tensor, :math:`\mathbf{I} = (I_1, I_2)^{\top}`, at time :math:`t_1` and
+  :math:`t_2 = t_1 + \Delta t` respectively, where :math:`\Delta t` denotes the time separation between two PIV images.
 
 - The class **Image** can be used to apply laser and camera properties on any standalone image, as well as on a series of images of advected particles.
 
 - The class **Postprocess** is the endpoint of the workflow and can be used to postprocess a single image or a series of images.
 
 At each stage, the user can enforce reproducible image generation through fixing random seeds.
-
-The following convention for indexing various quantities applies throughout the **pykitPIV** modules:
-
-.. image:: images/pykitPIV-image-indexing.svg
-    :width: 500
-    :align: center
 
 For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please
 check the following references:
@@ -58,6 +53,12 @@ check the following references:
    :caption: Installation
 
    installation/instruction
+
+.. toctree::
+   :maxdepth: 5
+   :caption: Preliminaries
+
+   preliminaries/preliminaries
 
 .. toctree::
    :maxdepth: 5
