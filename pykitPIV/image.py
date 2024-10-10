@@ -1583,9 +1583,6 @@ class Image:
         if not isinstance(streamplot_color, str):
             raise ValueError("Parameter `streamplot_color` has to be of type 'str'.")
 
-        if not isinstance(origin, str):
-            raise ValueError("Parameter `origin` has to be of type 'str'.")
-
         check_two_element_tuple(figsize, 'figsize')
 
         if not isinstance(dpi, int):
