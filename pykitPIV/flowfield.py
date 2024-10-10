@@ -676,11 +676,11 @@ class FlowField:
                 self.__velocity_field[i, 0, :, :] = velocity_field[0, 0, :, :]
                 self.__velocity_field[i, 1, :, :] = velocity_field[0, 1, :, :]
 
-            self.__velocity_field_magnitude = np.sqrt(self.__velocity_field[:, 0, :, :] ** 2 + self.__velocity_field[:, 1, :, :] ** 2)
+            self.__velocity_field_magnitude = np.sqrt(self.__velocity_field[:, 0:1, :, :] ** 2 + self.__velocity_field[:, 1:2, :, :] ** 2)
 
         else:
 
             self.__velocity_field = velocity_field
-            self.__velocity_field_magnitude = np.sqrt(velocity_field[:, 0, :, :] ** 2 + velocity_field[:, 1, :, :] ** 2)
+            self.__velocity_field_magnitude = np.sqrt(velocity_field[:, 0:1, :, :] ** 2 + velocity_field[:, 1:2, :, :] ** 2)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
