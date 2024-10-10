@@ -83,6 +83,8 @@ class Motion:
     - **particle_coordinates_I2** - (read-only) ``list`` of ``tuple`` specifying the  coordinates of particles in image :math:`I_2`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **updated_particle_diameters** - (read-only) ``list`` of ``numpy.ndarray`` specifying the updated particle diameters for each PIV image pair.
     - **displacement_field** - (read-only) ``numpy.ndarray`` specifying the displacement field, :math:`ds = [dx, dy]`, in the :math:`x` and :math:`y` direction. It is computed as the velocity component multiplied by time separation and has a unit of :math:`px`. It has size :math:`(N, 2, H+2b, W+2b)`. The second index corresponds to :math:`dx` and :math:`dy` displacement, respectively.
+    - **displacement_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the displacement field magnitude, :math:`|ds| = \sqrt{dx^2 + dy^2}`. It has a unit of :math:`px`. It has size :math:`(N, 1, H+2b, W+2b)`.
+
     """
 
     def __init__(self,
@@ -142,6 +144,8 @@ class Motion:
         self.__displacement_field[:, 0, :, :] = self.__flowfield.velocity_field[:, 0, :, :] * time_separation
         self.__displacement_field[:, 1, :, :] = self.__flowfield.velocity_field[:, 1, :, :] * time_separation
 
+        self.__displacement_field_magnitude = np.sqrt(self.displacement_field[:, 0, :, :] ** 2 + self.displacement_field[:, 1, :, :] ** 2)
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
@@ -169,6 +173,10 @@ class Motion:
     @property
     def displacement_field(self):
         return self.__displacement_field
+
+    @property
+    def displacement_field_magnitude(self):
+        return self.__displacement_field_magnitude
 
     # Setters:
     @time_separation.setter
