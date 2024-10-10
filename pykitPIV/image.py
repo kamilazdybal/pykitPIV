@@ -38,10 +38,6 @@ class Image:
     - **random_seed** - (read-only) as per user input.
     - **images_I1** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`. Only available after ``Image.add_particles()`` has been called.
     - **images_I2** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`. Only available after ``Image.add_motion()`` has been called.
-    - **images_I1_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`, without image buffers. Only available after ``Image.add_particles()`` and ``Image.remove_buffer()`` have been called.
-    - **images_I2_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`, without image buffers. Only available after ``Image.add_motion()`` and ``Image.remove_buffer()`` have been called.
-    - **targets** - (read-only) ``numpy.ndarray`` specifying the flow targets per each image. It has size :math:`(N, N_t, H+2b, W+2b)`. Only available after ``Image.add_flowfield()`` has been called.
-    - **targets_no_buffer** - (read-only) ``numpy.ndarray`` specifying the flow targets per each image, without image buffers. It has size :math:`(N, N_t, H, W)`. Only available after ``Image.add_flowfield()`` and then ``Image.remove_buffer()`` have been called.
     - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image. Only available after ``Image.add_reflected_light`` has been called.
     - **maximum_intensity** - (read-only) ``int`` specifying the maximum intensity that was used when adding reflected light to the image. Only available after ``Image.add_reflected_light`` has been called.
     """
@@ -69,16 +65,6 @@ class Image:
         # Initialize images:
         self.__images_I1 = None
         self.__images_I2 = None
-
-        # Initialize images without buffer:
-        self.__images_I1_no_buffer = None
-        self.__images_I2_no_buffer = None
-
-        # Initialize flow targets:
-        self.__targets = None
-
-        # Initialize flow targets without buffer:
-        self.__targets_no_buffer = None
 
         # Initialize particles:
         self.__particles = None
@@ -112,22 +98,6 @@ class Image:
         return self.__images_I2
 
     @property
-    def images_I1_no_buffer(self):
-        return self.__images_I1_no_buffer
-
-    @property
-    def images_I2_no_buffer(self):
-        return self.__images_I2_no_buffer
-
-    @property
-    def targets(self):
-        return self.__targets
-
-    @property
-    def targets_no_buffer(self):
-        return self.__targets_no_buffer
-
-    @property
     def exposures_per_image(self):
         return self.__exposures_per_image
 
@@ -142,7 +112,8 @@ class Image:
         """
         Adds particles to the image. Particles should be defined using the ``Particle`` class.
 
-        Calling this function populates the private attribute ``image.__particles`` and the ``image.images_I1`` attribute.
+        Calling this function populates the ``image.images_I1`` attribute and the private attribute ``image.__particles``
+        which gives the user access to attributes from the ``Particle`` object.
 
         **Example:**
 
@@ -187,7 +158,8 @@ class Image:
         """
         Adds the flow field to the image. The flow field should be defined using the ``FlowField`` class.
 
-        Calling this function populates the private attribute ``image.__flowfield`` and the ``image.targets`` attribute.
+        Calling this function populates the private attribute ``image.__flowfield``
+        which gives the user access to attributes from the ``FlowField`` object.
 
         **Example:**
 
@@ -221,7 +193,6 @@ class Image:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__flowfield = flowfield
-        self.__targets = flowfield.velocity_field
 
         print('Velocity field added to the image.')
 
@@ -232,7 +203,8 @@ class Image:
         """
         Adds particle movement to the image. The movement should be defined using the ``Motion`` class.
 
-        Calling this function populates the private attribute ``image.__motion``.
+        Calling this function populates the private attribute ``image.__motion``
+        which gives the user access to attributes from the ``Motion`` object.
 
         **Example:**
 
@@ -278,6 +250,92 @@ class Image:
         self.__motion = motion
 
         print('Particle movement added to the image.')
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def get_velocity_field(self):
+        """
+        Returns the velocity field from the object of the ``FlowField`` class.
+
+        :return:
+            - **velocity_field** - as per ``FlowField`` class.
+        """
+
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if self.__flowfield is None:
+            raise NameError("Flow field has not been added to the image yet! Use the `Image.add_flowfield()` method first.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        return self.__flowfield.velocity_field
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def get_velocity_field_magnitude(self):
+        """
+        Returns the velocity field magnitude from the object of the ``FlowField`` class.
+
+        :return:
+            - **velocity_field_magnitude** - as per ``FlowField`` class.
+        """
+
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if self.__flowfield is None:
+            raise NameError("Flow field has not been added to the image yet! Use the `Image.add_flowfield()` method first.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        return self.__flowfield.velocity_field_magnitude
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def get_displacement_field(self):
+        """
+        Returns the displacement field from the object of the ``Motion`` class.
+
+        :return:
+            - **displacement_field** - as per ``Motion`` class.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if self.__motion is None:
+            raise NameError("Motion has not been added to the image yet! Use the `Image.add_motion()` method first.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        return self.__motion.displacement_field
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def get_displacement_field_magnitude(self):
+        """
+        Returns the displacement field magnitude from the object of the ``Motion`` class.
+
+        :return:
+            - **displacement_field_magnitude** - as per ``Motion`` class.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if self.__motion is None:
+            raise NameError("Motion has not been added to the image yet! Use the `Image.add_motion()` method first.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        return self.__motion.displacement_field_magnitude
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -528,65 +586,16 @@ class Image:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def remove_buffers(self):
+    def remove_buffers(self, input_tensor):
         """
-        Removes buffers from the generated PIV image pairs and from the associated targets (velocity fields).
-        Executing this function populates the class attributes ``Image.images_I1_no_buffer``,
-        ``Image.images_I2_no_buffer`` with copies of ``Image.images_I1``, ``Image.images_I2`` but with the buffer
-        removed, and it also populates the class attribute  ``Image.targets_no_buffer``,
-        with a copy of ``Image.targets`` but with the buffer removed.
+        Removes image buffers from the input tensors. If the input tensor is a four-dimensional array of size
+        :math:`(N, C_in, H+2b, W+2b)`, then the output is a four-dimensional array of size :math:`(N, C_in, H, W)`.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        if self.__particles.size_buffer > 0:
 
-            # Remove buffer from PIV image pairs:
-            if self.images_I1 is None:
-
-                raise ValueError("Images have not been initialized yet!")
-
-            else:
-
-                self.__images_I1_no_buffer = np.zeros((self.__particles.n_images, 1, self.__particles.size[0], self.__particles.size[1]))
-
-                for i in range(0,self.__particles.n_images):
-
-                    self.__images_I1_no_buffer[i, 0, :, :] = self.images_I1[i, 0, self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer]
-
-                print('Buffers removed from images I1.')
-
-            if self.images_I2 is None:
-
-                pass
-
-            else:
-
-                self.__images_I2_no_buffer = np.zeros((self.__particles.n_images, 1, self.__particles.size[0], self.__particles.size[1]))
-
-                for i in range(0,self.__particles.n_images):
-
-                    self.__images_I2_no_buffer[i, 0, :, :] = self.images_I2[i, 0, self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer]
-
-                print('Buffers removed from images I2.')
-
-            # Remove buffer from PIV image targets (velocity field):
-            if self.__flowfield is not None:
-
-                self.__targets_no_buffer = self.__flowfield.velocity_field[:, :, self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer]
-
-                print('Buffers removed from the velocity field.')
-
-        else:
-
-            print('Images do not have a buffer to remove!')
-
-            self.__images_I1_no_buffer = self.images_I1
-            self.__images_I2_no_buffer = self.images_I2
-
-            if self.__flowfield is not None:
-
-                self.__targets_no_buffer = self.targets
+        return input_tesor_no_buffers
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -623,23 +632,18 @@ class Image:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def image_pairs_to_tensor(self):
+    def concatenate_tensors(self, input_tensor_tuple):
         """
-        Prepares a four-dimensional tensor array of size :math:`(N, 2, H, W)` that stores
-        the PIV image pairs, :math:`I_1` and :math:`I_2`, concatenated along the second dimension.
-
-        .. note::
-
-            This function assumes that you have removed image buffers using ``Image.remove_buffers``.
+        Concatenates multiple four-dimensional tensor arrays along the second dimension (the "channel" dimension).
 
         :return:
-            - **images_tensor** - ``numpy.ndarray`` specifying the PIV image pairs tensor.
-              It has size :math:`(N, 2, H, W)`, where :math:`N` is the number of PIV image pairs,
+            - **input_tensor_tuple** - ``tuple`` of ``numpy.ndarray`` specifying the four-dimensional tensors to concatenate.
+              Each ``numpy.ndarray`` should have size :math:`(N, _, H, W)`, where :math:`N` is the number of PIV image pairs,
               :math:`H` is the height and :math:`W` is the width of each PIV image.
-              The second dimension refers to images :math:`I_1` or :math:`I_2`, respectively.
+              The second dimension refers to items being concatenated.
         """
 
-        return np.concatenate((self.images_I1_no_buffer, self.images_I2_no_buffer), axis=1)
+        return np.concatenate(input_tensor_tuple, axis=1)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -649,7 +653,7 @@ class Image:
                    filename=None,
                    verbose=False):
         """
-        Saves the image pairs tensor and the associated flow targets tensor to ``.h5`` data format.
+        Saves the image pairs tensor and/or the associated flow targets tensor to ``.h5`` data format.
 
         :param tensors_dictionary:
             ``dict`` specifying the tensors to save.
@@ -717,7 +721,7 @@ class Image:
     def upload_from_h5(self,
                        filename=None):
         """
-        Upload image pairs tensor and the associated flow targets tensor from ``.h5`` data format.
+        Upload image pairs tensor and/or the associated flow targets tensor from ``.h5`` data format.
 
         :param filename: (optional)
             ``str`` specifying the path and filename to save the ``.h5`` data. Note that ``'-pair-#'`` will be added
@@ -1153,7 +1157,7 @@ class Image:
 
         if self.__motion is None:
 
-            print('Note: Movement of particles has not been added to the image yet!\n\n')
+            print('Note: Motion has not been added to the image yet!\n\n')
 
         else:
 
