@@ -82,7 +82,7 @@ class Motion:
     - **particle_coordinates_I1** - (read-only) ``list`` of ``tuple`` specifying the coordinates of particles in image :math:`I_1`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **particle_coordinates_I2** - (read-only) ``list`` of ``tuple`` specifying the  coordinates of particles in image :math:`I_2`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **updated_particle_diameters** - (read-only) ``list`` of ``numpy.ndarray`` specifying the updated particle diameters for each PIV image pair.
-    - **displacement_field** - (read-only) ``numpy.ndarray`` specifying the displacement field, :math:`ds`, in the :math:`x` and :math:`y` direction. It is computed as the velocity component multiplied by time separation and has a unit of :math:`px`.
+    - **displacement_field** - (read-only) ``numpy.ndarray`` specifying the displacement field, :math:`ds = [dx, dy]`, in the :math:`x` and :math:`y` direction. It is computed as the velocity component multiplied by time separation and has a unit of :math:`px`. It has size :math:`(N, 2, H+2b, W+2b)`. The second index corresponds to :math:`dx` and :math:`dy` displacement, respectively.
     """
 
     def __init__(self,
@@ -117,6 +117,10 @@ class Motion:
 
         check_two_element_tuple(particle_loss, 'particle_loss')
         check_min_max_tuple(particle_loss, 'particle_loss')
+
+        # Check that a velocity field is present in the FlowField class object:
+        if flowfield.velocity_field is None:
+            raise AttributeError("No velocity field is generated in the FlowField class object.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

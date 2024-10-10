@@ -88,8 +88,8 @@ class Particle:
     - **particle_coordinates** - (read-only) ``list`` specifying the absolute coordinates of all particle centers for each image.
       The positions are computed based on the ``seeding_mode``. The first element in each tuple are the coordinates
       along the image height, and the second element are the coordinates along the image width.
-    - **particle_positions** - (read-only) ``numpy.ndarray`` specifying the starting position per pixel of all particle centers
-      for each image; these positions will later populate the first PIV image frame, :math:`I_1`.
+    - **particle_positions** - (read-only) ``numpy.ndarray`` specifying the per pixel starting positions of all particles' centers
+      for each PIV image pair; these positions will later populate the first PIV image frame, :math:`I_1`.
       The positions are computed based on the ``seeding_mode``. If a particle's position falls into
       a specific pixel coordinate, this pixel's value is increased by one. Zero entry indicates that no particles are present
       inside that pixel.
