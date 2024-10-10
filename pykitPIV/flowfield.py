@@ -209,6 +209,12 @@ class FlowField:
                                                      gaussian_filters=(10,30),
                                                      n_gaussian_filter_iter=6)
 
+            # Access the velocity components tensor:
+            flowfield.velocity_field
+
+            # Access the velocity field magnitude:
+            flowfield.velocity_field_magnitude
+
         :param displacement: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement
         :param gaussian_filters: (optional)
@@ -316,6 +322,12 @@ class FlowField:
                                                         n=10,
                                                         rotation=10)
 
+            # Access the velocity components tensor:
+            flowfield.velocity_field
+
+            # Access the velocity field magnitude:
+            flowfield.velocity_field_magnitude
+
         :param displacement: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement
         :param m: (optional)
@@ -416,6 +428,12 @@ class FlowField:
             # Generate Chebyshev velocity field:
             flowfield.generate_chebyshev_velocity_field(order=10)
 
+            # Access the velocity components tensor:
+            flowfield.velocity_field
+
+            # Access the velocity field magnitude:
+            flowfield.velocity_field_magnitude
+
         :param displacement: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement.
         :param start: (optional)
@@ -509,6 +527,12 @@ class FlowField:
 
             # Generate spherical harmonics velocity field:
             flowfield.generate_spherical_harmonics_velocity_field(degree=1, order=1)
+
+            # Access the velocity components tensor:
+            flowfield.velocity_field
+
+            # Access the velocity field magnitude:
+            flowfield.velocity_field_magnitude
 
         :param displacement: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement.
