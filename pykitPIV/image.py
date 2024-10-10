@@ -41,7 +41,7 @@ class Image:
     - **images_I1_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`, without image buffers. Only available after ``Image.add_particles()`` and ``Image.remove_buffer()`` have been called.
     - **images_I2_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`, without image buffers. Only available after ``Image.add_motion()`` and ``Image.remove_buffer()`` have been called.
     - **targets** - (read-only) ``list`` of ``tuple``, where each element contains the velocity field components, :math:`u` and :math:`v`, as ``numpy.ndarray``. Only available after ``Image.add_flowfield()`` has been called.
-    - **targets_no_buffer** - (read-only) ``numpy.ndarray`` specifying the flow targets per each image, without image buffers. It has size :math:`(N, :math:`C_{out}`, H, W)`. Only available after ``Image.add_flowfield()`` and then ``Image.remove_buffer()`` have been called.
+    - **targets_no_buffer** - (read-only) ``numpy.ndarray`` specifying the flow targets per each image, without image buffers. It has size :math:`(N, C_{out}, H, W)`. Only available after ``Image.add_flowfield()`` and then ``Image.remove_buffer()`` have been called.
     - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image. Only available after ``Image.add_reflected_light`` has been called.
     - **maximum_intensity** - (read-only) ``int`` specifying the maximum intensity that was used when adding reflected light to the image. Only available after ``Image.add_reflected_light`` has been called.
     """
@@ -573,7 +573,7 @@ class Image:
             # Remove buffer from PIV image targets (velocity field):
             if self.__flowfield is not None:
 
-                self.__targets_no_buffer = self.__flowfield.velocity_field[:,:,self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer]
+                self.__targets_no_buffer = self.__flowfield.velocity_field[:, :, self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer]
 
                 print('Buffers removed from the velocity field.')
 
@@ -1333,19 +1333,19 @@ class Image:
             if self.__flowfield.size_buffer == 0:
 
                 if vmin_vmax is not None:
-                    plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
+                    plt.imshow(self.__flowfield.velocity_field[idx, 0, :, :], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                 else:
-                    plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, origin=origin)
+                    plt.imshow(self.__flowfield.velocity_field[idx, 0, :, :], cmap=cmap, origin=origin)
 
             else:
 
                 if with_buffer:
 
                     if vmin_vmax is not None:
-                        im = plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, vmin=vmin_vmax[0],
+                        im = plt.imshow(self.__flowfield.velocity_field[idx, 0, :, :], cmap=cmap, vmin=vmin_vmax[0],
                                    vmax=vmin_vmax[1], origin=origin)
                     else:
-                        im = plt.imshow(self.__flowfield.velocity_field[idx][0], cmap=cmap, origin=origin)
+                        im = plt.imshow(self.__flowfield.velocity_field[idx, 0, :, :], cmap=cmap, origin=origin)
 
                     # Extend the imshow area with the buffer:
                     f = lambda pixel: pixel - self.__flowfield.size_buffer
@@ -1359,9 +1359,9 @@ class Image:
                 else:
 
                     if vmin_vmax is not None:
-                        plt.imshow(self.__flowfield.velocity_field[idx][0][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
+                        plt.imshow(self.__flowfield.velocity_field[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                     else:
-                        plt.imshow(self.__flowfield.velocity_field[idx][0][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin=origin)
+                        plt.imshow(self.__flowfield.velocity_field[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin=origin)
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
@@ -1387,14 +1387,14 @@ class Image:
 
                 if origin == 'upper':
                     if vmin_vmax is not None:
-                        plt.imshow(-self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
+                        plt.imshow(-self.__flowfield.velocity_field[idx, 1, :, :], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                     else:
-                        plt.imshow(-self.__flowfield.velocity_field[idx][1], cmap=cmap, origin=origin)
+                        plt.imshow(-self.__flowfield.velocity_field[idx, 1, :, :], cmap=cmap, origin=origin)
                 elif origin == 'lower':
                     if vmin_vmax is not None:
-                        plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
+                        plt.imshow(self.__flowfield.velocity_field[idx, 1, :, :], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                     else:
-                        plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, origin=origin)
+                        plt.imshow(self.__flowfield.velocity_field[idx, 1, :, :], cmap=cmap, origin=origin)
 
             else:
 
@@ -1403,18 +1403,18 @@ class Image:
                     if origin == 'upper':
 
                         if vmin_vmax is not None:
-                            im = plt.imshow(-self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0],
+                            im = plt.imshow(-self.__flowfield.velocity_field[idx, 1, :, :], cmap=cmap, vmin=vmin_vmax[0],
                                        vmax=vmin_vmax[1], origin=origin)
                         else:
-                            im = plt.imshow(-self.__flowfield.velocity_field[idx][1], cmap=cmap, origin=origin)
+                            im = plt.imshow(-self.__flowfield.velocity_field[idx, 1, :, :], cmap=cmap, origin=origin)
 
                     elif origin == 'lower':
 
                         if vmin_vmax is not None:
-                            im = plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, vmin=vmin_vmax[0],
+                            im = plt.imshow(self.__flowfield.velocity_field[idx, 1, :, :], cmap=cmap, vmin=vmin_vmax[0],
                                             vmax=vmin_vmax[1], origin=origin)
                         else:
-                            im = plt.imshow(self.__flowfield.velocity_field[idx][1], cmap=cmap, origin=origin)
+                            im = plt.imshow(self.__flowfield.velocity_field[idx, 1, :, :], cmap=cmap, origin=origin)
 
                     # Extend the imshow area with the buffer:
                     f = lambda pixel: pixel - self.__flowfield.size_buffer
@@ -1430,16 +1430,16 @@ class Image:
                     if origin == 'upper':
 
                         if vmin_vmax is not None:
-                            plt.imshow(-self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
+                            plt.imshow(-self.__flowfield.velocity_field[idx, 1, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                         else:
-                            plt.imshow(-self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin=origin)
+                            plt.imshow(-self.__flowfield.velocity_field[idx, 1, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin=origin)
 
                     elif origin == 'lower':
 
                         if vmin_vmax is not None:
-                            plt.imshow(self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
+                            plt.imshow(self.__flowfield.velocity_field[idx, 1, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                         else:
-                            plt.imshow(self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin=origin)
+                            plt.imshow(self.__flowfield.velocity_field[idx, 1, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin=origin)
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
@@ -1603,18 +1603,18 @@ class Image:
             if self.__flowfield.size_buffer == 0:
 
                 if vmin_vmax is not None:
-                    plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
+                    plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, :, :], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                 else:
-                    plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, origin=origin)
+                    plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, :, :], cmap=cmap, origin=origin)
 
             else:
 
                 if with_buffer:
 
                     if vmin_vmax is not None:
-                        im = plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
+                        im = plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, :, :], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                     else:
-                        im = plt.imshow(self.__flowfield.velocity_field_magnitude[idx], cmap=cmap, origin=origin)
+                        im = plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, :, :], cmap=cmap, origin=origin)
 
                     # Extend the imshow area with the buffer:
                     f = lambda pixel: pixel - self.__flowfield.size_buffer
@@ -1628,9 +1628,9 @@ class Image:
                 else:
 
                     if vmin_vmax is not None:
-                        plt.imshow(self.__flowfield.velocity_field_magnitude[idx][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
+                        plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, vmin=vmin_vmax[0], vmax=vmin_vmax[1], origin=origin)
                     else:
-                        plt.imshow(self.__flowfield.velocity_field_magnitude[idx][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin=origin)
+                        plt.imshow(self.__flowfield.velocity_field_magnitude[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], cmap=cmap, origin=origin)
 
             if xlabel is not None:
                 plt.xlabel(xlabel)
@@ -1658,12 +1658,12 @@ class Image:
                 if add_quiver:
                     X = np.arange(0,self.__flowfield.size[1],quiver_step)
                     Y = np.arange(0,self.__flowfield.size[0],quiver_step)
-                    plt.quiver(X, Y, self.__flowfield.velocity_field[idx][0][::quiver_step,::quiver_step], self.__flowfield.velocity_field[idx][1][::quiver_step,::quiver_step], color=quiver_color)
+                    plt.quiver(X, Y, self.__flowfield.velocity_field[idx, 0, ::quiver_step, ::quiver_step], self.__flowfield.velocity_field[idx, 1, ::quiver_step, ::quiver_step], color=quiver_color)
 
                 if add_streamplot:
                     X = np.arange(0,self.__flowfield.size[1],1)
                     Y = np.arange(0,self.__flowfield.size[0],1)
-                    plt.streamplot(X, Y, self.__flowfield.velocity_field[idx][0], self.__flowfield.velocity_field[idx][1], density=streamplot_density, color=streamplot_color)
+                    plt.streamplot(X, Y, self.__flowfield.velocity_field[idx, 0, :, :], self.__flowfield.velocity_field[idx, 1, :, :], density=streamplot_density, color=streamplot_color)
 
             else:
 
@@ -1673,7 +1673,7 @@ class Image:
                         X = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer, quiver_step)
                         Y = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer, quiver_step)
 
-                        plt.quiver(X, Y, self.__flowfield.velocity_field[idx][0][::quiver_step, ::quiver_step], self.__flowfield.velocity_field[idx][1][::quiver_step, ::quiver_step], color=quiver_color)
+                        plt.quiver(X, Y, self.__flowfield.velocity_field[idx, 0, ::quiver_step, ::quiver_step], self.__flowfield.velocity_field[idx, 1, ::quiver_step, ::quiver_step], color=quiver_color)
 
                         plt.xlim([-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer])
                         plt.ylim([-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer])
@@ -1681,7 +1681,7 @@ class Image:
                     if add_streamplot:
                         X = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer, 1)
                         Y = np.arange(-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer, 1)
-                        plt.streamplot(X, Y, self.__flowfield.velocity_field[idx][0], self.__flowfield.velocity_field[idx][1], density=streamplot_density, color=streamplot_color)
+                        plt.streamplot(X, Y, self.__flowfield.velocity_field[idx, 0, :, :], self.__flowfield.velocity_field[idx, 1, :, :], density=streamplot_density, color=streamplot_color)
 
                         plt.xlim([-self.__flowfield.size_buffer, self.__flowfield.size[1] + self.__flowfield.size_buffer])
                         plt.ylim([-self.__flowfield.size_buffer, self.__flowfield.size[0] + self.__flowfield.size_buffer])
@@ -1692,8 +1692,8 @@ class Image:
                         X = np.arange(0, self.__flowfield.size[1], quiver_step)
                         Y = np.arange(0, self.__flowfield.size[0], quiver_step)
 
-                        velocity_field_u_subset = self.__flowfield.velocity_field[idx][0][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer]
-                        velocity_field_v_subset = self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer]
+                        velocity_field_u_subset = self.__flowfield.velocity_field[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer]
+                        velocity_field_v_subset = self.__flowfield.velocity_field[idx, 1, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer]
 
                         plt.quiver(X, Y, velocity_field_u_subset[::quiver_step, ::quiver_step], velocity_field_v_subset[::quiver_step, ::quiver_step], color=quiver_color)
 
@@ -1701,8 +1701,8 @@ class Image:
                         X = np.arange(0, self.__flowfield.size[1], 1)
                         Y = np.arange(0, self.__flowfield.size[0], 1)
 
-                        plt.streamplot(X, Y, self.__flowfield.velocity_field[idx][0][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer],
-                                       self.__flowfield.velocity_field[idx][1][self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], density=streamplot_density, color=streamplot_color)
+                        plt.streamplot(X, Y, self.__flowfield.velocity_field[idx, 0, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer],
+                                       self.__flowfield.velocity_field[idx, 1, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], density=streamplot_density, color=streamplot_color)
 
             if filename is not None:
 
