@@ -36,12 +36,12 @@ class Image:
     **Attributes:**
 
     - **random_seed** - (read-only) as per user input.
-    - **images_I1** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`. Only available after ``Image.add_particles()`` has been called.
-    - **images_I2** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`. Only available after ``Image.add_motion()`` has been called.
-    - **images_I1_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`, without the buffer. Only available after ``Image.add_particles()`` and ``Image.remove_buffer()`` have been called.
-    - **images_I2_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`, without the buffer. Only available after ``Image.add_motion()`` and ``Image.remove_buffer()`` have been called.
+    - **images_I1** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`. Only available after ``Image.add_particles()`` has been called.
+    - **images_I2** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`. Only available after ``Image.add_motion()`` has been called.
+    - **images_I1_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`, without image buffers. Only available after ``Image.add_particles()`` and ``Image.remove_buffer()`` have been called.
+    - **images_I2_no_buffer** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H, W)`, where :math:`N` is the number of PIV image pairs, :math:`C_{in}` is the number of channels (one channel is supported for the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`, without image buffers. Only available after ``Image.add_motion()`` and ``Image.remove_buffer()`` have been called.
     - **targets** - (read-only) ``list`` of ``tuple``, where each element contains the velocity field components, :math:`u` and :math:`v`, as ``numpy.ndarray``. Only available after ``Image.add_flowfield()`` has been called.
-    - **targets_no_buffer** - (read-only) ``list`` of ``tuple``, where each element contains the velocity field components, :math:`u` and :math:`v`, as ``numpy.ndarray``, without the buffer. Only available after ``Image.add_flowfield()`` and ``Image.remove_buffer()`` have been called.
+    - **targets_no_buffer** - (read-only) ``numpy.ndarray`` specifying the flow targets per each image, without image buffers. It has size :math:`(N, :math:`C_{out}`, H, W)`. Only available after ``Image.add_flowfield()`` and then ``Image.remove_buffer()`` have been called.
     - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image. Only available after ``Image.add_reflected_light`` has been called.
     - **maximum_intensity** - (read-only) ``int`` specifying the maximum intensity that was used when adding reflected light to the image. Only available after ``Image.add_reflected_light`` has been called.
     """
@@ -573,14 +573,7 @@ class Image:
             # Remove buffer from PIV image targets (velocity field):
             if self.__flowfield is not None:
 
-                self.__targets_no_buffer = []
-
-                for i in range(0,self.__particles.n_images):
-
-                    target_tuple = (self.__flowfield.velocity_field[i][0][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer],
-                                    self.__flowfield.velocity_field[i][1][self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer])
-
-                    self.__targets_no_buffer.append(target_tuple)
+                self.__targets_no_buffer = self.__flowfield.velocity_field[:,:,self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer]
 
                 print('Buffers removed from the velocity field.')
 

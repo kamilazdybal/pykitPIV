@@ -54,7 +54,7 @@ class FlowField:
     :param size: (optional)
         ``tuple`` of two ``int`` elements specifying the size of each image in pixels. The first number is image height, :math:`h`, the second number is image width, :math:`w`.
     :param size_buffer: (optional)
-        ``int`` specifying the buffer in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
+        ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
         This number should be approximately equal to the maximum displacement that particles are subject to in order to allow for new particles to arrive into the image area.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
@@ -70,8 +70,8 @@ class FlowField:
     - **gaussian_filters** - (read-only) as per user input.
     - **n_gaussian_filter_iter** - (read-only) as per user input.
     - **gaussian_filter_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the Gaussian filter sizes in pixels :math:`[\\text{px}]` for each image. Template diameters are random numbers between ``gaussian_filters[0]`` and ``gaussian_filters[1]``.
-    - **velocity_field** - (read-only) ``numpy.ndarray`` specifying the velocity vector, :math:`\\vec{V} = [u, v]`, per each image. It has size :math:`(N, 2, H, W)`. The second index corresponds to :math:`u` and :math:`v` velocity component, respectively.
-    - **velocity_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the velocity field magnitude, :math:`|\\vec{V}| = \\sqrt{u^2 + v^2}`, per each image. It has size :math:`(N, 1, H, W)`.
+    - **velocity_field** - (read-only) ``numpy.ndarray`` specifying the velocity vector, :math:`\\vec{V} = [u, v]`, per each image. It has size :math:`(N, 2, H+2b, W+2b)`. The second index corresponds to :math:`u` and :math:`v` velocity component, respectively.
+    - **velocity_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the velocity field magnitude, :math:`|\\vec{V}| = \\sqrt{u^2 + v^2}`, per each image. It has size :math:`(N, 1, H+2b, W+2b)`.
     - **size_with_buffer** - (read-only) ``tuple`` specifying the size of each image in pixels with buffer added.
     """
 
