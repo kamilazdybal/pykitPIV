@@ -21,14 +21,15 @@ from pykitPIV.flowfield import FlowField
 class Motion:
     """
     Applies velocity field defined by the ``FlowField`` class instance to particles defined by the ``Particle`` class instance.
-    The ``Motion`` class provides the position of particles at the next time instance, :math:`t + T`, where :math:`T`
+    The ``Motion`` class provides the position of particles at the next time instance, :math:`t_2 = t_1 + \Delta t`, where :math:`\Delta t`
     is the time separation for the PIV image pair :math:`\\mathbf{I} = (I_1, I_2)^{\\top}`.
 
     .. note::
 
         Particles that exit the image area as a result of their motion are removed from image :math:`I_2`.
+
         To ensure that motion of particles does not cause unphysical removal of particles near image boundaries, set an appropriately large
-        image buffer when instantiating objects of ``Particle`` and ``FlowField`` class (see parameter ``size_buffer``).
+        image buffer, :math:`b`, when instantiating objects of ``Particle`` and ``FlowField`` class (see parameter ``size_buffer``).
 
     **Example:**
 
@@ -40,7 +41,7 @@ class Motion:
         n_images = 10
 
         # Specify size in pixels for each image:
-        image_size = (128,512)
+        image_size = (128, 512)
 
         # Initialize a particle object:
         particles = Particle(n_images=n_images,
@@ -68,12 +69,15 @@ class Motion:
     :param flowfield:
         ``FlowField`` class instance specifying the flow field.
     :param time_separation: (optional)
-        ``float`` or ``int`` specifying the time separation, :math:`T`, in seconds :math:`[s]` between two consecutive PIV images.
+        ``float`` or ``int`` specifying the time separation, :math:`\Delta t`, in seconds :math:`[s]` between two consecutive PIV images.
     :param particle_loss: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         percentage of lost particles between two consecutive PIV images. This percentage of particles from image :math:`I_1` will be randomly
-        removed and replaced in image :math:`I_2`. This parameter mimics the complete loss of luminosity of particles that move off the laser plane
-        and a gain of luminosity for brand new particles that arrive into the laser plane.
+        removed in image :math:`I_2`. This parameter mimics the complete loss of luminosity of particles that move perpendicular to the laser plane.
+    :param particle_gain: (optional)
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+        percentage of lost particles between two consecutive PIV images. This percentage of particles from image :math:`I_1` will be randomly
+        added in image :math:`I_2`. This parameter mimics the gain of luminosity for brand new particles that arrive into the laser plane.
 
     **Attributes:**
 
@@ -82,8 +86,8 @@ class Motion:
     - **particle_coordinates_I1** - (read-only) ``list`` of ``tuple`` specifying the coordinates of particles in image :math:`I_1`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **particle_coordinates_I2** - (read-only) ``list`` of ``tuple`` specifying the  coordinates of particles in image :math:`I_2`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **updated_particle_diameters** - (read-only) ``list`` of ``numpy.ndarray`` specifying the updated particle diameters for each PIV image pair.
-    - **displacement_field** - (read-only) ``numpy.ndarray`` specifying the displacement field, :math:`ds = [dx, dy]`, in the :math:`x` and :math:`y` direction. It is computed as the velocity component multiplied by time separation and has a unit of :math:`px`. It has size :math:`(N, 2, H+2b, W+2b)`. The second index corresponds to :math:`dx` and :math:`dy` displacement, respectively.
-    - **displacement_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the displacement field magnitude, :math:`|ds| = \sqrt{dx^2 + dy^2}`. It has a unit of :math:`px`. It has size :math:`(N, 1, H+2b, W+2b)`.
+    - **displacement_field** - (read-only) ``numpy.ndarray`` specifying the displacement field, :math:`ds = [dx, dy]`, in the :math:`x` and :math:`y` direction. It is computed as the velocity component multiplied by time separation and has a unit of :math:`\\text{px}`. It has size :math:`(N, 2, H+2b, W+2b)`. The second index corresponds to :math:`dx` and :math:`dy` displacement, respectively.
+    - **displacement_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the displacement field magnitude, :math:`|ds| = \sqrt{dx^2 + dy^2}`. It has a unit of :math:`\\text{px}`. It has size :math:`(N, 1, H+2b, W+2b)`.
 
     """
 
@@ -91,7 +95,8 @@ class Motion:
                  particles,
                  flowfield,
                  time_separation=1,
-                 particle_loss=(0, 2)):
+                 particle_loss=(0, 2),
+                 particle_gain=(0, 2)):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -119,6 +124,9 @@ class Motion:
 
         check_two_element_tuple(particle_loss, 'particle_loss')
         check_min_max_tuple(particle_loss, 'particle_loss')
+
+        check_two_element_tuple(particle_gain, 'particle_gain')
+        check_min_max_tuple(particle_gain, 'particle_gain')
 
         # Check that a velocity field is present in the FlowField class object:
         if flowfield.velocity_field is None:
