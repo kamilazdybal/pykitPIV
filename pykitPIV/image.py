@@ -648,28 +648,6 @@ class Image:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def targets_to_tensor(self):
-        """
-        Prepares a 4-dimensional array with dimensions: ``(n_images, 2, image_height, image_width)`` that stores
-        the flow targets.
-
-        The second dimension represents the velocity field components, :math:`u` and :math:`v`.
-
-        :return:
-            - **targets_tensor** - ``numpy.ndarray`` specifying the flow targets tensor.
-        """
-
-        targets_tensor = np.zeros((self.__particles.n_images, 2, self.__particles.size[0], self.__particles.size[1]))
-
-        for i in range(0, self.__particles.n_images):
-
-            targets_tensor[i, 0, :, :] = self.targets_no_buffer[i][0]
-            targets_tensor[i, 1, :, :] = self.targets_no_buffer[i][1]
-
-        return targets_tensor
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
     def save_to_h5(self,
                    tensors_dictionary,
                    save_individually=False,
