@@ -22,7 +22,12 @@ conda activate pykitPIV
 export NCCL_DEBUG=INFO
 export HDF5_USE_FILE_LOCKING=FALSE
 
+srun python pykitPIV-generate-images.py --dt 0.001 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
+srun python pykitPIV-generate-images.py --dt 0.01 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
+srun python pykitPIV-generate-images.py --dt 0.1 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
+srun python pykitPIV-generate-images.py --dt 0.5 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
 srun python pykitPIV-generate-images.py --dt 1.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
+srun python pykitPIV-generate-images.py --dt 1.5 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
 srun python pykitPIV-generate-images.py --dt 2.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
 srun python pykitPIV-generate-images.py --dt 3.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
 srun python pykitPIV-generate-images.py --dt 4.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
@@ -32,8 +37,3 @@ srun python pykitPIV-generate-images.py --dt 7.0 --n_images 10 --size_buffer 60 
 srun python pykitPIV-generate-images.py --dt 8.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
 srun python pykitPIV-generate-images.py --dt 9.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
 srun python pykitPIV-generate-images.py --dt 10.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
-srun python pykitPIV-generate-images.py --dt 11.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
-srun python pykitPIV-generate-images.py --dt 12.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
-srun python pykitPIV-generate-images.py --dt 13.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
-srun python pykitPIV-generate-images.py --dt 14.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
-srun python pykitPIV-generate-images.py --dt 15.0 --n_images 10 --size_buffer 60 --image_height 256 --image_width 256
