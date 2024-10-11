@@ -1,10 +1,6 @@
 ######################################
-Preliminaries
+Indexing convention
 ######################################
-
-*********************************************************
-A note on the indexing convention
-*********************************************************
 
 The following convention for indexing various quantities applies throughout the **pykitPIV** modules:
 
