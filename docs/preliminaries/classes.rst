@@ -1,5 +1,5 @@
 ######################################
-Overview of classes
+Classes in **pykitPIV**
 ######################################
 
 The graph below shows the possible workflows constructed from the five main classes:
