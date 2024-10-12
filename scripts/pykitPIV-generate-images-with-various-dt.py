@@ -32,7 +32,7 @@ image_size = (image_height, image_width)
 
 tic = time.perf_counter()
 
-time_separations = [0.001,0.01,0.1,0.5,1,1.5,2,3,4,5,6,7,8,9,10]
+time_separations = [1,2]
 
 for i, dt in enumerate(time_separations):
 
@@ -41,9 +41,9 @@ for i, dt in enumerate(time_separations):
     particles = Particle(n_images,
                          size=image_size,
                          size_buffer=size_buffer,
-                         diameters=(2, 4),
+                         diameters=(1, 5),
                          distances=(1, 2),
-                         densities=(0.05, 0.06),
+                         densities=(0.1, 0.3),
                          diameter_std=0.5,
                          seeding_mode='random',
                          random_seed=100)
@@ -53,9 +53,9 @@ for i, dt in enumerate(time_separations):
                           size_buffer=size_buffer,
                           random_seed=100)
 
-    flowfield.generate_random_velocity_field(gaussian_filters=(10, 11),
-                                             n_gaussian_filter_iter=20,
-                                             displacement=(0, 10))
+    flowfield.generate_random_velocity_field(gaussian_filters=(2, 20),
+                                             n_gaussian_filter_iter=10,
+                                             displacement=(2, 10))
 
     motion = Motion(particles,
                     flowfield,
@@ -68,7 +68,7 @@ for i, dt in enumerate(time_separations):
     image.add_particles(particles)
     image.add_flowfield(flowfield)
     image.add_motion(motion)
-    image.add_reflected_light(exposures=(0.6, 0.65),
+    image.add_reflected_light(exposures=(0.5, 0.95),
                               maximum_intensity=2 ** 16 - 1,
                               laser_beam_thickness=1,
                               laser_over_exposure=1,
@@ -95,7 +95,7 @@ tensors_dictionary = {"I"      : images_tensor,
                       "target" : targets_tensor}
 
 image.save_to_h5(tensors_dictionary, 
-                 filename='pykitPIV-dataset-' + str(n_images*len(time_separations)) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '-various-dt.h5',
+                 filename='pykitPIV-dataset-' + str(n_images*len(time_separations)) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '-dt-1p0-2p0.h5',
                  verbose=True)
 
 toc = time.perf_counter()

@@ -5,8 +5,8 @@
 #SBATCH --time=4:00:00
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=kamilazdybal@gmail.com
-#SBATCH --job-name=pykitPIV-generate-images-various-dt
-#SBATCH --output=pykitPIV-generate-images-various-dt.txt
+#SBATCH --job-name=pykitPIV-generate-images-dt-1p0-2p0
+#SBATCH --output=pykitPIV-generate-images-dt-1p0-2p0.txt
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-core=1
 #SBATCH --ntasks-per-node=1
@@ -22,4 +22,4 @@ conda activate pykitPIV
 export NCCL_DEBUG=INFO
 export HDF5_USE_FILE_LOCKING=FALSE
 
-srun python pykitPIV-generate-images-with-various-dt.py --n_images 333 --size_buffer 80 --image_height 256 --image_width 256
+srun python pykitPIV-generate-images-with-various-dt.py --n_images 5000 --size_buffer 20 --image_height 512 --image_width 512
