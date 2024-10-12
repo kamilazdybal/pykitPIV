@@ -1,3 +1,7 @@
+########################################################################################################################
+## This script generates PIV image pairs and the associated displacement fields.
+########################################################################################################################
+
 import numpy as np
 import argparse
 import time
@@ -72,7 +76,6 @@ image.add_reflected_light(exposures=(0.6, 0.65),
                           laser_over_exposure=1,
                           laser_beam_shape=0.95,
                           alpha=1/10)
-
 
 images_I1 = image.remove_buffers(image.images_I1)
 images_I2 = image.remove_buffers(image.images_I2)
