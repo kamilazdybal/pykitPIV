@@ -275,6 +275,11 @@ class Image:
                                   size_buffer=10,
                                   random_seed=100)
 
+            # Generate random velocity field:
+            flowfield.generate_random_velocity_field(displacement=(0, 10),
+                                                     gaussian_filters=(10,30),
+                                                     n_gaussian_filter_iter=6)
+
             # Initialize an image object:
             image = Image(random_seed=100)
 
@@ -287,7 +292,6 @@ class Image:
         :return:
             - **velocity_field** - as per ``FlowField`` class.
         """
-
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -324,6 +328,11 @@ class Image:
                                   size_buffer=10,
                                   random_seed=100)
 
+            # Generate random velocity field:
+            flowfield.generate_random_velocity_field(displacement=(0, 10),
+                                                     gaussian_filters=(10,30),
+                                                     n_gaussian_filter_iter=6)
+
             # Initialize an image object:
             image = Image(random_seed=100)
 
@@ -336,7 +345,6 @@ class Image:
         :return:
             - **velocity_field_magnitude** - as per ``FlowField`` class.
         """
-
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -372,6 +380,11 @@ class Image:
                                   size=(128,512),
                                   size_buffer=10,
                                   random_seed=100)
+
+            # Generate random velocity field:
+            flowfield.generate_random_velocity_field(displacement=(0, 10),
+                                                     gaussian_filters=(10,30),
+                                                     n_gaussian_filter_iter=6)
 
             # Initialize a motion object:
             motion = Motion(particles, flowfield)
@@ -423,6 +436,11 @@ class Image:
                                   size=(128,512),
                                   size_buffer=10,
                                   random_seed=100)
+
+            # Generate random velocity field:
+            flowfield.generate_random_velocity_field(displacement=(0, 10),
+                                                     gaussian_filters=(10,30),
+                                                     n_gaussian_filter_iter=6)
 
             # Initialize a motion object:
             motion = Motion(particles, flowfield)
@@ -763,6 +781,55 @@ class Image:
     def concatenate_tensors(self, input_tensor_tuple):
         """
         Concatenates multiple four-dimensional tensor arrays along the second dimension (the "channel" dimension).
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, FlowField, Motion, Image
+
+            # Initialize a particle object:
+            particles = Particle(1,
+                                 size=(128,512),
+                                 size_buffer=10,
+                                 random_seed=100)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(1,
+                                  size=(128,512),
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Generate random velocity field:
+            flowfield.generate_random_velocity_field(displacement=(0, 10),
+                                                     gaussian_filters=(10,30),
+                                                     n_gaussian_filter_iter=6)
+
+            # Initialize a motion object:
+            motion = Motion(particles, flowfield)
+            motion.runge_kutta_4th(n_steps=10)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add motion to an image:
+            image.add_motion(motion)
+
+            # Add particles to an image:
+            image.add_particles(particles)
+
+            # Add light reflected from particles:
+            image.add_reflected_light(exposures=(0.6,0.65),
+                                      maximum_intensity=2**16-1,
+                                      laser_beam_thickness=1,
+                                      laser_over_exposure=1,
+                                      laser_beam_shape=0.95,
+                                      alpha=1/10)
+
+            # Concatenate image frames:
+            I = image.concatenate_tensors((image.images_I1,
+                                           image.images_I2))
+
 
         :return:
             - **input_tensor_tuple** - ``tuple`` of ``numpy.ndarray`` specifying the four-dimensional tensors to concatenate.
