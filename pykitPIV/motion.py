@@ -28,8 +28,9 @@ class Motion:
 
         Particles that exit the image area as a result of their motion are removed from image :math:`I_2`.
 
-        To ensure that motion of particles does not cause unphysical removal of particles near image boundaries, set an appropriately large
+        To ensure that motion of particles does not cause unphysical disappearance of particles near image boundaries, set an appropriately large
         image buffer, :math:`b`, when instantiating objects of ``Particle`` and ``FlowField`` class (see parameter ``size_buffer``).
+        This allows new particles to enter the image area.
 
     **Example:**
 
@@ -47,9 +48,9 @@ class Motion:
         particles = Particle(n_images=n_images,
                              size=image_size,
                              size_buffer=10,
-                             diameters=(2,4),
-                             distances=(1,2),
-                             densities=(0.01,0.05),
+                             diameters=(2, 4),
+                             distances=(1, 2),
+                             densities=(0.01, 0.05),
                              diameter_std=1,
                              seeding_mode='random',
                              random_seed=100)
@@ -59,6 +60,11 @@ class Motion:
                               size=image_size,
                               size_buffer=10,
                               random_seed=100)
+
+        # Generate random velocity field:
+        flowfield.generate_random_velocity_field(gaussian_filters=(2, 10),
+                                                 n_gaussian_filter_iter=10,
+                                                 displacement=(2, 5))
 
         # Initialize a motion object:
         motion = Motion(particles, flowfield)
@@ -235,6 +241,13 @@ class Motion:
             Note, that the central assumption for generating the kinematic relationship between two consecutive PIV images
             is that the velocity field defined by :math:`(u, v)` remains constant for the duration of time :math:`T`.
 
+        **Example:**
+
+        .. code:: python
+
+            # Advect particles with the forward Euler scheme:
+            motion.forward_euler(n_steps=10)
+
         :param n_steps:
             ``int`` specifying the number of time steps, :math:`n`, that the numerical solver should take.
         """
@@ -302,7 +315,7 @@ class Motion:
     def runge_kutta_4th(self,
                       n_steps):
         """
-        Advects particles with the 4th order Runge-Kutta numerical scheme according to the formula:
+        Advects particles with the 4th order Runge-Kutta (RK4) numerical scheme according to the formula:
 
         .. math::
 
@@ -359,6 +372,13 @@ class Motion:
 
             Note, that the central assumption for generating the kinematic relationship between two consecutive PIV images
             is that the velocity field defined by :math:`(u, v)` remains constant for the duration of time :math:`T`.
+
+        **Example:**
+
+        .. code:: python
+
+            # Advect particles with the RK4 scheme:
+            motion.runge_kutta_4th(n_steps=10)
 
         :param n_steps:
             ``int`` specifying the number of time steps, :math:`n`, that the numerical solver should take.
@@ -489,6 +509,13 @@ class Motion:
                              filename=None):
         """
         Plots the positions of particles on images :math:`I_1` and :math:`I_2`.
+
+        **Example:**
+
+        .. code:: python
+
+            # Visualize the movement of particles:
+            motion.plot_particle_motion(idx=0)
 
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
