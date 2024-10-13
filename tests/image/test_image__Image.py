@@ -252,6 +252,229 @@ class TestImageClass(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def test_image__Image__get_velocity_field(self):
+
+        n_images = 1
+        size_buffer = 10
+        image_size = (20, 40)
+        time_separation = 1
+        random_seed = 100
+
+        particles = Particle(n_images,
+                             size=image_size,
+                             size_buffer=size_buffer,
+                             diameters=(2, 4),
+                             distances=(1, 2),
+                             densities=(0.05, 0.06),
+                             diameter_std=0.5,
+                             seeding_mode='random',
+                             random_seed=random_seed)
+
+        flowfield = FlowField(n_images,
+                              size=image_size,
+                              size_buffer=size_buffer,
+                              random_seed=random_seed)
+
+        flowfield.generate_random_velocity_field(gaussian_filters=(2, 10),
+                                                 n_gaussian_filter_iter=10,
+                                                 displacement=(2, 10))
+
+        motion = Motion(particles,
+                        flowfield,
+                        time_separation=time_separation)
+
+        motion.runge_kutta_4th(n_steps=10)
+
+        image = Image(random_seed=random_seed)
+
+        image.add_particles(particles)
+        image.add_flowfield(flowfield)
+
+        try:
+            V = image.get_velocity_field()
+        except Exception:
+            self.assertTrue(False)
+
+        (N, C, H, W) = V.shape
+        self.assertTrue(N == 1)
+        self.assertTrue(C == 2)
+        self.assertTrue(H == 40)
+        self.assertTrue(W == 60)
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_image__Image__get_velocity_field_magnitude(self):
+
+        n_images = 1
+        size_buffer = 10
+        image_size = (20, 40)
+        time_separation = 1
+        random_seed = 100
+
+        particles = Particle(n_images,
+                             size=image_size,
+                             size_buffer=size_buffer,
+                             diameters=(2, 4),
+                             distances=(1, 2),
+                             densities=(0.05, 0.06),
+                             diameter_std=0.5,
+                             seeding_mode='random',
+                             random_seed=random_seed)
+
+        flowfield = FlowField(n_images,
+                              size=image_size,
+                              size_buffer=size_buffer,
+                              random_seed=random_seed)
+
+        flowfield.generate_random_velocity_field(gaussian_filters=(2, 10),
+                                                 n_gaussian_filter_iter=10,
+                                                 displacement=(2, 10))
+
+        motion = Motion(particles,
+                        flowfield,
+                        time_separation=time_separation)
+
+        motion.runge_kutta_4th(n_steps=10)
+
+        image = Image(random_seed=random_seed)
+
+        image.add_particles(particles)
+        image.add_flowfield(flowfield)
+
+        try:
+            V = image.get_velocity_field_magnitude()
+        except Exception:
+            self.assertTrue(False)
+
+        (N, C, H, W) = V.shape
+        self.assertTrue(N == 1)
+        self.assertTrue(C == 1)
+        self.assertTrue(H == 40)
+        self.assertTrue(W == 60)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_image__Image__get_displacement_field(self):
+
+        n_images = 1
+        size_buffer = 10
+        image_size = (20, 40)
+        time_separation = 1
+        random_seed = 100
+
+        particles = Particle(n_images,
+                             size=image_size,
+                             size_buffer=size_buffer,
+                             diameters=(2, 4),
+                             distances=(1, 2),
+                             densities=(0.05, 0.06),
+                             diameter_std=0.5,
+                             seeding_mode='random',
+                             random_seed=random_seed)
+
+        flowfield = FlowField(n_images,
+                              size=image_size,
+                              size_buffer=size_buffer,
+                              random_seed=random_seed)
+
+        flowfield.generate_random_velocity_field(gaussian_filters=(2, 10),
+                                                 n_gaussian_filter_iter=10,
+                                                 displacement=(2, 10))
+
+        motion = Motion(particles,
+                        flowfield,
+                        time_separation=time_separation)
+
+        motion.runge_kutta_4th(n_steps=10)
+
+        image = Image(random_seed=random_seed)
+
+        image.add_particles(particles)
+        image.add_flowfield(flowfield)
+
+        with self.assertRaises(NameError):
+            ds = image.get_displacement_field()
+
+        image.add_motion(motion)
+
+        try:
+            ds = image.get_displacement_field()
+        except Exception:
+            self.assertTrue(False)
+
+        (N, C, H, W) = ds.shape
+        self.assertTrue(N == 1)
+        self.assertTrue(C == 2)
+        self.assertTrue(H == 40)
+        self.assertTrue(W == 60)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_image__Image__get_displacement_field_magnitude(self):
+
+        n_images = 1
+        size_buffer = 10
+        image_size = (20, 40)
+        time_separation = 1
+        random_seed = 100
+
+        particles = Particle(n_images,
+                             size=image_size,
+                             size_buffer=size_buffer,
+                             diameters=(2, 4),
+                             distances=(1, 2),
+                             densities=(0.05, 0.06),
+                             diameter_std=0.5,
+                             seeding_mode='random',
+                             random_seed=random_seed)
+
+        flowfield = FlowField(n_images,
+                              size=image_size,
+                              size_buffer=size_buffer,
+                              random_seed=random_seed)
+
+        flowfield.generate_random_velocity_field(gaussian_filters=(2, 10),
+                                                 n_gaussian_filter_iter=10,
+                                                 displacement=(2, 10))
+
+        motion = Motion(particles,
+                        flowfield,
+                        time_separation=time_separation)
+
+        motion.runge_kutta_4th(n_steps=10)
+
+        image = Image(random_seed=random_seed)
+
+        image.add_particles(particles)
+        image.add_flowfield(flowfield)
+
+        with self.assertRaises(NameError):
+            ds = image.get_displacement_field_magnitude()
+
+        image.add_motion(motion)
+
+        try:
+            ds = image.get_displacement_field_magnitude()
+        except Exception:
+            self.assertTrue(False)
+
+        (N, C, H, W) = ds.shape
+        self.assertTrue(N == 1)
+        self.assertTrue(C == 1)
+        self.assertTrue(H == 40)
+        self.assertTrue(W == 60)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_image__Image__concatenate_tensors(self):
+
+        pass
+
+
+
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_image__Image__plotting(self):
 
         pass

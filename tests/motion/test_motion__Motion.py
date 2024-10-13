@@ -126,6 +126,14 @@ class TestMotionClass(unittest.TestCase):
             motion.particle_coordinates_I2 = 2
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    def test_motion__Motion__time_separation_update_updates_displacement_fields(self):
+
+        pass
+
+
+
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def test_motion__Motion__removal_of_particles(self):
 
