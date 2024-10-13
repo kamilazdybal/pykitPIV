@@ -82,11 +82,11 @@
 
 \begin{document}
 
-\shorttitle{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for training optical flow estimation algorithms for velocimetry}
+\shorttitle{\texttt{pykitPIV}: Machine-learning-compatible synthetic image generation for training optical flow estimation algorithms for velocimetry}
 \shortauthors{Zdyba\l{} et~al.}
 
 
-\title [mode = title]{\texttt{pykitPIV}: PyTorch-compatible synthetic image generation for training optical flow estimation ML algorithms for velocimetry}
+\title [mode = title]{\texttt{pykitPIV}: Machine-learning-compatible synthetic image generation for training optical flow estimation algorithms for velocimetry}
 
 \author[EMPA]{Kamila Zdyba\l{}*}
 \ead{kamila.zdybal@gmail.com}
@@ -97,6 +97,9 @@
 \address[EMPA]{Laboratory for Computational Engineering, Swiss Federal Laboratories for Materials Science and Technology, Empa, Dübendorf, Switzerland}
 
 \begin{abstract} 
+% A lot of recent success in CNNs for optical flow.
+% However dataset are scarce and do not exploit challenging flow scenarios.
+% pykitPIV addresses this gap and allows for rich experimental conditions to be generated.
 We describe \texttt{pykitPIV}, a PyTorch-compatible Python library for generating synthetic images that mimic those obtained from particle image velocimetry (PIV) experiments. The library can be readily ported to training machine learning algorithms, such as convolutional neural networks (CNNs), or reinforcement learning (RL). Our image generation exploits the kinematic relationship between two PIV snapshots and advects particles from one time frame at $t_1$, to the next at $t_1 + \Delta t$, with a second-order accurate numerical scheme. This results in paired image intensities, $I_1$ and $I_2$, that are separated by $\Delta t$ in time. The goal of this library is to give the user a lot of flexibility in selecting various parameters that would normally be available in an experimental setting such as particle seeding density, thickness of the laser plane, camera exposure, particle loss due to out-of-plane movement, or $\Delta t$ between images. The richness of image generation can help answer outstanding questions in training CNNs for optical flow estimation or RL algorithms.
 \end{abstract}
 
@@ -108,7 +111,7 @@ particle image velocimetry; flow estimation; convolutional neural networks; mach
 
 \section{Motivation and significance\label{sec:introduction}}
 
-The last decade has seen many advances in training convolutional neural networks (CNNs) for optical flow estimation, \textit{i.e.}, predicting motion information from recorded image frames separated by $\Delta t$ in time. To date, numerous interesting network architectures have been developed, along with general advancements in training case-specific CNNs. This includes various implementations of FlowNets \citep{dosovitskiy2015flownet, ilg2017flownet, hui2018liteflownet}, spatial pyramid network (SPyNet) \cite{ranjan2017optical}, pyramid, warping and cost-volume network (PWC-Net) \cite{sun2018pwc}, and recurrent all-pairs field transforms (RAFT) \cite{teed2020raft}. In addition, the idea of the iterative residual refinement (IRR) \cite{hur2019iterative} allowed for significant reduction in the number of trainable parameters thanks to weight-sharing at several levels of successively upscaling image resolution.
+The last decade has seen advances in training convolutional neural networks (CNNs) for optical flow estimation, \textit{i.e.}, predicting motion information from recorded image frames separated by $\Delta t$ in time. To date, numerous specialized network architectures have been developed, along with general advancements in training case-specific CNNs. This includes various implementations of FlowNets \citep{dosovitskiy2015flownet, ilg2017flownet, hui2018liteflownet}, spatial pyramid network (SPyNet) \cite{ranjan2017optical}, pyramid, warping and cost-volume network (PWC-Net) \cite{sun2018pwc}, and, more recently, recurrent all-pairs field transforms (RAFT) \cite{teed2020raft}. In addition, the idea of the iterative residual refinement (IRR) \cite{hur2019iterative} allowed for significant reduction in the number of trainable parameters thanks to weight-sharing at several levels of successively upscaling image resolution.
 
 Particle image velocimetry (PIV) can especially profit from those architectures, since its main goal is to predict flow targets, such as displacement fields, velocity components, velocity magnitude, or vorticity, from paired snapshots of illuminated tracer particles injected into the flow. Recently, RAFT-PIV \cite{lagemann2021deep} and lightweight image-matching architecture (LIMA) \citep{manickathan2023lightweight} were proposed as versions of CNNs that are specifically optimized for predicting flow targets from velocimetry experiments. Thanks to this targeted architecture and optimization of training parameters, both RAFT-PIV and LIMA achieve high accuracy and per-pixel spatial resolution. LIMA is also significantly leaner in terms of the number of trainable parameters than its predecessors. Such networks can be trained on GPUs within the matter of hours and then ported to laboratory hardware to make flow predictions in real-time, parallel to experimental measurements.
 
@@ -120,7 +123,7 @@ The successes of RAFT-PIV and LIMA have been demonstrated on a number of classic
 \end{enumerate}
 
 
-To help researchers answer those questions, we propose the present Python library \texttt{pykitPIV} -- \textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}. Our library is compatible with PyTorch \cite{paszke2017automatic, paszke2019pytorch} to allow for easier porting with machine learning (ML) algorithms. The format for generated image tensors is consistent with the input required by the classic convolutional layers available in PyTorch (\texttt{torch.nn.Conv2d}). The high flexibility in the types of created images can also port very well with reinforcement learning (RL) algorithms, where an agent may learn to augment the training dataset in real-time to account for changes in experimental settings.
+To help researchers answer those questions, we propose the present Python library \texttt{pykitPIV} -- \textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}. Our library is compatible with PyTorch \cite{paszke2017automatic, paszke2019pytorch} to allow for easier porting with machine learning (ML) algorithms. The format for generated image tensors is consistent with the input required by the classic convolutional layers available in PyTorch (\texttt{torch.nn.Conv2d}). The high flexibility in the types of created images can port very well with reinforcement learning (RL) algorithms, where an agent may learn to augment the training dataset in real-time to account for changes in experimental settings.
 
 To date, synthetic PIV image generation software has been MATLAB-based \citep{ben2020openpiv, mendes2020piv}. This makes porting to Python interfaces more difficult. With the emerging ML applications, a package that readily ports to libraries such as PyTorch, TensorFlow, or Keras is the ideal solution. This allows the ML algorithm to interact with the image generation process. The most interesting future applications will be to use variational approaches to inform training data collection, or train a RL agent to construct necessary support data in new environments.
 
@@ -129,6 +132,8 @@ To date, synthetic PIV image generation software has been MATLAB-based \citep{be
 \subsection{Software architecture}
 
 All functionalities of \texttt{pykitPIV} are organized in five classes: \texttt{Particle}, \texttt{FlowField}, \texttt{Motion}, \texttt{Image}, and \texttt{Postprocess}, each achieving its own role in generating PIV image pairs and the corresponding flow targets. Fig.~\ref{fig:pykitPIV-overview} illustrates the hierarchy of using \texttt{pykitPIV} classes and briefly describes what can be achieved with each class. The user selects the number of image pairs to generate (batch size) and their dimensions (height and width). At each stage of image generation, the user can fix random seeds to assure that data generation is reproducible.
+
+\kamila{Mention that image properties are Monte Carlo -generated! We can show the span of conditions generated.}
 
 \begin{figure*}[t]
 \centering
@@ -202,7 +207,6 @@ particles = Particle(n_images,
                      diameters=(4,4.1),
                      distances=(1,2),
                      densities=(0.05,0.1),
-                     signal_to_noise=(5,20),
                      diameter_std=0.2,
                      seeding_mode='random',
                      random_seed=random_seed)
@@ -217,8 +221,8 @@ flowfield = FlowField(n_images,
 
 flowfield.generate_random_velocity_field(
 				gaussian_filters=(10,11),
-				n_gaussian_filter_iter=20,
-				displacement=(0,10))
+				n_gaussian_filter_iter=10,
+				displacement=(2,10))
 \end{lstlisting}
 We instantiate an object of the \texttt{Motion} class and we run a forward Euler numerical scheme to advect the particles:
 \lstset{language=Python}
@@ -269,7 +273,7 @@ image.save_to_h5({'I': image_pairs,
 
 \section{Impact} \label{sec:results}
 
-The kinematic training methodology \cite{manickathan2022kinematic}, which is the core concept behind generating PIV image pairs with \texttt{pykitPIV}, has been used in our group to train LIMA \cite{manickathan2023lightweight, mucignat2023lightweight}. The approach proved successful, which suggests that for small $\Delta t$, learning the kinematic relationship between two consecutive PIV snapshots, as opposed to knowing the full dynamic relationship, is sufficient to train CNNs.
+The kinematic training methodology \cite{manickathan2022kinematic}, which is the core concept behind generating PIV image pairs with \texttt{pykitPIV}, has been used to train CNNs in optical flow estimation \cite{manickathan2022kinematic, manickathan2023lightweight, mucignat2023lightweight}. The approach proved successful, which suggests that for small $\Delta t$, learning the kinematic relationship between two consecutive PIV snapshots, as opposed to knowing the full dynamic relationship, is sufficient to train CNNs.
 
 
 
