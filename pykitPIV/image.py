@@ -257,6 +257,33 @@ class Image:
         """
         Returns the velocity field from the object of the ``FlowField`` class.
 
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, FlowField, Image
+
+            # Initialize a particle object:
+            particles = Particle(1,
+                                 size=(128,512),
+                                 size_buffer=10,
+                                 random_seed=100)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(1,
+                                  size=(128,512),
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add flow field to an image:
+            image.add_flowfield(flowfield)
+
+            # Access the velocity field:
+            V = image.get_velocity_field()
+
         :return:
             - **velocity_field** - as per ``FlowField`` class.
         """
@@ -278,6 +305,33 @@ class Image:
     def get_velocity_field_magnitude(self):
         """
         Returns the velocity field magnitude from the object of the ``FlowField`` class.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, FlowField, Image
+
+            # Initialize a particle object:
+            particles = Particle(1,
+                                 size=(128,512),
+                                 size_buffer=10,
+                                 random_seed=100)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(1,
+                                  size=(128,512),
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add flow field to an image:
+            image.add_flowfield(flowfield)
+
+            # Access the velocity field magnitude:
+            V_mag = image.get_velocity_field_magnitude()
 
         :return:
             - **velocity_field_magnitude** - as per ``FlowField`` class.
@@ -301,6 +355,36 @@ class Image:
         """
         Returns the displacement field from the object of the ``Motion`` class.
 
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, FlowField, Motion, Image
+
+            # Initialize a particle object:
+            particles = Particle(1,
+                                 size=(128,512),
+                                 size_buffer=10,
+                                 random_seed=100)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(1,
+                                  size=(128,512),
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Initialize a motion object:
+            motion = Motion(particles, flowfield)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add motion to an image:
+            image.add_motion(motion)
+
+            # Access the displacement field:
+            ds = image.get_displacement_field()
+
         :return:
             - **displacement_field** - as per ``Motion`` class.
         """
@@ -321,6 +405,36 @@ class Image:
     def get_displacement_field_magnitude(self):
         """
         Returns the displacement field magnitude from the object of the ``Motion`` class.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, FlowField, Motion, Image
+
+            # Initialize a particle object:
+            particles = Particle(1,
+                                 size=(128,512),
+                                 size_buffer=10,
+                                 random_seed=100)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(1,
+                                  size=(128,512),
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Initialize a motion object:
+            motion = Motion(particles, flowfield)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add motion to an image:
+            image.add_motion(motion)
+
+            # Access the displacement field magnitude:
+            ds_mag = image.get_displacement_field_magnitude()
 
         :return:
             - **displacement_field_magnitude** - as per ``Motion`` class.
