@@ -45,6 +45,7 @@ check the following references:
 
    preliminaries/classes
    preliminaries/indexing
+   preliminaries/setting-spectra
 
 .. toctree::
    :maxdepth: 5

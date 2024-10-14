@@ -45,6 +45,9 @@ class Particle:
         # Access particle coordinates on the first image:
         (height_coordinates, width_coordinates) = particles.particle_coordinates[0]
 
+    .. image:: ../images/Particle-setting-spectrum.png
+        :width: 800
+
     :param n_images:
         ``int`` specifying the number of PIV image pairs, :math:`N`, to create.
     :param size: (optional)
