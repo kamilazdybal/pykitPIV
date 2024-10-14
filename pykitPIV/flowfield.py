@@ -215,6 +215,9 @@ class FlowField:
             # Access the velocity field magnitude:
             flowfield.velocity_field_magnitude
 
+        .. image:: ../images/FlowField-setting-spectrum.png
+            :width: 800
+
         :param displacement: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement
         :param gaussian_filters: (optional)

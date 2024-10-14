@@ -13,3 +13,11 @@ Class: ``Particle``
 .. image:: ../images/Particle-setting-spectrum.png
     :width: 900
     :align: center
+
+************************************************************
+Class: ``FlowField``
+************************************************************
+
+.. image:: ../images/FlowField-setting-spectrum.png
+    :width: 900
+    :align: center
