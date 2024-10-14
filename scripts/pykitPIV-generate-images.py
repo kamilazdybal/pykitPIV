@@ -45,7 +45,7 @@ particles = Particle(n_images,
                      size_buffer=size_buffer,
                      diameters=(2, 4),
                      distances=(1, 2),
-                     densities=(0.05, 0.06),
+                     densities=(0.3, 0.4),
                      diameter_std=0.5,
                      seeding_mode='random', 
                      random_seed=random_seed)
@@ -89,7 +89,7 @@ tensors_dictionary = {"I"      : images_tensor,
 num, decimal = [part for part in str(time_separation).split('.')]
 
 image.save_to_h5(tensors_dictionary, 
-                 filename='pykitPIV-dataset-n-' + str(n_images) + '-' + str(image_height) + '-by-' + str(image_width) + '-dt-' + str(num) + 'p' + str(decimal) + '-rs-' + str(random_seed) + '.h5',
+                 filename='pykitPIV-dataset-high-seeding-density-n-' + str(n_images) + '-' + str(image_height) + '-by-' + str(image_width) + '-dt-' + str(num) + 'p' + str(decimal) + '-rs-' + str(random_seed) + '.h5',
                  verbose=True)
 
 toc = time.perf_counter()
