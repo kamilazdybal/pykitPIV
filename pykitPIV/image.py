@@ -576,6 +576,9 @@ class Image:
                                       laser_beam_shape=0.95,
                                       alpha=1/20)
 
+        .. image:: ../images/Image-setting-spectrum.png
+            :width: 800
+
         :param exposures: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) light exposure.
         :param maximum_intensity: (optional)
