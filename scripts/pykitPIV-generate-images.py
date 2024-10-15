@@ -19,7 +19,7 @@ parser.add_argument('--image_height',           type=int,       default=100,    
 parser.add_argument('--image_width',            type=int,       default=100,                    metavar='W')
 parser.add_argument('--dt',                     type=float,     default=1.0,                    metavar='dt')
 parser.add_argument('--diameters',              type=float,     default=[1, 2], nargs="+",      metavar='D')
-parser.add_argument('--densities',              type=float,     default=[0.3, 0.3], nargs="+",  metavar='rho')
+parser.add_argument('--densities',              type=float,     default=[0.3, 0.31], nargs="+", metavar='rho')
 parser.add_argument('--diameter_std',           type=float,     default=0.5,                    metavar='D_std')
 parser.add_argument('--gaussian_filters',       type=float,     default=[40, 40.1], nargs="+",  metavar='GF')
 parser.add_argument('--n_gaussian_filter_iter', type=int,       default=10,                     metavar='n_GF_iter')
@@ -108,7 +108,7 @@ tensors_dictionary = {"I"      : images_tensor,
 num, decimal = [part for part in str(time_separation).split('.')]
 
 image.save_to_h5(tensors_dictionary, 
-                 filename='pykitPIV-dataset-high-seeding-density-n-' + str(n_images) + '-' + str(image_height) + '-by-' + str(image_width) + '-dt-' + str(num) + 'p' + str(decimal) + '-rs-' + str(random_seed) + '.h5',
+                 filename='pykitPIV-dataset-n-' + str(n_images) + '-' + str(image_height) + '-by-' + str(image_width) + '-dt-' + str(num) + 'p' + str(decimal) + '-rs-' + str(random_seed) + '.h5',
                  verbose=True)
 
 toc = time.perf_counter()
