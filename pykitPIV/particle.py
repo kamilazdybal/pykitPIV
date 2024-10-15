@@ -188,15 +188,15 @@ class Particle:
         n_of_particles = self.__size[0] * self.__size[1] * self.__particle_density_per_image
         self.__n_of_particles = [int(i) for i in n_of_particles]
 
-        # Initialize particle coordinates, positions, and diameters on each of the ``n_image`` images:
-        particle_coordinates = []
-        particle_positions = np.zeros((self.n_images, 1, self.__height_with_buffer, self.__width_with_buffer))
-        particle_diameters = []
+        if seeding_mode == 'random':
 
-        # Populate particle data for each of the ``n_image`` images:
-        for i in range(0,self.n_images):
+            # Initialize particle coordinates, positions, and diameters on each of the ``n_image`` images:
+            particle_coordinates = []
+            particle_positions = np.zeros((self.n_images, 1, self.__height_with_buffer, self.__width_with_buffer))
+            particle_diameters = []
 
-            if seeding_mode == 'random':
+            # Populate particle data for each of the ``n_image`` images:
+            for i in range(0,self.n_images):
 
                 # Generate absolute coordinates for particles' centers within the total available image area (drawn from random uniform distribution):
                 self.__y_coordinates = self.__height_with_buffer * np.random.rand(self.n_of_particles[i])
@@ -209,20 +209,17 @@ class Particle:
                 # Populate the 4D tensor of shape (N, C_in, H, W):
                 particle_positions[i, 0, :, :] = seeded_array
 
-            elif seeding_mode == 'poisson':
-                pass
+                # Generate diameters for all particles in the current image:
+                particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i]))
 
-            # Generate diameters for all particles in the current image:
-            particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i]))
+            # Initialize particle coordinates:
+            self.__particle_coordinates = particle_coordinates
 
-        # Initialize particle coordinates:
-        self.__particle_coordinates = particle_coordinates
+            # Initialize particle positions:
+            self.__particle_positions = particle_positions
 
-        # Initialize particle positions:
-        self.__particle_positions = particle_positions
-
-        # Initialize particle diameters:
-        self.__particle_diameters = particle_diameters
+            # Initialize particle diameters:
+            self.__particle_diameters = particle_diameters
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
