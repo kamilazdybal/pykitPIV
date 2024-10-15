@@ -65,7 +65,7 @@ class Particle:
     :param diameter_std: (optional)
         ``float`` or ``int`` specifying the standard deviation in pixels :math:`[\\text{px}]` for the distribution of particle diameters.
     :param seeding_mode: (optional)
-        ``str`` specifying the seeding mode for initializing particles in the image domain. It can be one of the following: ``'random'``, ``'poisson'``.
+        ``str`` specifying the seeding mode for initializing particles in the image domain. It can be one of the following: ``'random'``, ``'user'``, or ``'poisson'``.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
 
@@ -142,9 +142,9 @@ class Particle:
         if (not isinstance(diameter_std, float)) and (not isinstance(diameter_std, int)):
             raise ValueError("Parameter `diameter_std` has to be of type 'float' or 'int'.")
 
-        __seeding_mode = ['random', 'poisson']
+        __seeding_mode = ['random', 'user', 'poisson']
         if seeding_mode not in __seeding_mode:
-            raise ValueError("Parameter `seeding_mode` has to be 'random', or 'poisson'.")
+            raise ValueError("Parameter `seeding_mode` has to be 'random', 'user', or 'poisson'.")
 
         if random_seed is not None:
             if type(random_seed) != int:
@@ -178,6 +178,9 @@ class Particle:
         if seeding_mode == 'random':
             self.__particle_density_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
 
+        elif seeding_mode == 'user':
+            print('Use the function Image.upload_particle_coordinates() to seed particles.')
+
         elif seeding_mode == 'poisson':
             raise NotImplementedError('Poisson sampling is not supported yet.')
 
@@ -201,13 +204,10 @@ class Particle:
 
                 particle_coordinates.append((self.__y_coordinates, self.__x_coordinates))
 
-                # Populate a matrix that shows particle locations per pixel of the image area:
-                seeded_array = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
-                for x, y in zip(np.floor(self.__x_coordinates).astype(int), np.floor(self.__y_coordinates).astype(int)):
-                    seeded_array[y, x] += 1
+                seeded_array = self.__populate_seeded_array()
 
                 # Populate the 4D tensor of shape (N, C_in, H, W):
-                particle_positions[i,0,:,:] = seeded_array
+                particle_positions[i, 0, :, :] = seeded_array
 
             elif seeding_mode == 'poisson':
                 pass
@@ -298,6 +298,74 @@ class Particle:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def __populate_seeded_array(self):
+        """
+        Populates a matrix that shows particle locations per pixel of the image area.
+        """
+
+        seeded_array = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
+        for x, y in zip(np.floor(self.__x_coordinates).astype(int), np.floor(self.__y_coordinates).astype(int)):
+            seeded_array[y, x] += 1
+
+        return seeded_array
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def upload_particle_coordinates(self,
+                                    particle_coordinates):
+        """
+        Uploads user-specified starting particle coordinates.
+
+        :param particle_coordinates:
+            ``list`` of ``tuple`` specifying the coordinates of particles in image :math:`I_1`.
+            The first element in each tuple are the coordinates along the image height,
+            and the second element are the coordinates along the image width. It can be obtained directly from
+            an object of the ``Motion`` class by accessing the attribute ``Motion.particle_coordinates_I1``. This allows
+            to have starting particle coordinates with a more irregular pattern.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(particle_coordinates, list):
+            raise ValueError("Parameter `particle_coordinates` has to be of type `list`.")
+
+        if len(particle_coordinates) != self.n_images:
+            raise ValueError("Parameter `particle_coordinates` must have `n_images` number of elements.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Initialize particle positions and diameters on each of the ``n_image`` images:
+        particle_positions = np.zeros((self.n_images, 1, self.__height_with_buffer, self.__width_with_buffer))
+        particle_diameters = []
+
+        # Populate particle data for each of the ``n_image`` images:
+        for i in range(0,self.n_images):
+
+            # Access absolute coordinates for particles' centers within the total available image area:
+            self.__y_coordinates = particle_coordinates[i][0]
+            self.__x_coordinates = particle_coordinates[i][1]
+
+            seeded_array = self.__populate_seeded_array()
+
+            # Populate the 4D tensor of shape (N, C_in, H, W):
+            particle_positions[i, 0, :, :] = seeded_array
+
+            # Generate diameters for all particles in the current image:
+            particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i]))
+
+        # Initialize particle coordinates:
+        self.__particle_coordinates = particle_coordinates
+
+        # Initialize particle positions:
+        self.__particle_positions = particle_positions
+
+        # Initialize particle diameters:
+        self.__particle_diameters = particle_diameters
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     # ##################################################################################################################
 
     # Plotting functions
@@ -327,3 +395,5 @@ class Particle:
         """
 
         raise NotImplementedError('This function not implemented yet.')
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

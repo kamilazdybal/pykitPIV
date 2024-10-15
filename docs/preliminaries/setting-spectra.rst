@@ -21,3 +21,11 @@ Class: ``FlowField``
 .. image:: ../images/FlowField-setting-spectrum.png
     :width: 900
     :align: center
+
+************************************************************
+Class: ``Image``
+************************************************************
+
+.. image:: ../images/Image-setting-spectrum.png
+    :width: 900
+    :align: center
