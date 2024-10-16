@@ -26,10 +26,14 @@ Install requirements:
     pip install torch
     pip install pandas
     pip install scipy
+
+Optional for documentation builds:
+
+.. code-block:: bash
+
     pip install Sphinx
     pip install sphinxcontrib-bibtex
     pip install furo
-
 
 Clone the pykitPIV repository:
 
