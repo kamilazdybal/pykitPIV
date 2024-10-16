@@ -746,6 +746,8 @@ class Image:
 
             print('The buffer size was set to 0. Images do not have a buffer to remove!')
 
+            return input_tensor
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def measure_counts(self, image):
