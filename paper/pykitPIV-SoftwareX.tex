@@ -118,14 +118,15 @@ Particle image velocimetry (PIV) can especially profit from those architectures,
 The successes of RAFT-PIV and LIMA have been demonstrated on a number of classic experimental fluid dynamics settings such as flow behind a cylinder, boundary layer flow, or convective flow of a hot air plume \cite{mucignat2023lightweight}. However, to advance the accuracy of training CNNs for more complex PIV applications, a number of research questions will have to be addressed next:
 \begin{enumerate}
 \item How rich does the training dataset need to be to remain applicable in a given experimental setting?
-\item What degree of data augmentation is sufficient to transfer knowledge from one trained CNN to the next when changing experimental settings?
+\item How should we generate new training data samples to accomplish transfer learning to make a trained CNN applicable in the next experimental setting?
 \item At what time separation, $\Delta t$, would the current CNN architectures fail?
 \end{enumerate}
 
 
-To help researchers answer those questions, we propose the present Python library \texttt{pykitPIV} -- \textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}. Our library is compatible with PyTorch \cite{paszke2017automatic, paszke2019pytorch} to allow for easier porting with machine learning (ML) algorithms. The format for generated image tensors is consistent with the input required by the classic convolutional layers available in PyTorch (\texttt{torch.nn.Conv2d}). The high flexibility in the types of created images can port very well with reinforcement learning (RL) algorithms, where an agent may learn to augment the training dataset in real-time to account for changes in experimental settings.
+To help researchers answer those questions, we propose \texttt{pykitPIV} -- a Python library for synthetic PIV image generation that allows to generate rich and challenging experimental scenarios. \texttt{pykitPIV} stands \textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV} and exploits the kinematic relationship between two consecutive PIV image frames.
+%DESCRIBE WHAT ITS ABOUT%
 
-To date, synthetic PIV image generation software has been MATLAB-based \citep{ben2020openpiv, mendes2020piv}. This makes porting to Python interfaces more difficult. With the emerging ML applications, a package that readily ports to libraries such as PyTorch, TensorFlow, or Keras is the ideal solution. This allows the ML algorithm to interact with the image generation process. The most interesting future applications will be to use variational approaches to inform training data collection, or train a RL agent to construct necessary support data in new environments.
+To date, synthetic PIV image generation software has been MATLAB-based \citep{ben2020openpiv, mendes2020piv}. This makes porting to Python interfaces more difficult. With the emerging ML applications, a package that readily ports to libraries such as PyTorch, TensorFlow, or Keras is the ideal solution. This allows the ML algorithm to interact with the image generation process. Our library is compatible with PyTorch \cite{paszke2017automatic, paszke2019pytorch} to allow for easier porting with machine learning (ML) algorithms. The format for generated image tensors is consistent with the input required by the classic convolutional layers available in PyTorch (\texttt{torch.nn.Conv2d}). The high flexibility in the types of created images can port very well with reinforcement learning (RL) algorithms, where an agent may learn to augment the training dataset in real-time to account for changes in experimental settings. 
 
 \section{Software description} \label{sec:software}
 
@@ -294,7 +295,7 @@ The kinematic training methodology \cite{manickathan2022kinematic}, which is the
 
 \section{Conclusions}
 
-
+Future application can also include the use variational approaches to inform training data collection, or train a RL agent to construct necessary support data in new environments.
 
 \section*{Declaration of competing interest}
 
