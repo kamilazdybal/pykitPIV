@@ -65,7 +65,7 @@ tic = time.perf_counter()
 
 for i, time_separation in enumerate(time_separations):
 
-    print('Generating images for time separation of ' + str(dt) + 's...')
+    print('Generating images for time separation of ' + str(time_separation) + 's...')
 
     particles = Particle(n_images,
                          size=image_size,
