@@ -123,7 +123,7 @@ tensors_dictionary = {"I"      : images_tensor,
                       "target" : targets_tensor}
 
 image.save_to_h5(tensors_dictionary,
-                 filename='pykitPIV-dataset-' + str(n_images*len(time_separations)) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '-dt-' + dts_string + '-rs-' + str(random_seed) + '.h5',
+                 filename='pykitPIV-dataset-' + str(n_images*len(time_separations)) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '-density-' + str(densities_min) + '-' + str(densities_max) + '-dt-' + dts_string + '-rs-' + str(random_seed) + '.h5',
                  verbose=True)
 
 toc = time.perf_counter()

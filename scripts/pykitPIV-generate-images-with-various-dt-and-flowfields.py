@@ -56,12 +56,10 @@ image_size = (image_height, image_width)
 
 print('Running for the following time separations:')
 print(time_separations)
-
 dts_string = '-'.join([str(i) for i in time_separations])
 
 print('Running for the following flow fields:')
 print(flow_fields)
-
 ff_string = '-'.join([str(i) for i in flow_fields])
 
 #################################################################################################################################
@@ -148,7 +146,7 @@ tensors_dictionary = {"I"      : images_tensor,
                       "target" : targets_tensor}
 
 image.save_to_h5(tensors_dictionary, 
-                 filename='pykitPIV-dataset-' + str(n_images*len(time_separations)*len(flow_fields)) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '-dt-' + dts_string + '-ff-' + ff_string + '-rs-' + str(random_seed) + '.h5',
+                 filename='pykitPIV-dataset-' + str(n_images*len(time_separations)*len(flow_fields)) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '-density-' + str(densities_min) + '-' + str(densities_max) + '-dt-' + dts_string + '-ff-' + ff_string + '-rs-' + str(random_seed) + '.h5',
                  verbose=True)
 
 toc = time.perf_counter()

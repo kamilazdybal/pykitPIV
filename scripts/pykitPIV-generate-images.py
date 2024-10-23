@@ -108,7 +108,7 @@ tensors_dictionary = {"I"      : images_tensor,
 num, decimal = [part for part in str(time_separation).split('.')]
 
 image.save_to_h5(tensors_dictionary, 
-                 filename='pykitPIV-dataset-n-' + str(n_images) + '-' + str(image_height) + '-by-' + str(image_width) + '-dt-' + str(num) + 'p' + str(decimal) + '-rs-' + str(random_seed) + '.h5',
+                 filename='pykitPIV-dataset-n-' + str(n_images) + '-' + str(image_height) + '-by-' + str(image_width) + '-density-' + str(densities_min) + '-' + str(densities_max) + '-dt-' + str(num) + 'p' + str(decimal) + '-rs-' + str(random_seed) + '.h5',
                  verbose=True)
 
 toc = time.perf_counter()
