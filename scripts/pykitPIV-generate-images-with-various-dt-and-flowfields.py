@@ -83,7 +83,7 @@ flowfield = FlowField(n_images,
 
 for i, time_separation in enumerate(time_separations):
 
-    print('Generating images for time separation of ' + str(dt) + 's...')
+    print('Generating images for time separation of ' + str(time_separation) + 's...')
 
     for ff in flow_fields:
 
