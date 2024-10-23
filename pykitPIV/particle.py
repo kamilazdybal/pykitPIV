@@ -51,23 +51,37 @@ class Particle:
     :param n_images:
         ``int`` specifying the number of PIV image pairs, :math:`N`, to create.
     :param size: (optional)
-        ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`. The first number is the image height, :math:`H`, the second number is the image width, :math:`W`.
+        ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`.
+        The first number is the image height, :math:`H`, the second number is the image width, :math:`W`.
     :param size_buffer: (optional)
-        ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
-        This number should be approximately equal to the maximum displacement that particles are subject to in order to allow new particles to arrive into the image area
-        and old particles to exit the image area.
+        ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the image size
+        in the width and height direction.
+        This number should be approximately equal to the maximum displacement that particles are subject to
+        in order to allow new particles to arrive into the image area
+        as the old particles move towards the center of the image area.
     :param diameters: (optional)
-        ``tuple`` of two ``int`` elements specifying the minimum (first element) and maximum (second element) particle diameter in pixels :math:`[\\text{px}]` to randomly sample from.
+        ``tuple`` of two ``int`` elements specifying the minimum (first element) and maximum (second element)
+        particle diameter in pixels :math:`[\\text{px}]` to randomly sample from across all generated PIV image pairs.
+        Note, that one PIV pair will be associated with one (fixed) particle diameter, but you can steer the deviation
+        from that diameter using the ``diameter_std`` parameter.
     :param distances: (optional)
-        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle distances in pixels :math:`[\\text{px}]` to randomly sample from. Only used when ``seeding_mode`` is ``'poisson'``.
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+        particle distances in pixels :math:`[\\text{px}]` to randomly sample from.
+        Only used when ``seeding_mode`` is ``'poisson'``.
     :param densities: (optional)
-        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle seeding density on an image in particle per pixel :math:`[\\text{ppp}]` to randomly sample from. Only used when ``seeding_mode`` is ``'random'``.
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+        particle seeding density on an image in particle per pixel :math:`[\\text{ppp}]` to randomly sample from.
+        Only used when ``seeding_mode`` is ``'random'``.
     :param diameter_std: (optional)
-        ``float`` or ``int`` specifying the standard deviation in pixels :math:`[\\text{px}]` for the distribution of particle diameters.
+        ``float`` or ``int`` specifying the standard deviation in pixels :math:`[\\text{px}]` for the distribution
+        of particle diameters within one PIV image pair. If set to zero, all particles in a PIV image pair will have
+        diameters exactly equal.
     :param seeding_mode: (optional)
-        ``str`` specifying the seeding mode for initializing particles in the image domain. It can be one of the following: ``'random'``, ``'user'``, or ``'poisson'``.
+        ``str`` specifying the seeding mode for initializing particles in the image domain.
+        It can be one of the following: ``'random'``, ``'user'``, or ``'poisson'``.
     :param random_seed: (optional)
-        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
+        ``int`` specifying the random seed for random number generation in ``numpy``.
+        If specified, all image generation is reproducible.
 
     **Attributes:**
 
