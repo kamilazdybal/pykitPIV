@@ -70,24 +70,24 @@ ff_string = '-'.join([str(i) for i in flow_fields])
 
 tic = time.perf_counter()
 
+particles = Particle(n_images,
+                     size=image_size,
+                     size_buffer=size_buffer,
+                     diameters=(diameters_min, diameters_max),
+                     densities=(densities_min, densities_max),
+                     diameter_std=diameter_std,
+                     random_seed=random_seed)
+
+flowfield = FlowField(n_images,
+                      size=image_size,
+                      size_buffer=size_buffer,
+                      random_seed=random_seed)
+
 for i, dt in enumerate(time_separations):
 
     print('Generating images for time separation of ' + str(dt) + 's...')
 
     for ff in flow_fields:
-
-        particles = Particle(n_images,
-                             size=image_size,
-                             size_buffer=size_buffer,
-                             diameters=(diameters_min, diameters_max),
-                             densities=(densities_min, densities_max),
-                             diameter_std=diameter_std,
-                             random_seed=random_seed)
-
-        flowfield = FlowField(n_images,
-                              size=image_size,
-                              size_buffer=size_buffer,
-                              random_seed=random_seed)
 
         if ff == 1:
 
