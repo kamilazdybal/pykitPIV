@@ -22,4 +22,4 @@ conda activate pykitPIV
 export NCCL_DEBUG=INFO
 export HDF5_USE_FILE_LOCKING=FALSE
 
-srun python pykitPIV-generate-images-with-various-dt-and-flowfields.py --n_images 83 --size_buffer 80 --image_height 256 --image_width 256
+srun python pykitPIV-generate-images-with-various-dt-and-flowfields.py --dt 1 --n_images 10 --size_buffer 10 --image_height 256 --image_width 256 --densities 0.1 0.11

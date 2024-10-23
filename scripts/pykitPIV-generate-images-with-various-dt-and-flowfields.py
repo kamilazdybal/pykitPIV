@@ -83,7 +83,7 @@ flowfield = FlowField(n_images,
                       size_buffer=size_buffer,
                       random_seed=random_seed)
 
-for i, dt in enumerate(time_separations):
+for i, time_separation in enumerate(time_separations):
 
     print('Generating images for time separation of ' + str(dt) + 's...')
 
@@ -98,19 +98,19 @@ for i, dt in enumerate(time_separations):
         elif ff == 2:
 
             flowfield.generate_checkered_velocity_field(displacement=(displacement_min, displacement_max),
-                                                        m=6,
-                                                        n=6)
+                                                        m=20,
+                                                        n=20)
 
         elif ff == 3:
 
             flowfield.generate_chebyshev_velocity_field(displacement=(displacement_min, displacement_max),
-                                                        order=30)
+                                                        order=40)
 
         elif ff == 4:
 
             flowfield.generate_spherical_harmonics_velocity_field(displacement=(displacement_min, displacement_max),
-                                                                  degree=10,
-                                                                  order=10)
+                                                                  degree=40,
+                                                                  order=20)
 
         motion = Motion(particles,
                         flowfield,
