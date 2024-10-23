@@ -17,7 +17,8 @@ from pykitPIV.checks import *
 
 class Particle:
     """
-    Generates particles with specified properties for a set of ``n_images`` number of PIV image pairs.
+    Generates tracer particles with specified properties for a set of :math:`N` PIV image pairs.
+    This class generates the starting positions for tracer particles, *i.e.*, the ones used for :math:`I_1`.
 
     **Example:**
 
@@ -51,19 +52,21 @@ class Particle:
     :param n_images:
         ``int`` specifying the number of PIV image pairs, :math:`N`, to create.
     :param size: (optional)
-        ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`.
+        ``tuple`` of two ``int`` elements specifying the size of images in pixels :math:`[\\text{px}]`.
         The first number is the image height, :math:`H`, the second number is the image width, :math:`W`.
     :param size_buffer: (optional)
         ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the image size
         in the width and height direction.
         This number should be approximately equal to the maximum displacement that particles are subject to
         in order to allow new particles to arrive into the image area
-        as the old particles move towards the center of the image area.
+        and prevent spurious disappearance of particles near image boundaries.
     :param diameters: (optional)
         ``tuple`` of two ``int`` elements specifying the minimum (first element) and maximum (second element)
         particle diameter in pixels :math:`[\\text{px}]` to randomly sample from across all generated PIV image pairs.
-        Note, that one PIV pair will be associated with one (fixed) particle diameter, but you can steer the deviation
-        from that diameter using the ``diameter_std`` parameter.
+        Note, that one PIV pair will be associated with one (fixed) particle diameter, but the random sample
+        between minimum and maximum diameter will generate variation in diameters across :math:`N` PIV image pairs.
+        You can steer the deviation from that diameter within each single PIV image pair
+        using the ``diameter_std`` parameter.
     :param distances: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         particle distances in pixels :math:`[\\text{px}]` to randomly sample from.
@@ -78,7 +81,14 @@ class Particle:
         diameters exactly equal.
     :param seeding_mode: (optional)
         ``str`` specifying the seeding mode for initializing particles in the image domain.
-        It can be one of the following: ``'random'``, ``'user'``, or ``'poisson'``.
+        It can be one of the following: ``'random'``, ``'poisson'``, or ``'user'``.
+
+        - ``'random'`` seeding generates random locations of particles on the available image area.
+        - ``'poisson'`` seeding is also random, but makes sure that particles are kept at minimum ``distances``
+          from one another. This is particularly useful for generation BOS-like background image.
+        - ``'user'`` seeding allows for particle coordinates to be provided by the user.
+          This provides an interesting functionality where the user can chain movement of particles and create
+          time-resolved PIV sequence of images.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
         If specified, all image generation is reproducible.

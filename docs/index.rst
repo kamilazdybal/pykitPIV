@@ -5,6 +5,7 @@
 PyTorch-compatible, Python package for synthetic PIV image generation.
 It exploits the idea that if the time separation between two PIV images is small,
 kinematic relationship between two consecutive PIV images is sufficient to determine particle displacement fields.
+**pykitPIV** can also operate in the background-oriented Schlieren (BOS) mode.
 
 **pykitPIV** provides images of varying complexity in order to exhaust challenging training scenarios.
 The goal of this library is to give the user, or a machine learning algorithm, a lot of flexibility in setting-up
@@ -19,7 +20,7 @@ The graph below shows the possible workflows constructed from the five main clas
   :width: 900
   :align: center
 
-For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please
+For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV/BOS images, please
 check the following references:
 
 - `Kinematic training of convolutional neural networks for particle image velocimetry <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae/meta>`_
@@ -57,6 +58,12 @@ check the following references:
    user/motion
    user/image
    user/postprocess
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Quickstart
+
+    quickstart/quickstart-scripts
 
 .. toctree::
    :maxdepth: 2
