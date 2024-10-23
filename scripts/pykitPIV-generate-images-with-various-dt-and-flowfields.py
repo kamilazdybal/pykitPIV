@@ -1,11 +1,15 @@
+########################################################################################################################
+## This script generates PIV image pairs and the associated displacement fields.
+########################################################################################################################
+
 import numpy as np
 import argparse
 import time
 from pykitPIV import Particle, FlowField, Motion, Image
 
-#################################################################################################################################
+########################################################################################################################
 ## Argument parser
-#################################################################################################################################
+########################################################################################################################
 
 parser = argparse.ArgumentParser()
 
@@ -14,7 +18,6 @@ parser.add_argument('--size_buffer',            type=int,       default=10,     
 parser.add_argument('--image_height',           type=int,       default=256,                    metavar='H')
 parser.add_argument('--image_width',            type=int,       default=256,                    metavar='W')
 parser.add_argument('--dt',                     type=float,     default=[1, 2, 3], nargs="+",   metavar='dt')
-parser.add_argument('--flow_fields',            type=int,       default=[1, 2, 3, 4], nargs="+",metavar='FF')
 parser.add_argument('--diameters',              type=float,     default=[2, 3], nargs="+",      metavar='D')
 parser.add_argument('--densities',              type=float,     default=[0.3, 0.31], nargs="+", metavar='rho')
 parser.add_argument('--diameter_std',           type=float,     default=0.5,                    metavar='D_std')
@@ -27,6 +30,7 @@ parser.add_argument('--laser_beam_thickness',   type=float,     default=1,      
 parser.add_argument('--laser_beam_shape',       type=float,     default=0.95,                   metavar='LB-s')
 parser.add_argument('--alpha_denominator',      type=float,     default=10,                     metavar='ALPHA')
 parser.add_argument('--random_seed',            type=int,       default=100,                    metavar='RS')
+parser.add_argument('--flow_fields',            type=int,       default=[1, 2, 3, 4], nargs="+",metavar='FF')
 
 args = parser.parse_args()
 
