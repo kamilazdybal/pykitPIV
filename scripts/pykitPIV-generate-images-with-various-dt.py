@@ -52,7 +52,7 @@ random_seed = vars(args).get('random_seed')
 
 image_size = (image_height, image_width)
 
-print('Running for the following time separations:')
+print('\nRunning for the following time separations:')
 print(time_separations)
 
 dts_string = '-'.join([str(i) for i in time_separations])
@@ -63,30 +63,32 @@ dts_string = '-'.join([str(i) for i in time_separations])
 
 tic = time.perf_counter()
 
+particles = Particle(n_images,
+                     size=image_size,
+                     size_buffer=size_buffer,
+                     diameters=(diameters_min, diameters_max),
+                     densities=(densities_min, densities_max),
+                     diameter_std=diameter_std,
+                     random_seed=random_seed)
+
+flowfield = FlowField(n_images,
+                      size=image_size,
+                      size_buffer=size_buffer,
+                      random_seed=random_seed)
+
+flowfield.generate_random_velocity_field(gaussian_filters=(gaussian_filters_min, gaussian_filters_max),
+                                         n_gaussian_filter_iter=n_gaussian_filter_iter,
+                                         displacement=(displacement_min, displacement_max))
+
+motion = Motion(particles,
+                flowfield,
+                time_separation=time_separations[0])
+
 for i, time_separation in enumerate(time_separations):
 
-    print('Generating images for time separation of ' + str(time_separation) + 's...')
+    print('\nGenerating images for time separation of ' + str(time_separation) + 's...')
 
-    particles = Particle(n_images,
-                         size=image_size,
-                         size_buffer=size_buffer,
-                         diameters=(diameters_min, diameters_max),
-                         densities=(densities_min, densities_max),
-                         diameter_std=diameter_std,
-                         random_seed=random_seed)
-
-    flowfield = FlowField(n_images,
-                          size=image_size,
-                          size_buffer=size_buffer,
-                          random_seed=random_seed)
-
-    flowfield.generate_random_velocity_field(gaussian_filters=(gaussian_filters_min, gaussian_filters_max),
-                                             n_gaussian_filter_iter=n_gaussian_filter_iter,
-                                             displacement=(displacement_min, displacement_max))
-
-    motion = Motion(particles,
-                    flowfield,
-                    time_separation=time_separation)
+    motion.time_separation = time_separation
 
     motion.runge_kutta_4th(n_steps=n_steps)
 
@@ -125,6 +127,6 @@ image.save_to_h5(tensors_dictionary,
                  verbose=True)
 
 toc = time.perf_counter()
-print(f'Images generated and saved in {(toc - tic)/60:0.1f} minutes.\n')
+print(f'Images generated and saved in {(toc - tic)/60:0.2f} minutes.\n')
 
 #################################################################################################################################
