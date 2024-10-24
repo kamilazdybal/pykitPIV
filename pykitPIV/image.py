@@ -148,6 +148,7 @@ class Image:
 
         self.__particles = particles
         self.__images_I1 = self.__particles.particle_positions
+        self.__images_I2 = self.__particles.particle_positions
 
         print('Particles added to the image.')
 
@@ -1256,6 +1257,7 @@ class Image:
             else:
 
                 plt.imshow(image_to_plot[self.__particles.size_buffer:-self.__particles.size_buffer, self.__particles.size_buffer:-self.__particles.size_buffer], cmap=cmap, origin=origin, vmin=0, vmax=self.maximum_intensity)
+
 
         if xlabel is not None:
             plt.xlabel(xlabel)

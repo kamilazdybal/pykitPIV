@@ -51,6 +51,17 @@ check the following references:
 
 ## Installation
 
+from environment.yml
+
+'''
+conda env create -f environment.yml
+conda activate pykitPIV
+python -m pip install .
+'''
+
+
+or
+
 Start with a new Python environment:
 
 ```
