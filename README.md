@@ -51,18 +51,15 @@ check the following references:
 
 ## Installation
 
-from environment.yml
+Install from `environment.yml`:
 
-'''
+```
 conda env create -f environment.yml
 conda activate pykitPIV
 python -m pip install .
-'''
+```
 
-
-or
-
-Start with a new Python environment:
+or, start with a new Python environment:
 
 ```
 conda create -n pykitPIV python=3.10
