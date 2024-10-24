@@ -167,7 +167,7 @@ class Motion:
 
         self.__displacement_field_magnitude = np.sqrt(self.displacement_field[:, 0:1, :, :] ** 2 + self.displacement_field[:, 1:2, :, :] ** 2)
 
-        # Check whether particles loos/gain will have to be modeled:
+        # Check whether particles loss/gain will have to be modeled:
         if self.__particle_loss[1] > 0:
             self.__particles_lost = True
         else:
@@ -231,7 +231,7 @@ class Motion:
 
         self.__particle_loss = new_particle_loss
 
-        # Check whether particles loos/gain will have to be modeled:
+        # Check whether particles loss/gain will have to be modeled:
         if self.__particle_loss[1] > 0:
             self.__particles_lost = True
         else:
