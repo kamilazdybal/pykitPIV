@@ -1,9 +1,13 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.collections import PatchCollection
+import matplotlib.patches as patches
 import random
 import copy
 import scipy
+from scipy.stats import qmc
+from scipy.spatial import cKDTree
 import warnings
 from pykitPIV.checks import *
 
@@ -17,8 +21,7 @@ from pykitPIV.checks import *
 
 class Particle:
     """
-    Generates tracer particles with specified properties for a set of :math:`N` PIV image pairs.
-    This class generates the starting positions for tracer particles, *i.e.*, the ones used for :math:`I_1`.
+    Generates particles with specified properties for a set of ``n_images`` number of PIV image pairs.
 
     **Example:**
 
@@ -52,46 +55,23 @@ class Particle:
     :param n_images:
         ``int`` specifying the number of PIV image pairs, :math:`N`, to create.
     :param size: (optional)
-        ``tuple`` of two ``int`` elements specifying the size of images in pixels :math:`[\\text{px}]`.
-        The first number is the image height, :math:`H`, the second number is the image width, :math:`W`.
+        ``tuple`` of two ``int`` elements specifying the size of each image in pixels :math:`[\\text{px}]`. The first number is the image height, :math:`H`, the second number is the image width, :math:`W`.
     :param size_buffer: (optional)
-        ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the image size
-        in the width and height direction.
-        This number should be approximately equal to the maximum displacement that particles are subject to
-        in order to allow new particles to arrive into the image area
-        and prevent spurious disappearance of particles near image boundaries.
+        ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
+        This number should be approximately equal to the maximum displacement that particles are subject to in order to allow new particles to arrive into the image area
+        and old particles to exit the image area.
     :param diameters: (optional)
-        ``tuple`` of two ``int`` elements specifying the minimum (first element) and maximum (second element)
-        particle diameter in pixels :math:`[\\text{px}]` to randomly sample from across all generated PIV image pairs.
-        Note, that one PIV pair will be associated with one (fixed) particle diameter, but the random sample
-        between minimum and maximum diameter will generate variation in diameters across :math:`N` PIV image pairs.
-        You can steer the deviation from that diameter within each single PIV image pair
-        using the ``diameter_std`` parameter.
+        ``tuple`` of two ``int`` elements specifying the minimum (first element) and maximum (second element) particle diameter in pixels :math:`[\\text{px}]` to randomly sample from.
     :param distances: (optional)
-        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
-        particle distances in pixels :math:`[\\text{px}]` to randomly sample from.
-        Only used when ``seeding_mode`` is ``'poisson'``.
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle distances in pixels :math:`[\\text{px}]` to randomly sample from. Only used when ``seeding_mode`` is ``'poisson'``.
     :param densities: (optional)
-        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
-        particle seeding density on an image in particle per pixel :math:`[\\text{ppp}]` to randomly sample from.
-        Only used when ``seeding_mode`` is ``'random'``.
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) particle seeding density on an image in particle per pixel :math:`[\\text{ppp}]` to randomly sample from. Only used when ``seeding_mode`` is ``'random'``.
     :param diameter_std: (optional)
-        ``float`` or ``int`` specifying the standard deviation in pixels :math:`[\\text{px}]` for the distribution
-        of particle diameters within one PIV image pair. If set to zero, all particles in a PIV image pair will have
-        diameters exactly equal.
+        ``float`` or ``int`` specifying the standard deviation in pixels :math:`[\\text{px}]` for the distribution of particle diameters.
     :param seeding_mode: (optional)
-        ``str`` specifying the seeding mode for initializing particles in the image domain.
-        It can be one of the following: ``'random'``, ``'poisson'``, or ``'user'``.
-
-        - ``'random'`` seeding generates random locations of particles on the available image area.
-        - ``'poisson'`` seeding is also random, but makes sure that particles are kept at minimum ``distances``
-          from one another. This is particularly useful for generation BOS-like background image.
-        - ``'user'`` seeding allows for particle coordinates to be provided by the user.
-          This provides an interesting functionality where the user can chain movement of particles and create
-          time-resolved PIV sequence of images.
+        ``str`` specifying the seeding mode for initializing particles in the image domain. It can be one of the following: ``'random'``, ``'user'``, or ``'poisson'``.
     :param random_seed: (optional)
-        ``int`` specifying the random seed for random number generation in ``numpy``.
-        If specified, all image generation is reproducible.
+        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
 
     **Attributes:**
 
@@ -206,13 +186,15 @@ class Particle:
             print('Use the function Image.upload_particle_coordinates() to seed particles.')
 
         elif seeding_mode == 'poisson':
-            raise NotImplementedError('Poisson sampling is not supported yet.')
+            self.__particle_density_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
 
-        # Compute the total number of particles for a given particle density on each image:
-        n_of_particles = self.__size[0] * self.__size[1] * self.__particle_density_per_image
-        self.__n_of_particles = [int(i) for i in n_of_particles]
 
         if seeding_mode == 'random':
+
+            # Compute the total number of particles for a given particle density on each image:
+            n_of_particles = self.__size[0] * self.__size[1] * self.__particle_density_per_image
+            self.__n_of_particles = [int(i) for i in n_of_particles]
+
 
             # Initialize particle coordinates, positions, and diameters on each of the ``n_image`` images:
             particle_coordinates = []
@@ -235,6 +217,59 @@ class Particle:
 
                 # Generate diameters for all particles in the current image:
                 particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i]))
+
+                # Initialize particle coordinates:
+            self.__particle_coordinates = particle_coordinates
+
+            # Initialize particle positions:
+            self.__particle_positions = particle_positions
+
+            # Initialize particle diameters:
+            self.__particle_diameters = particle_diameters
+
+
+        if seeding_mode == 'poisson':
+            # Initialize particle coordinates, positions, and diameters on each of the ``n_image`` images:
+            particle_coordinates = []
+            particle_positions = np.zeros((self.n_images, 1, self.__height_with_buffer, self.__width_with_buffer))
+            particle_diameters = []
+            n_of_particles = []
+            s=max(self.__size_with_buffer)
+            for i in range(0,self.n_images):
+
+                dia=self.__particle_diameter_per_image[i]
+                den=self.__particle_density_per_image[i]
+                dist=self.__particle_distance_per_image[i]
+                radius=dia/den/s
+                #radius = 0.2
+                engine = qmc.PoissonDisk(d=2, radius=radius,ncandidates=30)
+                sample = engine.fill_space()*s
+                # check for  outlayers 
+                ix=sample[:,1]<self.__size_with_buffer[1] 
+                iy=sample[:,0]<self.__size_with_buffer[0]
+                ind=ix * iy
+                # delete outlayers 
+                sample=sample[ind]
+                x=sample[:,1]
+                y=sample[:,0]
+                n=len(x)
+                # number of paricles
+                n_of_particles.append(n)
+
+                self.__x_coordinates=x
+                self.__y_coordinates=y
+                particle_coordinates.append((self.__y_coordinates, self.__x_coordinates))
+
+                seeded_array = self.__populate_seeded_array()
+                
+                # Populate the 4D tensor of shape (N, C_in, H, W):
+                particle_positions[i, 0, :, :] = seeded_array
+
+                # Generate diameters for all particles in the current image:
+                particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, n))
+
+            # number ofparticles
+            self.__n_of_particles=n_of_particles
 
             # Initialize particle coordinates:
             self.__particle_coordinates = particle_coordinates
@@ -330,6 +365,8 @@ class Particle:
 
         return seeded_array
 
+
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def upload_particle_coordinates(self,
@@ -393,6 +430,140 @@ class Particle:
 
     # ##################################################################################################################
 
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def plot(self,
+             idx,
+             with_buffer=False,
+             xlabel=None,
+             ylabel=None,
+             xticks=True,
+             yticks=True,
+             title=None,
+             cmap='Greys',
+             origin='lower',
+             figsize=(5,5),
+             dpi=300,
+             filename=None):
+        """
+        Plots a particles.
+
+        :param idx:
+            ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
+        :param with_buffer: (optional)
+            ``bool`` specifying whether the buffer for the image size should be visualized. If set to ``False``, the true PIV image size is visualized. If set to ``True``, the PIV image with a buffer is visualized and buffer outline is marked with a red rectangle.
+        :param xlabel: (optional)
+            ``str`` specifying :math:`x`-label.
+        :param ylabel: (optional)
+            ``str`` specifying :math:`y`-label.
+        :param xticks: (optional)
+            ``bool`` specifying if ticks along the :math:`x`-axis should be plotted.
+        :param yticks: (optional)
+            ``bool`` specifying if ticks along the :math:`y`-axis should be plotted.
+        :param title: (optional)
+            ``str`` specifying figure title.
+        :param cmap: (optional)
+            ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param origin: (optional)
+            ``str`` specifying the origin location. It can be ``'upper'`` or ``'lower'``.
+        :param figsize: (optional)
+            ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
+        :param dpi: (optional)
+            ``int`` specifying the dpi for the image.
+        :param filename: (optional)
+            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+
+        :return:
+            - **plt** - ``matplotlib.pyplot`` image handle.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(idx, int):
+            raise ValueError("Parameter `idx` has to be of type 'int'.")
+        if idx < 0:
+            raise ValueError("Parameter `idx` has to be non-negative.")
+
+        if not isinstance(with_buffer, bool):
+            raise ValueError("Parameter `with_buffer` has to be of type 'bool'.")
+
+        if (xlabel is not None) and (not isinstance(xlabel, str)):
+            raise ValueError("Parameter `xlabel` has to be of type 'str'.")
+
+        if (ylabel is not None) and (not isinstance(ylabel, str)):
+            raise ValueError("Parameter `ylabel` has to be of type 'str'.")
+
+        if not isinstance(xticks, bool):
+            raise ValueError("Parameter `xticks` has to be of type 'bool'.")
+
+        if not isinstance(yticks, bool):
+            raise ValueError("Parameter `yticks` has to be of type 'bool'.")
+
+        if (title is not None) and (not isinstance(title, str)):
+            raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        if not isinstance(origin, str):
+            raise ValueError("Parameter `origin` has to be of type 'str'.")
+
+        check_two_element_tuple(figsize, 'figsize')
+
+        if (filename is not None) and (not isinstance(filename, str)):
+            raise ValueError("Parameter `filename` has to be of type 'str'.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        if self.__particle_coordinates is None:
+
+            print('Note: Particles have not been generated yet!\n\n')
+
+        else:
+            y=self.__size_with_buffer[0]
+            x=self.__size_with_buffer[1]
+            sb=self.__size_buffer
+ 
+            sample=self.__particle_coordinates[idx]   # y,x corrdiantes
+            radius=self.__particle_diameters[idx]/2   
+            pos=self.__particle_positions[idx][0]   # 0..n  pixel map
+            pixelmap=pos
+            pixelmap[pos>=1]=1
+
+     
+            fig,ax=plt.subplots(figsize=figsize)
+            circles = [plt.Circle((xi, yi), radius=r, color='b',fill=False) for xi, yi ,r in zip(sample[1],sample[0],radius)]
+            collection = PatchCollection(circles, match_original=True)
+            rect=patches.Rectangle((sb-0.5,sb-0.5), self.size[1], self.size[0], linewidth=1, edgecolor='r', facecolor='none',fill=False)
+            ax.add_collection(collection)           # circels in particle size
+            _ = ax.scatter(sample[1], sample[0])    # centers of the particles 
+            _ = ax.imshow(pixelmap,cmap=cmap)                    # pixel map of the centers
+            _ = ax.add_patch(rect)                  # draw actual imageframe
+            _ = ax.set(aspect='equal',  xlim=[0, x], ylim=[0, y])
+
+
+        if xlabel is not None:
+            plt.xlabel(xlabel)
+
+        if ylabel is not None:
+            plt.ylabel(ylabel)
+
+        if not xticks:
+            plt.xticks([])
+
+        if not yticks:
+            plt.yticks([])
+
+        if title is not None:
+            plt.title(title)
+
+        if filename is not None:
+            plt.savefig(filename, dpi=dpi, bbox_inches='tight')
+
+        return plt
+        
+
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def plot_properties_per_image(self):
@@ -418,3 +589,32 @@ class Particle:
         raise NotImplementedError('This function not implemented yet.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+if __name__ == "__main__" :
+
+    case=["PIV","BOS"][1]
+
+    if case=="PIV":   
+        particles = Particle(1, 
+                        size=(128,256), 
+                        size_buffer=10,
+                        diameters=(2, 3),
+                        diameter_std=0.5,
+                        densities=(0.05, 0.051),
+                        seeding_mode="random",
+                        random_seed=100)
+ 
+    if case=="BOS":  #BOS
+        particles = Particle(1, 
+                        size=(128,256), 
+                        size_buffer=10,
+                        diameters=(5, 5),
+                        diameter_std=0.0,
+                        densities=(0.9, 0.9),   # 1 particle touches
+                        seeding_mode="poisson",
+                        random_seed=100)
+
+    plt=particles.plot(0)
+    plt.show()
+    print('done')
