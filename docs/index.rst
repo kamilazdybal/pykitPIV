@@ -1,5 +1,5 @@
 .. image:: images/pykitPIV-logo.png
-  :width: 300
+    :width: 300
 
 **pykitPIV** (**Py**\ thon **ki**\ nematic **t**\ raining for **P**\ article **I**\ mage **V**\ elocimetry) is a
 PyTorch-compatible, Python package for synthetic PIV image generation.
@@ -17,8 +17,8 @@ The image tensors are compatible with PyTorch and can easily port with convoluti
 The graph below shows the possible workflows constructed from the five main classes:
 
 .. image:: images/pykitPIV-workflow.svg
-  :width: 900
-  :align: center
+    :width: 900
+    :align: center
 
 For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV/BOS images, please
 check the following references:
@@ -30,49 +30,49 @@ check the following references:
 - `A lightweight convolutional neural network to reconstruct deformation in BOS recordings <https://link.springer.com/article/10.1007/s00348-023-03618-7>`_
 
 .. image:: images/example-temporal-evolution.gif
-  :width: 700
-  :align: center
+    :width: 700
+    :align: center
 
 ------------------------------------------------------------------------------------------------------------------------
 
 .. toctree::
-   :maxdepth: 5
-   :caption: Installation
+    :maxdepth: 5
+    :caption: Installation
 
-   installation/instruction
-
-.. toctree::
-   :maxdepth: 5
-   :caption: Preliminaries
-
-   preliminaries/classes
-   preliminaries/indexing
-   preliminaries/setting-spectra
+    installation/instruction
 
 .. toctree::
-   :maxdepth: 5
-   :caption: User Guide
+    :maxdepth: 5
+    :caption: Preliminaries
 
-   user/particle
-   user/flowfield
-   user/motion
-   user/image
-   user/postprocess
+    preliminaries/classes
+    preliminaries/indexing
+    preliminaries/setting-spectra
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Quickstart
+    :maxdepth: 5
+    :caption: User Guide
+
+    user/particle
+    user/flowfield
+    user/motion
+    user/image
+    user/postprocess
+
+.. toctree::
+    :maxdepth: 2
+    :caption: Quickstart
 
     quickstart/quickstart-scripts
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Tutorials & Demos
+    :maxdepth: 2
+    :caption: Tutorials & Demos
 
-   tutorials/demo-generate-images
-   tutorials/demo-image-statistics
-   tutorials/demo-PyTorch-dataloader
-   tutorials/demo-data-augmentation
-   tutorials/demo-import-external-velocity-field
-   tutorials/demo-integrate-with-LIMA
+    tutorials/demo-generate-images
+    tutorials/demo-image-statistics
+    tutorials/demo-PyTorch-dataloader
+    tutorials/demo-data-augmentation
+    tutorials/demo-import-external-velocity-field
+    tutorials/demo-integrate-with-LIMA
 
