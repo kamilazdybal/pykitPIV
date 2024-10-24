@@ -94,7 +94,6 @@ class Motion:
     - **updated_particle_diameters** - (read-only) ``list`` of ``numpy.ndarray`` specifying the updated particle diameters for each PIV image pair.
     - **displacement_field** - (read-only) ``numpy.ndarray`` specifying the displacement field, :math:`ds = [dx, dy]`, in the :math:`x` and :math:`y` direction. It is computed as the velocity component multiplied by time separation and has a unit of :math:`\\text{px}`. It has size :math:`(N, 2, H+2b, W+2b)`. The second index corresponds to :math:`dx` and :math:`dy` displacement, respectively.
     - **displacement_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the displacement field magnitude, :math:`|ds| = \sqrt{dx^2 + dy^2}`. It has a unit of :math:`\\text{px}`. It has size :math:`(N, 1, H+2b, W+2b)`.
-
     """
 
     def __init__(self,
@@ -102,7 +101,8 @@ class Motion:
                  flowfield,
                  time_separation=1,
                  particle_loss=(0, 2),
-                 particle_gain=(0, 2)):
+                 particle_gain=(0, 2),
+                 random_seed=None):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -138,6 +138,12 @@ class Motion:
         if flowfield.velocity_field is None:
             raise AttributeError("No velocity field is generated in the FlowField class object.")
 
+        if random_seed is not None:
+            if type(random_seed) != int:
+                raise ValueError("Parameter `random_seed` has to be of type 'int'.")
+            else:
+                np.random.seed(seed=random_seed)
+
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Class init:
@@ -145,6 +151,7 @@ class Motion:
         self.__flowfield = flowfield
         self.__time_separation = time_separation
         self.__particle_loss = particle_loss
+        self.__random_seed = random_seed
 
         # Initialize particle coordinates:
         self.__particle_coordinates_I1 = self.__particles.particle_coordinates
@@ -159,6 +166,12 @@ class Motion:
         self.__displacement_field[:, 1, :, :] = self.__flowfield.velocity_field[:, 1, :, :] * time_separation
 
         self.__displacement_field_magnitude = np.sqrt(self.displacement_field[:, 0:1, :, :] ** 2 + self.displacement_field[:, 1:2, :, :] ** 2)
+
+        # Check whether particles loos/gain will have to be modeled:
+        if self.__particle_loss[1] > 0:
+            self.__particles_lost = True
+        else:
+            self.__particles_lost = False
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -209,6 +222,36 @@ class Motion:
                 self.__displacement_field[:, 1, :, :] = self.__flowfield.velocity_field[:, 1, :, :] * new_time_separation
 
                 self.__displacement_field_magnitude = np.sqrt(self.displacement_field[:, 0:1, :, :] ** 2 + self.displacement_field[:, 1:2, :, :] ** 2)
+
+    @particle_loss.setter
+    def particle_loss(self, new_particle_loss):
+
+        check_two_element_tuple(new_particle_loss, 'particle_loss')
+        check_min_max_tuple(new_particle_loss, 'particle_loss')
+
+        self.__particle_loss = new_particle_loss
+
+        # Check whether particles loos/gain will have to be modeled:
+        if self.__particle_loss[1] > 0:
+            self.__particles_lost = True
+        else:
+            self.__particles_lost = False
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def __lose_particles(self,
+                         idx,
+                         n_particles):
+
+        current_loss_percentage = np.random.rand(1) * (self.__particle_loss[1] - self.__particle_loss[0]) + self.__particle_loss[0]
+        current_loss_percentage = current_loss_percentage[0]
+
+        idx_removed = np.random.choice(np.array([i for i in range(0,n_particles)]), int(current_loss_percentage*n_particles/100), replace=False)
+        idx_retained = [ii for ii in range(0, n_particles) if ii not in idx_removed]
+
+        print('Image ' + str(idx+1) + ':\t' + str(n_particles - len(idx_retained)) + ' particles lost')
+
+        return idx_retained
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -287,7 +330,7 @@ class Motion:
             updated_particle_diameters = self.__particles.particle_diameters[i]
 
             # This method assumes that the velocity field does not change during the image separation time:
-            for i in range(0,n_steps):
+            for _ in range(0,n_steps):
 
                 # Compute the new coordinates at the next time step:
                 y_coordinates_I2 = particle_coordinates_old[:,0] + interpolate_v_component(particle_coordinates_old) * __delta_t
@@ -302,7 +345,13 @@ class Motion:
                 idx_retained = [ii for ii in range(0,particle_coordinates_old.shape[0]) if ii not in idx_removed]
 
                 particle_coordinates_old = particle_coordinates_old[idx_retained,:]
+                updated_particle_diameters = updated_particle_diameters[idx_retained]
 
+            if self.__particles_lost:
+
+                idx_retained = self.__lose_particles(i, particle_coordinates_old.shape[0])
+
+                particle_coordinates_old = particle_coordinates_old[idx_retained,:]
                 updated_particle_diameters = updated_particle_diameters[idx_retained]
 
             particle_coordinates_I2.append((particle_coordinates_old[:,0], particle_coordinates_old[:,1]))
@@ -432,7 +481,7 @@ class Motion:
             x_R = 1.0 / 6.0 * (x_R1 + 2 * x_R2 + 2 * x_R3 + x_R4)
 
             # This method assumes that the velocity field does not change during the image separation time:
-            for i in range(0,n_steps):
+            for _ in range(0,n_steps):
 
                 x_R1_old = copy.deepcopy(x_R1)
                 x_R2_old = copy.deepcopy(x_R2)
@@ -478,6 +527,13 @@ class Motion:
 
                 y_R = 1.0 / 6.0 * (y_R1 + 2 * y_R2 + 2 * y_R3 + y_R4)
                 x_R = 1.0 / 6.0 * (x_R1 + 2 * x_R2 + 2 * x_R3 + x_R4)
+
+            if self.__particles_lost:
+
+                idx_retained = self.__lose_particles(i, particle_coordinates_old.shape[0])
+
+                particle_coordinates_old = particle_coordinates_old[idx_retained,:]
+                updated_particle_diameters = updated_particle_diameters[idx_retained]
 
             particle_coordinates_I2.append((particle_coordinates_old[:,0], particle_coordinates_old[:,1]))
             self.__updated_particle_diameters.append(updated_particle_diameters)
