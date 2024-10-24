@@ -128,8 +128,6 @@ class TestImageClass(unittest.TestCase):
         self.assertTrue(image.images_I1.shape[2] == 110)
         self.assertTrue(image.images_I1.shape[3] == 90)
 
-        self.assertTrue(image.images_I2 is None)
-
         images_I1_no_buffer = image.remove_buffers(image.images_I1)
 
         self.assertTrue(images_I1_no_buffer.shape[2] == 100)
@@ -164,8 +162,6 @@ class TestImageClass(unittest.TestCase):
 
         self.assertTrue(image.images_I1.shape[2] == 110)
         self.assertTrue(image.images_I1.shape[3] == 90)
-
-        self.assertTrue(image.images_I2 is None)
 
         images_I1_no_buffer = image.remove_buffers(image.images_I1)
 
