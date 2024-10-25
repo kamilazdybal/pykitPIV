@@ -25,6 +25,7 @@ parser.add_argument('--gaussian_filters',       type=float,     default=[10, 10.
 parser.add_argument('--n_gaussian_filter_iter', type=int,       default=10,                     metavar='n_GF_iter')
 parser.add_argument('--displacement',           type=float,     default=[2.0, 3.0], nargs="+",  metavar='disp')
 parser.add_argument('--n_steps',                type=int,       default=10,                     metavar='N_STEPS')
+parser.add_argument('--particle_loss',          type=float,     default=[0, 2], nargs="+",      metavar='PLOSS')
 parser.add_argument('--exposures',              type=float,     default=[0.9, 0.95], nargs="+", metavar='EXP')
 parser.add_argument('--laser_beam_thickness',   type=float,     default=1,                      metavar='LB-t')
 parser.add_argument('--laser_beam_shape',       type=float,     default=0.95,                   metavar='LB-s')
@@ -50,6 +51,7 @@ gaussian_filters_min, gaussian_filters_max = tuple(vars(args).get('gaussian_filt
 n_gaussian_filter_iter = vars(args).get('n_gaussian_filter_iter')
 displacement_min, displacement_max = tuple(vars(args).get('displacement'))
 n_steps = vars(args).get('n_steps')
+particle_loss_min, particle_loss_max = tuple(vars(args).get('particle_loss'))
 exposures_min, exposures_max = tuple(vars(args).get('exposures'))
 laser_beam_thickness = vars(args).get('laser_beam_thickness')
 laser_beam_shape = vars(args).get('laser_beam_shape')
@@ -116,7 +118,8 @@ for i, time_separation in enumerate(time_separations):
 
         motion = Motion(particles,
                         flowfield,
-                        time_separation=time_separation)
+                        time_separation=time_separation,
+                        particle_loss=(particle_loss_min, particle_loss_max))
 
         motion.runge_kutta_4th(n_steps=n_steps)
 
@@ -150,7 +153,7 @@ tensors_dictionary = {"I"      : images_tensor,
                       "target" : targets_tensor}
 
 image.save_to_h5(tensors_dictionary, 
-                 filename='pykitPIV-dataset-' + str(n_images*len(time_separations)*len(flow_fields)) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '-density-' + str(densities_min) + '-' + str(densities_max) + '-dt-' + dts_string + '-ff-' + ff_string + '-rs-' + str(random_seed) + '.h5',
+                 filename='pykitPIV-dataset-' + str(n_images*len(time_separations)*len(flow_fields)) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '-density-' + str(densities_min) + '-' + str(densities_max) + '-ploss-max-' + str(particle_loss_max) + '-dt-' + dts_string + '-ff-' + ff_string + '-rs-' + str(random_seed) + '.h5',
                  verbose=True)
 
 toc = time.perf_counter()
