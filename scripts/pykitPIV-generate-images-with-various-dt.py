@@ -25,7 +25,7 @@ parser.add_argument('--gaussian_filters',       type=float,     default=[10, 10.
 parser.add_argument('--n_gaussian_filter_iter', type=int,       default=10,                     metavar='n_GF_iter')
 parser.add_argument('--displacement',           type=float,     default=[2.0, 3.0], nargs="+",  metavar='disp')
 parser.add_argument('--n_steps',                type=int,       default=10,                     metavar='N_STEPS')
-parser.add_argument('--particle_loss',          type=float,     default=[0, 2], nargs="+",      metavar='PLOSS')
+parser.add_argument('--particle_loss',          type=float,     default=[0, 0], nargs="+",      metavar='PLOSS')
 parser.add_argument('--exposures',              type=float,     default=[0.9, 0.95], nargs="+", metavar='EXP')
 parser.add_argument('--laser_beam_thickness',   type=float,     default=1,                      metavar='LB-t')
 parser.add_argument('--laser_beam_shape',       type=float,     default=0.95,                   metavar='LB-s')
