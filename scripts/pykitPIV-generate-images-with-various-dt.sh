@@ -23,16 +23,6 @@ export NCCL_DEBUG=INFO
 export HDF5_USE_FILE_LOCKING=FALSE
 
 srun python pykitPIV-generate-images-with-various-dt.py --dt 0.5 --densities 0.1 0.1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024
-srun python pykitPIV-generate-images-with-various-dt.py --dt 1 --densities 0.1 0.1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024
-srun python pykitPIV-generate-images-with-various-dt.py --dt 2 --densities 0.1 0.1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024
-srun python pykitPIV-generate-images-with-various-dt.py --dt 3 --densities 0.1 0.1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024
-srun python pykitPIV-generate-images-with-various-dt.py --dt 4 --densities 0.1 0.1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024
-srun python pykitPIV-generate-images-with-various-dt.py --dt 5 --densities 0.1 0.1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024
-srun python pykitPIV-generate-images-with-various-dt.py --dt 6 --densities 0.1 0.1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024
-srun python pykitPIV-generate-images-with-various-dt.py --dt 7 --densities 0.1 0.1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024
-srun python pykitPIV-generate-images-with-various-dt.py --dt 8 --densities 0.1 0.1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024
-srun python pykitPIV-generate-images-with-various-dt.py --dt 9 --densities 0.1 0.1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024
-srun python pykitPIV-generate-images-with-various-dt.py --dt 10 --densities 0.1 0.1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024
 
 
 
