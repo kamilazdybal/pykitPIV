@@ -711,8 +711,8 @@ class FlowField:
             - **divergence** - divergence of the velocity field, :math:`\\nabla \\cdot \\vec{V}`.
         """
 
-        dudy, dudx = np.gradient(velocity_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
-        dvdy, dvdx = np.gradient(velocity_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
+        (dudy, dudx) = np.gradient(velocity_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
+        (dvdy, dvdx) = np.gradient(velocity_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
 
         divergence = dudx + dvdy
 
@@ -742,8 +742,8 @@ class FlowField:
             - **vorticity** - vorticity of the velocity field, :math:`\omega`.
         """
 
-        dudy, dudx = np.gradient(velocity_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
-        dvdy, dvdx = np.gradient(velocity_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
+        (dudy, dudx) = np.gradient(velocity_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
+        (dvdy, dvdx) = np.gradient(velocity_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
 
         vorticity = dvdx - dudy
 
