@@ -15,3 +15,7 @@ Class: ``FlowField``
 .. autofunction:: pykitPIV.flowfield.FlowField.generate_spherical_harmonics_velocity_field
 
 .. autofunction:: pykitPIV.flowfield.FlowField.upload_velocity_field
+
+.. autofunction:: pykitPIV.flowfield.FlowField.compute_divergence
+
+.. autofunction:: pykitPIV.flowfield.FlowField.compute_vorticity

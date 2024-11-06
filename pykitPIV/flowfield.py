@@ -687,3 +687,63 @@ class FlowField:
             self.__velocity_field_magnitude = np.sqrt(velocity_field[:, 0:1, :, :] ** 2 + velocity_field[:, 1:2, :, :] ** 2)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def compute_divergence(self,
+                           velocity_field,
+                           edge_order=1):
+        """
+        Computes the divergence of the specified velocity field:
+
+        .. math::
+
+            \\nabla \\cdot \\vec{V} = \\frac{\\partial u}{\\partial x} + \\frac{\\partial v}{\\partial y}
+
+        :param velocity_field:
+            ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
+            where :math:`N` is the number PIV image pairs, :math:`2` refers to each velocity component,
+            :math:`H` is the height and :math:`W` is the width of each PIV image.
+        :param edge_order: (optional)
+            ``int`` specifying the order for the gradient computation at image boundaries.
+
+        :return:
+            - **divergence** - divergence of the velocity field, :math:`\\nabla \\cdot \\vec{V}`.
+        """
+
+        dudy, dudx = np.gradient(velocity_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
+        dvdy, dvdx = np.gradient(velocity_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
+
+        divergence = dudx + dvdy
+
+        return divergence
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def compute_vorticity(self,
+                           velocity_field,
+                           edge_order=1):
+        """
+        Computes the vorticity of the specified velocity field:
+
+        .. math::
+
+            \\omega = \\frac{\\partial v }{\\partial x} - \\frac{\\partial u}{\\partial y}
+
+        :param velocity_field:
+            ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
+            where :math:`N` is the number PIV image pairs, :math:`2` refers to each velocity component,
+            :math:`H` is the height and :math:`W` is the width of each PIV image.
+        :param edge_order: (optional)
+            ``int`` specifying the order for the gradient computation at image boundaries.
+
+        :return:
+            - **vorticity** - vorticity of the velocity field, :math:`\omega`.
+        """
+
+        dudy, dudx = np.gradient(velocity_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
+        dvdy, dvdx = np.gradient(velocity_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
+
+        vorticity = dvdx - dudy
+
+        return vorticity
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
