@@ -635,7 +635,8 @@ class FlowField:
 
         :param velocity_field:
             ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
-            where :math:`N` is the number PIV image pairs, :math:`2` refers to each velocity component,
+            where :math:`N` is the number of PIV image pairs, :math:`2` refers to each velocity component
+            :math:`u` and :math:`v` respectively,
             :math:`H` is the height and :math:`W` is the width of each PIV image. It can also be of size :math:`(1, 2, H, W)`,
             in which case the same velocity field will be applied to all PIV image pairs.
         """
@@ -700,7 +701,8 @@ class FlowField:
 
         :param velocity_field:
             ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
-            where :math:`N` is the number PIV image pairs, :math:`2` refers to each velocity component,
+            where :math:`N` is the number of PIV image pairs, :math:`2` refers to each velocity component
+            :math:`u` and :math:`v` respectively,
             :math:`H` is the height and :math:`W` is the width of each PIV image.
         :param edge_order: (optional)
             ``int`` specifying the order for the gradient computation at image boundaries.
@@ -730,7 +732,8 @@ class FlowField:
 
         :param velocity_field:
             ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
-            where :math:`N` is the number PIV image pairs, :math:`2` refers to each velocity component,
+            where :math:`N` is the number of PIV image pairs, :math:`2` refers to each velocity component
+            :math:`u` and :math:`v` respectively,
             :math:`H` is the height and :math:`W` is the width of each PIV image.
         :param edge_order: (optional)
             ``int`` specifying the order for the gradient computation at image boundaries.
