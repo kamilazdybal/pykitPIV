@@ -36,10 +36,20 @@ class Image:
     **Attributes:**
 
     - **random_seed** - (read-only) as per user input.
-    - **images_I1** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`. Only available after ``Image.add_particles()`` has been called.
-    - **images_I2** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`. Only available after ``Image.add_motion()`` has been called.
-    - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image. Only available after ``Image.add_reflected_light`` has been called.
-    - **maximum_intensity** - (read-only) ``int`` specifying the maximum intensity that was used when adding reflected light to the image. Only available after ``Image.add_reflected_light`` has been called.
+    - **images_I1** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the
+      number PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment),
+      :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_1`, and
+      :math:`b` is the optional buffer.
+      Only available after ``Image.add_particles()`` has been called.
+    - **images_I2** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the
+      number PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment),
+      :math:`H` is the height and :math:`W` is the width of each PIV image, :math:`I_2`, and
+      :math:`b` is the optional buffer.
+      Only available after ``Image.add_motion()`` has been called.
+    - **exposures_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the light exposure for each image.
+      Only available after ``Image.add_reflected_light`` has been called.
+    - **maximum_intensity** - (read-only) ``int`` specifying the maximum intensity that was used when adding reflected
+      light to the image. Only available after ``Image.add_reflected_light`` has been called.
     """
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
