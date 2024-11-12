@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pykitPIV import Particle
+from pykitPIV import Particle, Image
 
 loop_for = 2
 
@@ -298,6 +298,31 @@ class TestParticleClass(unittest.TestCase):
                              seeding_mode='random')
 
         self.assertTrue(particles_1.n_of_particles < particles_2.n_of_particles)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__seeding_density_quantitatively(self):
+
+        sizes = [(10,10), (50,50), (100,100), (200,200)]
+
+        seeding_densities = [0.01 * i for i in range(0,20)]
+
+        for seeding_density in seeding_densities:
+
+            for size in sizes:
+
+                particles_1 = Particle(1,
+                                       size=size,
+                                       densities=(seeding_density, seeding_density),
+                                       seeding_mode='random')
+
+                particle_positions = particles_1.particle_positions
+
+                n_particles = np.sum(particle_positions[0,0,:,:])
+
+                image_area = size[0] * size[1]
+
+                self.assertTrue(n_particles==int(image_area * seeding_density))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
