@@ -22,14 +22,10 @@ conda activate pykitPIV
 export NCCL_DEBUG=INFO
 export HDF5_USE_FILE_LOCKING=FALSE
 
-srun python pykitPIV-generate-images.py --dt 0.5 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024 --densities 0.1 0.1 --gaussian_filters 50 50
-srun python pykitPIV-generate-images.py --dt 1 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024 --densities 0.1 0.1 --gaussian_filters 50 50
-srun python pykitPIV-generate-images.py --dt 2 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024 --densities 0.1 0.1 --gaussian_filters 50 50
-srun python pykitPIV-generate-images.py --dt 3 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024 --densities 0.1 0.1 --gaussian_filters 50 50
-srun python pykitPIV-generate-images.py --dt 4 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024 --densities 0.1 0.1 --gaussian_filters 50 50
-srun python pykitPIV-generate-images.py --dt 5 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024 --densities 0.1 0.1 --gaussian_filters 50 50
-srun python pykitPIV-generate-images.py --dt 6 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024 --densities 0.1 0.1 --gaussian_filters 50 50
-srun python pykitPIV-generate-images.py --dt 7 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024 --densities 0.1 0.1 --gaussian_filters 50 50
-srun python pykitPIV-generate-images.py --dt 8 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024 --densities 0.1 0.1 --gaussian_filters 50 50
-srun python pykitPIV-generate-images.py --dt 9 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024 --densities 0.1 0.1 --gaussian_filters 50 50
-srun python pykitPIV-generate-images.py --dt 10 --n_images 5 --size_buffer 80 --image_height 1024 --image_width 1024 --densities 0.1 0.1 --gaussian_filters 50 50
+srun python pykitPIV-generate-images.py --densities 0.01 0.01
+srun python pykitPIV-generate-images.py --densities 0.05 0.05
+srun python pykitPIV-generate-images.py --densities 0.1 0.1
+srun python pykitPIV-generate-images.py --densities 0.2 0.2
+srun python pykitPIV-generate-images.py --densities 0.3 0.3
+srun python pykitPIV-generate-images.py --densities 0.4 0.4
+
