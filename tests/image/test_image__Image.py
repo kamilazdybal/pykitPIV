@@ -462,6 +462,65 @@ class TestImageClass(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def test_image__Image__clip_or_normalize_maximum_intensity_I1(self):
+
+        maximum_intensity = 2 ** 16 - 1,
+
+        particles = Particle(1,
+                             size=(100, 100),
+                             size_buffer=5,
+                             densities=(0.1,0.1))
+
+        image = Image(random_seed=100)
+
+        image.add_particles(particles)
+
+        image.add_reflected_light(exposures=(0.6,0.65),
+                                  maximum_intensity=2**16-1,
+                                  laser_beam_thickness=1,
+                                  laser_over_exposure=1,
+                                  laser_beam_shape=0.95,
+                                  alpha=1/8,
+                                  clip_intensities=False,
+                                  normalize_intensities=False)
+
+        self.assertTrue(np.max(image.images_I1) > maximum_intensity)
+
+        image.add_reflected_light(exposures=(0.6,0.65),
+                                  maximum_intensity=2**16-1,
+                                  laser_beam_thickness=1,
+                                  laser_over_exposure=1,
+                                  laser_beam_shape=0.95,
+                                  alpha=1/8,
+                                  clip_intensities=True,
+                                  normalize_intensities=False)
+
+        self.assertTrue(np.max(image.images_I1) <= maximum_intensity)
+
+        image.add_reflected_light(exposures=(0.6,0.65),
+                                  maximum_intensity=2**16-1,
+                                  laser_beam_thickness=1,
+                                  laser_over_exposure=1,
+                                  laser_beam_shape=0.95,
+                                  alpha=1/8,
+                                  clip_intensities=False,
+                                  normalize_intensities=True)
+
+        self.assertTrue(np.max(image.images_I1) <= maximum_intensity)
+
+        # Only one of clip_intensities or normalize_intensities can be True at a time:
+        with self.assertRaises(ValueError):
+            image.add_reflected_light(exposures=(0.6,0.65),
+                                      maximum_intensity=2**16-1,
+                                      laser_beam_thickness=1,
+                                      laser_over_exposure=1,
+                                      laser_beam_shape=0.95,
+                                      alpha=1/8,
+                                      clip_intensities=True,
+                                      normalize_intensities=True)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_image__Image__concatenate_tensors(self):
 
         pass
