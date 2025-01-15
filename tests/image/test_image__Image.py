@@ -595,9 +595,6 @@ class TestImageClass(unittest.TestCase):
                                       clip_intensities=True,
                                       normalize_intensities=True)
 
-
-
-
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def test_image__Image__concatenate_tensors(self):

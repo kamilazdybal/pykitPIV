@@ -727,8 +727,8 @@ class Image:
         def __normalize_intensities(image, maximum_intensity):
             return (image / np.max(image)) * maximum_intensity
 
-        user_warned_I1 = False
-        user_warned_I2 = False
+        __user_warned_I1 = False
+        __user_warned_I2 = False
         warning_message = 'Some of pixel values in images I1 exceed the requested maximum pixel intensity. Consider clipping or normalizing the image intensities.'
 
         # Add light to image I1:
@@ -753,10 +753,10 @@ class Image:
                 if (not clip_intensities) and (not normalize_intensities):
                     images_I1[i, 0, :, :] = particles_with_gaussian_light
 
-                    if not user_warned_I1:
+                    if not __user_warned_I1:
                         if np.any(particles_with_gaussian_light > maximum_intensity):
                             print(warning_message)
-                            user_warned_I1 = True
+                            __user_warned_I1 = True
 
                 self.__images_I1 = images_I1
 
@@ -784,10 +784,10 @@ class Image:
                 if (not clip_intensities) and (not normalize_intensities):
                     images_I2[i, 0, :, :] = particles_with_gaussian_light
 
-                    if not user_warned_I2:
+                    if not __user_warned_I2:
                         if np.any(particles_with_gaussian_light > maximum_intensity):
                             print(warning_message)
-                            user_warned_I2 = True
+                            __user_warned_I2 = True
 
                 self.__images_I2 = images_I2
 
