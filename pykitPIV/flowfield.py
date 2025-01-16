@@ -545,7 +545,10 @@ class FlowField:
                                   random_seed=100)
 
             # Generate Chebyshev velocity field:
-            flowfield.generate_chebyshev_velocity_field(order=10)
+            flowfield.generate_chebyshev_velocity_field(displacement=(0, 10),
+                                                        start=0.3,
+                                                        stop=0.8,
+                                                        order=10)
 
             # Access the velocity components tensor:
             flowfield.velocity_field
@@ -645,7 +648,11 @@ class FlowField:
                                   random_seed=100)
 
             # Generate spherical harmonics velocity field:
-            flowfield.generate_spherical_harmonics_velocity_field(degree=1, order=1)
+            flowfield.generate_spherical_harmonics_velocity_field(displacement=(0, 10),
+                                                                  start=0.3,
+                                                                  stop=0.8,
+                                                                  order=1,
+                                                                  degree=1)
 
             # Access the velocity components tensor:
             flowfield.velocity_field
