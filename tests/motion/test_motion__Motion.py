@@ -117,9 +117,6 @@ class TestMotionClass(unittest.TestCase):
         motion = Motion(particles, flowfield)
 
         with self.assertRaises(AttributeError):
-            motion.particle_loss = (0, 2)
-
-        with self.assertRaises(AttributeError):
             motion.particle_coordinates_I1 = 1
 
         with self.assertRaises(AttributeError):

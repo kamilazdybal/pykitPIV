@@ -493,7 +493,7 @@ class Image:
         to the particle centroid.
 
         The reflected light follows a Gaussian distribution, i.e., the light intensity value, :math:`i_p`, at the
-        request pixel, :math:`p`, is computed as:
+        requested pixel, :math:`p`, is computed as:
 
         .. math::
 
@@ -516,7 +516,11 @@ class Image:
         :param coordinate_width:
             ``float`` specifying the pixel coordinate in the image width direction, :math:`w_p`, relative to the particle centroid.
         :param alpha: (optional):
-            ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius. The default value is :math:`1/8` as per `Rabault et al. (2017) <https://iopscience.iop.org/article/10.1088/1361-6501/aa8b87/meta>`_ and `Manickathan et al. (2022) <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae>`_.
+            ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius.
+            The default and recommended value is :math:`1/8` as per
+            `Raffel et al. (2018) <https://link.springer.com/book/10.1007/978-3-319-68852-7>`_,
+            `Rabault et al. (2017) <https://iopscience.iop.org/article/10.1088/1361-6501/aa8b87/meta>`_
+            and `Manickathan et al. (2022) <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae>`_.
 
         :return:
             - **pixel_value** - ``float`` specifying the light intensity value at the requested pixel.
@@ -555,9 +559,11 @@ class Image:
                             laser_beam_thickness=2,
                             laser_over_exposure=1,
                             laser_beam_shape=0.85,
-                            alpha=1/8):
+                            alpha=1/8,
+                            clip_intensities=True,
+                            normalize_intensities=False):
         """
-        Creates particle sizes and adds laser light reflected from particles.
+        Creates particle shapes and adds laser light reflected from particles.
 
         The reflected light follows a Gaussian distribution and is computed using
         the ``Image.compute_light_intensity_at_pixel()`` method.
@@ -585,18 +591,23 @@ class Image:
                                       laser_beam_thickness=1,
                                       laser_over_exposure=1,
                                       laser_beam_shape=0.95,
-                                      alpha=1/20)
+                                      alpha=1/8,
+                                      clip_intensities=True,
+                                      normalize_intensities=False)
 
         .. image:: ../images/Image-setting-spectrum.png
             :width: 800
 
         :param exposures: (optional)
-            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) light exposure.
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+            light exposure.
         :param maximum_intensity: (optional)
-            ``int`` specifying the maximum light intensity.
+            ``int`` specifying the maximum light intensity. This will be the brightest possible pixel, which will
+            only happen if the particle is located at the center of that pixel and at the center of the laser plane.
+            All particles with an offset with respect to the laser plane will have a lower intensity than the maximum.
         :param laser_beam_thickness: (optional)
-            ``int`` or ``float`` specifying the thickness of the laser beam. With a small thickness, particles that are e
-            ven slightly off-plane will appear darker. Note, that the thicker the laser plane, the larger the distance
+            ``int`` or ``float`` specifying the thickness of the laser beam. With a small thickness, particles that are
+            even slightly off-plane will appear darker. Note, that the thicker the laser plane, the larger the distance
             that the particle can travel away from the laser plane to lose its luminosity.
         :param laser_over_exposure: (optional)
             ``int`` or ``float`` specifying the overexposure of the laser beam.
@@ -604,7 +615,18 @@ class Image:
             ``int`` or ``float`` specifying the spread of the Gaussian shape of the laser beam. The larger this number
             is, the wider the Gaussian light distribution from the laser and more particles will be illuminated.
         :param alpha: (optional):
-            ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius as per the ``Particle.compute_light_intensity_at_pixel()`` method.
+            ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius as per the
+            ``Particle.compute_light_intensity_at_pixel()`` method.
+            The default and recommended value is :math:`1/8` as per
+            `Raffel et al. (2018) <https://link.springer.com/book/10.1007/978-3-319-68852-7>`_,
+            `Rabault et al. (2017) <https://iopscience.iop.org/article/10.1088/1361-6501/aa8b87/meta>`_
+            and `Manickathan et al. (2022) <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae>`_.
+        :param clip_intensities: (optional):
+            ``bool`` specifying whether the image intensities should be clipped if any pixel exceeds
+            the maximum light intensity. Only one of ``clip_intensities``, ``normalize_intensities`` can be ``True``.
+        :param normalize_intensities: (optional):
+            ``bool`` specifying whether the image intensities should be normalized if any pixel exceeds
+            the maximum light intensity. Only one of ``clip_intensities``, ``normalize_intensities`` can be ``True``.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -628,6 +650,15 @@ class Image:
 
         if not(isinstance(alpha, float)):
             raise ValueError("Parameter `alpha` has to be of type `float`.")
+
+        if not(isinstance(clip_intensities, bool)):
+            raise ValueError("Parameter `clip_intensities` has to be of type `bool`.")
+
+        if not(isinstance(normalize_intensities, bool)):
+            raise ValueError("Parameter `normalize_intensities` has to be of type `bool`.")
+
+        if clip_intensities and normalize_intensities:
+            raise ValueError("Only one of `clip_intensities`, `normalize_intensities` can be set to True.")
 
         if self.random_seed is not None:
             np.random.seed(seed=self.random_seed)
@@ -691,8 +722,16 @@ class Image:
 
             return particles_with_gaussian_light
 
+        # Different possible ways to handle pixel intensities exceeding the maximum requested intensity:
         def __clip_intensities(image, maximum_intensity):
             return np.clip(image, a_min=0, a_max=maximum_intensity)
+
+        def __normalize_intensities(image, maximum_intensity):
+            return (image / np.max(image)) * maximum_intensity
+
+        __user_warned_I1 = False
+        __user_warned_I2 = False
+        warning_message = 'Some of pixel values in images I1 exceed the requested maximum pixel intensity. Consider clipping or normalizing the image intensities.'
 
         # Add light to image I1:
         if self.__particles is not None:
@@ -706,7 +745,20 @@ class Image:
                                                                  self.__particles.particle_coordinates[i][1],
                                                                  image_instance=1)
 
-                images_I1[i, 0, :, :] = __clip_intensities(particles_with_gaussian_light, maximum_intensity)
+                if clip_intensities:
+                    images_I1[i, 0, :, :] = __clip_intensities(particles_with_gaussian_light, maximum_intensity)
+
+                if normalize_intensities:
+                    images_I1[i, 0, :, :] = __normalize_intensities(particles_with_gaussian_light, maximum_intensity)
+
+                # If the user didn't choose to either clip or normalize image intensities:
+                if (not clip_intensities) and (not normalize_intensities):
+                    images_I1[i, 0, :, :] = particles_with_gaussian_light
+
+                    if not __user_warned_I1:
+                        if np.any(particles_with_gaussian_light > maximum_intensity):
+                            print(warning_message)
+                            __user_warned_I1 = True
 
                 self.__images_I1 = images_I1
 
@@ -724,7 +776,20 @@ class Image:
                                                                  self.__motion.particle_coordinates_I2[i][1],
                                                                  image_instance=2)
 
-                images_I2[i, 0, :, :] = __clip_intensities(particles_with_gaussian_light, maximum_intensity)
+                if clip_intensities:
+                    images_I2[i, 0, :, :] = __clip_intensities(particles_with_gaussian_light, maximum_intensity)
+
+                if normalize_intensities:
+                    images_I2[i, 0, :, :] = __normalize_intensities(particles_with_gaussian_light, maximum_intensity)
+
+                # If the user didn't choose to either clip or normalize image intensities:
+                if (not clip_intensities) and (not normalize_intensities):
+                    images_I2[i, 0, :, :] = particles_with_gaussian_light
+
+                    if not __user_warned_I2:
+                        if np.any(particles_with_gaussian_light > maximum_intensity):
+                            print(warning_message)
+                            __user_warned_I2 = True
 
                 self.__images_I2 = images_I2
 

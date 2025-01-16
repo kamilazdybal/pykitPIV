@@ -78,6 +78,7 @@ pip install h5py
 pip install torch
 pip install pandas
 pip install scipy
+pip install cmcrameri
 pip install Sphinx
 pip install sphinxcontrib-bibtex
 pip install furo

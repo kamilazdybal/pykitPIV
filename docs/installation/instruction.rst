@@ -26,6 +26,7 @@ Install requirements:
     pip install torch
     pip install pandas
     pip install scipy
+    pip install cmcrameri
 
 Optional for documentation builds:
 

@@ -8,6 +8,8 @@ Class: ``FlowField``
 
 .. autofunction:: pykitPIV.flowfield.FlowField.generate_random_velocity_field
 
+.. autofunction:: pykitPIV.flowfield.FlowField.generate_sinusoidal_velocity_field
+
 .. autofunction:: pykitPIV.flowfield.FlowField.generate_checkered_velocity_field
 
 .. autofunction:: pykitPIV.flowfield.FlowField.generate_chebyshev_velocity_field

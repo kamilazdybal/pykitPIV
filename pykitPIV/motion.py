@@ -83,12 +83,12 @@ class Motion:
     :param particle_gain: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         percentage of lost particles between two consecutive PIV images. This percentage of particles from image :math:`I_1` will be randomly
-        added in image :math:`I_2`. This parameter mimics the gain of luminosity for brand new particles that arrive into the laser plane.
+        added in image :math:`I_2`. This parameter mimics the gain of luminosity for new particles that arrive into the laser plane.
 
     **Attributes:**
 
     - **time_separation** - (can be re-set) as per user input.
-    - **particle_loss** - (read-only) as per user input.
+    - **particle_loss** - (can be re-set) as per user input.
     - **particle_coordinates_I1** - (read-only) ``list`` of ``tuple`` specifying the coordinates of particles in image :math:`I_1`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **particle_coordinates_I2** - (read-only) ``list`` of ``tuple`` specifying the  coordinates of particles in image :math:`I_2`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **updated_particle_diameters** - (read-only) ``list`` of ``numpy.ndarray`` specifying the updated particle diameters for each PIV image pair.
