@@ -294,11 +294,11 @@ class FlowField:
 
         .. math::
 
-            u(h) = A \\sin(2 \pi h / \Lambda)
+            u(w) = A \\sin(2 \pi w / \Lambda)
 
         .. math::
 
-            v(w) = A \\sin(2 \pi w / \Lambda)
+            v(h) = A \\sin(2 \pi h / \Lambda)
 
         where :math:`A` is the amplitude in pixels :math:`[\\text{px}]` and :math:`\Lambda` is the wavelength in pixels :math:`[\\text{px}]`.
 
