@@ -219,11 +219,15 @@ class FlowField:
             :width: 800
 
         :param displacement: (optional)
-            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) displacement
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+            displacement.
         :param gaussian_filters: (optional)
-            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) Gaussian filter size (bandwidth) for smoothing out the random velocity fields to randomly sample from.
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+            Gaussian filter size (bandwidth) for smoothing out the random velocity fields to randomly sample from.
         :param n_gaussian_filter_iter: (optional)
-            ``int`` specifying the number of iterations applying a Gaussian filter to the random velocity field to eventually arrive at a smoothed velocity map. With no iterations, each pixel attains a random velocity component value.
+            ``int`` specifying the number of iterations applying a Gaussian filter to the random velocity field to
+            eventually arrive at a smoothed velocity map. With no iterations,
+            each pixel attains a random velocity component value.
        """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -272,6 +276,118 @@ class FlowField:
 
             velocity_field_u = velocity_magnitude_scale * velocity_field_u
             velocity_field_v = velocity_magnitude_scale * velocity_field_v
+
+            self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            self.__velocity_field[i, 0, :, :] = velocity_field_u
+            self.__velocity_field[i, 1, :, :] = velocity_field_v
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def generate_sinusoidal_velocity_field(self,
+                                           amplitudes=(2, 4),
+                                           wavelengths=(8, 128),
+                                           components='both'):
+        """
+        Generates a sinusoidal velocity field as per
+        `Scarano and Riethmuller (2000) <https://link.springer.com/article/10.1007/s003480070007>`_.
+        Each velocity component is computed as:
+
+        .. math::
+
+            u(h) = A \\sin(2 \pi h / \Lambda)
+
+        .. math::
+
+            v(w) = A \\sin(2 \pi w / \Lambda)
+
+        where :math:`A` is the amplitude in pixels :math:`[\\text{px}]` and :math:`\Lambda` is the wavelength in pixels :math:`[\\text{px}]`.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import FlowField
+
+            # We are going to generate 10 flow fields for 10 PIV image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (128,512)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images=n_images,
+                                  size=image_size,
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Generate sinusoidal velocity field:
+            flowfield.generate_sinusoidal_velocity_field(amplitudes=(2, 4),
+                                                         wavelengths=(20,40),
+                                                         components='u')
+
+            # Access the velocity components tensor:
+            flowfield.velocity_field
+
+            # Access the velocity field magnitude:
+            flowfield.velocity_field_magnitude
+
+        :param amplitudes: (optional)
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+            amplitude, :math:`A`, in pixels :math:`[\\text{px}]`.
+        :param wavelengths: (optional)
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+            wavelength, :math:`\Lambda`, in pixels :math:`[\\text{px}]`.
+        :param components: (optional)
+            ``str`` specifying which velocity components should be generated. It can be one of the following:
+            ``'both'``, ``'u'``, or ``'v'``. When only one component is generated, the other one is zero.
+       """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        check_two_element_tuple(amplitudes, 'amplitudes')
+        check_min_max_tuple(amplitudes, 'amplitudes')
+
+        check_two_element_tuple(wavelengths, 'wavelengths')
+        check_min_max_tuple(wavelengths, 'wavelengths')
+
+        __components = ['both', 'u', 'v']
+
+        if not isinstance(components, str):
+            raise ValueError("Parameter `components` has to be of type 'str'.")
+
+        if components not in __components:
+            raise ValueError("Parameter `components` has to be 'both', or 'u', or 'v'.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        self.__amplitudes = amplitudes
+        self.__wavelengths = wavelengths
+        self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
+        self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
+
+        self.__amplitudes_per_image = np.random.rand(self.__n_images) * (self.__amplitudes[1] - self.__amplitudes[0]) + self.__amplitudes[0]
+        self.__wavelengths_per_image = np.random.rand(self.__n_images) * (self.__wavelengths[1] - self.__wavelengths[0]) + self.__wavelengths[0]
+
+        h = np.linspace(0, self.size_with_buffer[0], self.size_with_buffer[0])
+        w = np.linspace(0, self.size_with_buffer[1], self.size_with_buffer[1])
+
+        (grid_w, grid_h) = np.meshgrid(w, h)
+
+        for i in range(0, self.n_images):
+
+            if components == 'both':
+                velocity_field_u = self.__amplitudes_per_image[i] * np.sin(2 * np.pi * grid_w / self.__wavelengths_per_image[i])
+                velocity_field_v = self.__amplitudes_per_image[i] * np.sin(2 * np.pi * grid_h / self.__wavelengths_per_image[i])
+
+            elif components == 'u':
+                velocity_field_u = self.__amplitudes_per_image[i] * np.sin(2 * np.pi * grid_w / self.__wavelengths_per_image[i])
+                velocity_field_v = np.zeros((self.size_with_buffer[0], self.size_with_buffer[1]))
+
+            elif components == 'v':
+                velocity_field_u = np.zeros((self.size_with_buffer[0], self.size_with_buffer[1]))
+                velocity_field_v = self.__amplitudes_per_image[i] * np.sin(2 * np.pi * grid_h / self.__wavelengths_per_image[i])
 
             self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
             self.__velocity_field[i, 0, :, :] = velocity_field_u

@@ -518,6 +518,7 @@ class Image:
         :param alpha: (optional):
             ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius.
             The default and recommended value is :math:`1/8` as per
+            `Raffel et al. (2018) <https://link.springer.com/book/10.1007/978-3-319-68852-7>`_,
             `Rabault et al. (2017) <https://iopscience.iop.org/article/10.1088/1361-6501/aa8b87/meta>`_
             and `Manickathan et al. (2022) <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae>`_.
 
@@ -617,6 +618,7 @@ class Image:
             ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius as per the
             ``Particle.compute_light_intensity_at_pixel()`` method.
             The default and recommended value is :math:`1/8` as per
+            `Raffel et al. (2018) <https://link.springer.com/book/10.1007/978-3-319-68852-7>`_,
             `Rabault et al. (2017) <https://iopscience.iop.org/article/10.1088/1361-6501/aa8b87/meta>`_
             and `Manickathan et al. (2022) <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae>`_.
         :param clip_intensities: (optional):
