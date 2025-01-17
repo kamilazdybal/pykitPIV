@@ -10,4 +10,6 @@ Class: ``Motion``
 
 .. autofunction:: pykitPIV.motion.Motion.runge_kutta_4th
 
+.. autofunction:: pykitPIV.motion.Motion.compute_order_parameter
+
 .. autofunction:: pykitPIV.motion.Motion.plot_particle_motion
