@@ -82,11 +82,11 @@
 
 \begin{document}
 
-\shorttitle{\texttt{pykitPIV}: Rich and reproducible synthetic image generation for training machine learning algorithms in velocimetry}
+\shorttitle{\texttt{pykitPIV}: Rich and reproducible data generation for training machine learning algorithms in velocimetry}
 \shortauthors{Zdyba\l{} et~al.}
 
 
-\title [mode = title]{\texttt{pykitPIV}: Rich and reproducible synthetic image generation for training machine learning algorithms in velocimetry}
+\title [mode = title]{\texttt{pykitPIV}: Rich and reproducible data generation for training machine learning algorithms in velocimetry}
 
 \author[EMPA]{Kamila Zdyba\l{}*}
 \ead{kamila.zdybal@gmail.com}
@@ -98,7 +98,8 @@
 \address[EMPA]{Laboratory for Computational Engineering, Swiss Federal Laboratories for Materials Science and Technology, Empa, Dübendorf, Switzerland}
 
 \begin{abstract}
-We describe \texttt{pykitPIV}, a Python library for generating synthetic images that mimic those obtained from particle image velocimetry (PIV) or background-oriented Schlieren (BOS) experimental techniques in fluid dynamics. The library can be readily integrated with machine learning (ML) algorithms, such as convolutional neural networks, variational approaches, active learning, or reinforcement learning. This can support the current goals of the velocimetry community for faster and more accurate real-time experimental inference, moving the field towards autonomous experimentation. Our image generation exploits the kinematic relationship between two PIV/BOS snapshots, advecting particles from one time frame to the next with a second-order accurate numerical scheme. This results in paired image intensities, $(I_1, I_2)$, separated by $\Delta t$ in time. The goal of this library is to give the user, or the ML agent, extensive flexibility in selecting various parameters that would normally be available in an experimental setting. This includes particle seeding density, thickness of the laser plane, camera exposure, particle loss due to out-of-plane movement, experimental noise, \textit{etc}. The richness and reproducibility of image generation can help advance the growing development of ML applications in experimental fluid dynamics.
+We describe \texttt{pykitPIV}, a Python library for generating synthetic images that mimic those obtained from particle image velocimetry (PIV) and background-oriented Schlieren (BOS) experimental techniques in fluid dynamics. The library integrates with machine learning (ML) algorithms, such as convolutional neural networks, variational approaches, active learning, or reinforcement learning. Our goal is to support the current trends in the velocimetry community for faster and more accurate real-time experimental inference, moving the field towards autonomous experimentation and building fluid dynamics models from data. Our image generation exploits the kinematic relationship between two PIV/BOS snapshots, advecting particles from one time frame to the next with a second-order accurate numerical scheme. This results in paired image intensities, $(I_1, I_2)$, separated by $\Delta t$ in time. The goal of this library is to give the user, or the ML agent, flexibility in selecting various parameters that would normally be available in an experimental setting, such as seeding density, properties of the laser plane, camera exposure, particle loss, or experimental noise. 
+We provide an atlas of velocity fields which includes synthetic fields generated from challenging functional forms as well as dynamically-accurate fields based on the Langevin model as a surrogate to solving the Navier-Stokes equations. The richness of experimental conditions and reproducibility of image generation can help advance the growing development of ML applications in experimental fluid dynamics.
 \end{abstract}
 
 \begin{keywords}
