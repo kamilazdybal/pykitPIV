@@ -6,6 +6,7 @@ import random
 import copy
 import scipy
 import warnings
+from pykitPIV.particle import Particle
 from pykitPIV.checks import *
 
 ################################################################################
@@ -729,6 +730,7 @@ class FlowField:
                                          mean_field,
                                          integral_time_scale=1,
                                          sigma=1,
+                                         n_stochastic_particles=10000,
                                          n_iterations=100):
         """
         Generates a velocity field using the simplified Langevin model (SLM) by solving the following stochastic
@@ -788,7 +790,18 @@ class FlowField:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (128,512)
+            image_size = (128,128)
+
+            # Initialize a mean flow field object:
+            mean_flowfield = FlowField(n_images=n_images,
+                                       size=image_size,
+                                       size_buffer=10,
+                                       random_seed=100)
+
+            # Generate sinusoidal velocity field that will serve as the mean velocity field:
+            mean_flowfield.generate_sinusoidal_velocity_field(amplitudes=(2, 4),
+                                                              wavelengths=(20,40),
+                                                              components='both')
 
             # Initialize a flow field object:
             flowfield = FlowField(n_images=n_images,
@@ -796,19 +809,18 @@ class FlowField:
                                   size_buffer=10,
                                   random_seed=100)
 
-            # Generate sinusoidal velocity field that will serve as the mean velocity field:
-            flowfield.generate_sinusoidal_velocity_field(amplitudes=(2, 4),
-                                                         wavelengths=(20,40),
-                                                         components='both')
+            # Solve the SLM for the mean velocity fields:
+            flowfield.generate_langevin_velocity_field(mean_field=mean_flowfield.velocity_field,
+                                                       integral_time_scale=1,
+                                                       sigma=1,
+                                                       n_stochastic_particles=10000,
+                                                       n_iterations=100)
 
+            # Access the velocity components tensor:
+            flowfield.velocity_field
 
-
-
-
-
-
-
-
+            # Access the velocity field magnitude:
+            flowfield.velocity_field_magnitude
 
         :param mean_field:
             ``numpy.ndarray`` specifying the mean velocity field with components :math:`u_m^*` and :math:`v_m^*`, respectively.
@@ -820,6 +832,8 @@ class FlowField:
             ``int`` or ``float`` specifying the Lagrangian integral time scale, :math:`T_L`.
         :param sigma: (optional)
             ``int`` or ``float`` specifying the turbulent kinetic energy.
+        :param n_stochastic_particles: (optional)
+            ``int`` specifying the number of stochastic particles for which the SLM will be solved.
         :param n_iterations: (optional)
             ``int`` specifying the number of iterations, :math:`n`, during which the finite-difference equations are updated.
         """
@@ -828,7 +842,7 @@ class FlowField:
 
         # Input parameter check:
 
-        if (not isinstance(mean_field, numpy.ndarray)):
+        if (not isinstance(mean_field, np.ndarray)):
             raise ValueError("Parameter `mean_field` has to be of type 'numpy.ndarray'.")
 
         if (not isinstance(integral_time_scale, int)) and (not isinstance(integral_time_scale, float)):
@@ -837,15 +851,87 @@ class FlowField:
         if (not isinstance(sigma, int)) and (not isinstance(sigma, float)):
             raise ValueError("Parameter `sigma` has to be of type 'int' or 'float'.")
 
+        if (not isinstance(n_stochastic_particles, int)):
+            raise ValueError("Parameter `n_stochastic_particles` has to be of type 'int'.")
+
         if (not isinstance(n_iterations, int)):
             raise ValueError("Parameter `n_iterations` has to be of type 'int'.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+        self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
+        self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
+
+        # Compute seeding density for the user-specified number of stochastic particles:
+        __target_particle_density = n_stochastic_particles / (self.__height_with_buffer * self.__width_with_buffer)
+
+        # Initialize the stochastic particles:
+        particles = Particle(1,
+                             size=(self.__height_with_buffer, self.__width_with_buffer),
+                             size_buffer=0,
+                             densities=(__target_particle_density, __target_particle_density),
+                             random_seed=self.__random_seed)
+
+        if (not particles.n_of_particles[0] == n_stochastic_particles):
+            raise RuntimeError("The true number of stochastic particles generated is different from the one requested by the user. This should not happen and is the issue of pykitPIV.")
+
+        # Coordinates of the stochastic particles:
+        X, Y = particles.particle_coordinates[0]
+
+        for im in range(0, self.n_images):
+
+            # Determine initial velocity for the stochastic particles based on the pixel to which they initially belong:
+            U_star_mean = np.zeros_like(X)
+            V_star_mean = np.zeros_like(Y)
+
+            for i in range(0, n_stochastic_particles):
+                U_star_mean[i] = mean_field[im, 0, int(np.floor(Y[i])), int(np.floor(X[i]))]
+                V_star_mean[i] = mean_field[im, 1, int(np.floor(Y[i])), int(np.floor(X[i]))]
+
+            delta_t = integral_time_scale / 100
+            n_steps = int(integral_time_scale / delta_t) + 1
+            time_vector = np.linspace(0, integral_time_scale, n_iterations)
+
+            square_root_factor = np.sqrt((1 / integral_time_scale) * 2 * sigma ** 2 * delta_t)
+
+            U_star = np.zeros((n_particles[0], 1))
+            V_star = np.zeros((n_particles[0], 1))
+
+            X_positions = np.zeros((n_particles[0], 1))
+            X_positions[:, 0] = X
+            Y_positions = np.zeros((n_particles[0], 1))
+            Y_positions[:, 0] = Y
+
+            # Update the velocity components and the positions of stochastic particles:
+            for i in range(0, n_iterations):
+
+                # Update the u-component of velocity:
+                U_star[:, i + 1] = U_star[:, i] - (U_star[:, i] - U_star_mean) * delta_t / TL + square_root_factor * np.random.randn()
+
+                # Update the x-coordinates of the stochastic particles:
+                X_matrix[:, i + 1] = X_matrix[:, i] + U_star[:, i] * delta_t
+
+                # Update the v-component of velocity:
+                V_star[:, i + 1] = V_star[:, i] - (V_star[:, i] - V_star_mean) * delta_t / TL + square_root_factor * np.random.randn()
+
+                # Update the y-coordinate of the stochastic particles:
+                Y_matrix[:, i + 1] = Y_matrix[:, i] + V_star[:, i] * delta_t
+
+            # Average the velocity over the ensemble of stochastic particles in each pixel:
+            U_Langevin = np.zeros((1, 2, H_with_buffer, W_with_buffer))
+
+            for i in range(0, H_with_buffer):
+                for j in range(0, W_with_buffer):
+                    locations = np.where((X_matrix[:, -1] >= j - 0.5) & (X_matrix[:, -1] < j + 0.5) & (Y_matrix[:, -1] >= i - 0.5) & (Y_matrix[:, -1] < i + 0.5))
+
+                    # Average particle velocities within the control volume defined by one pixel:
+                    U_Langevin[0, 0, i, j] = np.mean(U_star[locations, -1])
+                    U_Langevin[0, 1, i, j] = np.mean(V_star[locations, -1])
 
 
-
-
+            self.__velocity_field_magnitude[im, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            self.__velocity_field[im, 0, :, :] = velocity_field_u
+            self.__velocity_field[im, 1, :, :] = velocity_field_v
 
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
