@@ -4,8 +4,10 @@ import matplotlib.pyplot as plt
 from scipy.special import chebyu, sph_harm
 import random
 import copy
+import time
 import scipy
 import warnings
+from pykitPIV.particle import Particle
 from pykitPIV.checks import *
 
 ################################################################################
@@ -294,11 +296,11 @@ class FlowField:
 
         .. math::
 
-            u(h) = A \\sin(2 \pi h / \Lambda)
+            u(w) = A \\sin(2 \pi w / \Lambda)
 
         .. math::
 
-            v(w) = A \\sin(2 \pi w / \Lambda)
+            v(h) = A \\sin(2 \pi h / \Lambda)
 
         where :math:`A` is the amplitude in pixels :math:`[\\text{px}]` and :math:`\Lambda` is the wavelength in pixels :math:`[\\text{px}]`.
 
@@ -545,7 +547,10 @@ class FlowField:
                                   random_seed=100)
 
             # Generate Chebyshev velocity field:
-            flowfield.generate_chebyshev_velocity_field(order=10)
+            flowfield.generate_chebyshev_velocity_field(displacement=(0, 10),
+                                                        start=0.3,
+                                                        stop=0.8,
+                                                        order=10)
 
             # Access the velocity components tensor:
             flowfield.velocity_field
@@ -645,7 +650,11 @@ class FlowField:
                                   random_seed=100)
 
             # Generate spherical harmonics velocity field:
-            flowfield.generate_spherical_harmonics_velocity_field(degree=1, order=1)
+            flowfield.generate_spherical_harmonics_velocity_field(displacement=(0, 10),
+                                                                  start=0.3,
+                                                                  stop=0.8,
+                                                                  order=1,
+                                                                  degree=1)
 
             # Access the velocity components tensor:
             flowfield.velocity_field
@@ -714,6 +723,244 @@ class FlowField:
             self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
             self.__velocity_field[i, 0, :, :] = velocity_field_u
             self.__velocity_field[i, 1, :, :] = velocity_field_v
+
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def generate_langevin_velocity_field(self,
+                                         mean_field,
+                                         integral_time_scale=1,
+                                         sigma=1,
+                                         n_stochastic_particles=10000,
+                                         n_iterations=100,
+                                         verbose=False):
+        """
+        Generates a velocity field using the simplified Langevin model (SLM) by solving the following stochastic
+        partial differential equation:
+
+        .. math::
+
+            dU^*(t) = - \\frac{1}{T_L} U^*(t) dt + \\sqrt{\\frac{1}{T_L} 2 \\sigma^2 }  d W(t)
+
+        where :math:`U^*(t)` is one component of particle's velocity, :math:`T_L` is the Lagrangian integral time scale,
+        :math:`\sigma` is the turbulent kinetic energy, and :math:`W(t)` is the stochastic variable.
+
+        In essence, the SLM model simulates stationary isotropic turbulence in the Lagrangian sense, where stochastic
+        particles are allowed to drift and carry fluid velocity to a different location.
+
+        In practice, we solve the following finite-difference set of equations for both components of velocity:
+
+        .. math::
+
+            u^*(t + \\Delta t) = u^*(t) - (u^*(t) - u_m^*) \\frac{\\Delta t}{T_L} + \\sqrt{\\frac{1}{T_L} 2 \\sigma^2 \\Delta t}  \\xi(t)
+
+            x(t + \\Delta t) = x(t) + u^*(t) \\Delta t
+
+        .. math::
+
+            v^*(t + \\Delta t) = v^*(t) - (v^*(t) - v_m^*) \\frac{\\Delta t}{T_L} + \\sqrt{\\frac{1}{T_L} 2 \\sigma^2 \\Delta t}  \\xi(t)
+
+            y(t + \\Delta t) = y(t) + v^*(t) \\Delta t
+
+        where :math:`u_m^*` and :math:`v_m^*` are the components of the mean velocity,
+        :math:`\\xi(t)` is a random variable :math:`\\xi(t) \in \mathcal{N}(0,1)`,
+        and :math:`x(t)` and :math:`y(t)` are coordinates of the stochastic particles.
+
+        The above equations define the update to velocity components and particle positions over :math:`n` iterations
+        (set by the parameter ``n_iterations``). :math:`\\Delta t` is then computed as:
+
+        .. math::
+
+            \\Delta t = \\frac{T_L}{n}
+
+        Next, a per-pixel velocity is found as an average over the ensemble of stochastic particles present within that pixel.
+        In the case where particle drift makes any pixel empty, velocity component is interpolated.
+
+        Note that the stochastic particles for solving the SLM are in practice generated using the ``Particle`` class
+        but they are independent of the seeded particles used for PIV.
+
+        For a thorough discussion of SLM see section 12.3 of
+        `S.B. Pope - Turbulent Flows (1995) <https://www.cambridge.org/highereducation/books/turbulent-flows/C58EFF59AF9B81AE6CFAC9ED16486B3A#contents>`_.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import FlowField
+
+            # We are going to generate 10 flow fields for 10 PIV image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (128,128)
+
+            # Initialize a mean flow field object:
+            mean_flowfield = FlowField(n_images=n_images,
+                                       size=image_size,
+                                       size_buffer=10,
+                                       random_seed=100)
+
+            # Generate sinusoidal velocity field that will serve as the mean velocity field:
+            mean_flowfield.generate_sinusoidal_velocity_field(amplitudes=(2, 4),
+                                                              wavelengths=(20,40),
+                                                              components='both')
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images=n_images,
+                                  size=image_size,
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Solve the SLM for the mean velocity fields:
+            flowfield.generate_langevin_velocity_field(mean_field=mean_flowfield.velocity_field,
+                                                       integral_time_scale=1,
+                                                       sigma=1,
+                                                       n_stochastic_particles=10000,
+                                                       n_iterations=100,
+                                                       verbose=True)
+
+            # Access the velocity components tensor:
+            flowfield.velocity_field
+
+            # Access the velocity field magnitude:
+            flowfield.velocity_field_magnitude
+
+        :param mean_field:
+            ``numpy.ndarray`` specifying the mean velocity field with components :math:`u_m^*` and :math:`v_m^*`, respectively.
+            It should be of size :math:`(N, 2, H+2 \cdot b, W+2 \cdot b)`.
+            The SLM model essentially provides a stochastic drift over that user-specified mean velocity, preserving
+            the Lagrangian integral time scale and the turbulent kinetic energy. The mean velocity can be synthetically
+            generated using one of the velocity field generators provided in this class.
+        :param integral_time_scale: (optional)
+            ``int`` or ``float`` specifying the Lagrangian integral time scale, :math:`T_L`.
+        :param sigma: (optional)
+            ``int`` or ``float`` specifying the turbulent kinetic energy.
+        :param n_stochastic_particles: (optional)
+            ``int`` specifying the number of stochastic particles for which the SLM will be solved.
+        :param n_iterations: (optional)
+            ``int`` specifying the number of iterations, :math:`n`, during which the finite-difference equations are updated.
+        :param verbose: (optional)
+            ``bool`` for printing verbose details.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if (not isinstance(mean_field, np.ndarray)):
+            raise ValueError("Parameter `mean_field` has to be of type 'numpy.ndarray'.")
+
+        if (not isinstance(integral_time_scale, int)) and (not isinstance(integral_time_scale, float)):
+            raise ValueError("Parameter `integral_time_scale` has to be of type 'int' or 'float'.")
+
+        if (not isinstance(sigma, int)) and (not isinstance(sigma, float)):
+            raise ValueError("Parameter `sigma` has to be of type 'int' or 'float'.")
+
+        if (not isinstance(n_stochastic_particles, int)):
+            raise ValueError("Parameter `n_stochastic_particles` has to be of type 'int'.")
+
+        if (not isinstance(n_iterations, int)):
+            raise ValueError("Parameter `n_iterations` has to be of type 'int'.")
+
+        if not isinstance(verbose, bool):
+            raise ValueError("Parameter `verbose` has to be of type 'bool'.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
+        self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
+
+        # Compute seeding density for the user-specified number of stochastic particles:
+        __target_particle_density = n_stochastic_particles / (self.__height_with_buffer * self.__width_with_buffer)
+
+        # Initialize the stochastic particles:
+        particles = Particle(1,
+                             size=(self.__height_with_buffer, self.__width_with_buffer),
+                             size_buffer=0,
+                             densities=(__target_particle_density, __target_particle_density),
+                             random_seed=self.__random_seed)
+
+        if (particles.n_of_particles[0] > n_stochastic_particles+10) or (particles.n_of_particles[0] < n_stochastic_particles-10):
+            raise RuntimeError("The true number of stochastic particles generated (" + str(particles.n_of_particles[0]) + ") is different from the one requested by the user (" + str(n_stochastic_particles) + "). This should not happen and is the issue of pykitPIV.")
+
+        __n_stochastic_particles = particles.n_of_particles[0]
+
+        # Coordinates of the stochastic particles:
+        X, Y = particles.particle_coordinates[0]
+
+        tic = time.perf_counter()
+
+        for im in range(0, self.n_images):
+
+            if verbose: print('Generating velocity field for image ' + str(im) + '...')
+
+            # Determine the initial velocity for the stochastic particles based on the pixel to which they initially belong:
+            U_star_mean = np.zeros_like(X)
+            V_star_mean = np.zeros_like(Y)
+
+            for i in range(0, __n_stochastic_particles):
+                U_star_mean[i] = mean_field[im, 0, int(np.floor(Y[i])), int(np.floor(X[i]))]
+                V_star_mean[i] = mean_field[im, 1, int(np.floor(Y[i])), int(np.floor(X[i]))]
+
+            # Define delta t:
+            delta_t = integral_time_scale / n_iterations
+
+            # Define the constant factor from the SLM equation:
+            square_root_factor = np.sqrt((1 / integral_time_scale) * 2 * sigma ** 2 * delta_t)
+
+            # Initialize the
+            U_star = np.zeros((__n_stochastic_particles, ))
+            V_star = np.zeros((__n_stochastic_particles, ))
+
+            X_positions = np.zeros((__n_stochastic_particles, ))
+            X_positions[:] = X
+            Y_positions = np.zeros((__n_stochastic_particles, ))
+            Y_positions[:] = Y
+
+            # Update the velocity components and the positions of stochastic particles:
+            for _ in range(0, n_iterations):
+
+                # Update the x-coordinates of the stochastic particles:
+                X_positions = X_positions + U_star * delta_t
+
+                # Update the u-component of velocity:
+                U_star = U_star - (U_star - U_star_mean) * delta_t / integral_time_scale + square_root_factor * np.random.randn()
+
+                # Update the y-coordinate of the stochastic particles:
+                Y_positions = Y_positions + V_star * delta_t
+
+                # Update the v-component of velocity:
+                V_star = V_star - (V_star - V_star_mean) * delta_t / integral_time_scale + square_root_factor * np.random.randn()
+
+            # Average the velocity over the ensemble of stochastic particles in each pixel:
+            velocity_field_u = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
+            velocity_field_v = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
+
+            # This part is the largest computational bottleneck -- need to figure out how we can vectorize this code:
+            tic_averaging = time.perf_counter()
+
+            for i in range(0, self.__height_with_buffer):
+                for j in range(0, self.__width_with_buffer):
+
+                    # Control volume that spans one pixel:
+                    locations = np.where((X_positions >= j - 0.5) & (X_positions < j + 0.5) & (Y_positions >= i - 0.5) & (Y_positions < i + 0.5))
+
+                    # Average particle velocities within the control volume defined by one pixel:
+                    velocity_field_u[i, j] = np.mean(U_star[locations])
+                    velocity_field_v[i, j] = np.mean(V_star[locations])
+
+            toc_averaging = time.perf_counter()
+            if verbose: print(f'\tAveraging time: {(toc_averaging - tic_averaging) / 60:0.1f} minutes.\n')
+
+            self.__velocity_field_magnitude[im, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            self.__velocity_field[im, 0, :, :] = velocity_field_u
+            self.__velocity_field[im, 1, :, :] = velocity_field_v
+
+            # Define the time vector for later:
+            # time_vector = np.linspace(0, integral_time_scale, n_iterations)
+
+        toc = time.perf_counter()
+        if verbose: print(f'Total time: {(toc - tic) / 60:0.1f} minutes.\n' + '- ' * 40)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

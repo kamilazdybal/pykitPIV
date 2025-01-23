@@ -542,6 +542,28 @@ class Motion:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def compute_order_parameter(self):
+        """
+        Computes an order parameter as per
+        `Vicsek et al. (1995) <https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.75.1226>`_:
+
+        .. math::
+
+            v_a = \\frac{1}{N} \\left| \\sum_{i=1}^N \\frac{\\vec{v}_i}{|\\vec{v}_i|} \\right|
+
+        This is a number between 0 and 1, where a value approaching 0 indicates fully random motion of particles
+        and a value approaching 1 indicates coherently moving particles (with ordered direction of velocities).
+        """
+
+
+
+
+
+        pass
+
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     # ##################################################################################################################
 
     # Plotting functions
