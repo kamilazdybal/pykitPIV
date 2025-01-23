@@ -995,13 +995,13 @@ class FlowField:
                 X_positions = X_positions + U_star * delta_t
 
                 # Update the u-component of velocity:
-                U_star = U_star - (U_star - U_star_mean) * delta_t / integral_time_scale + square_root_factor * np.random.randn()
+                U_star = U_star - (U_star - U_star_mean) * delta_t / integral_time_scale + square_root_factor * np.random.randn(__n_stochastic_particles)
 
                 # Update the y-coordinate of the stochastic particles:
                 Y_positions = Y_positions + V_star * delta_t
 
                 # Update the v-component of velocity:
-                V_star = V_star - (V_star - V_star_mean) * delta_t / integral_time_scale + square_root_factor * np.random.randn()
+                V_star = V_star - (V_star - V_star_mean) * delta_t / integral_time_scale + square_root_factor * np.random.randn(__n_stochastic_particles)
 
             # Average the velocity over the ensemble of stochastic particles in each pixel:
             velocity_field_u = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
