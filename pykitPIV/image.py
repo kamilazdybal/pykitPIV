@@ -2007,6 +2007,7 @@ class Image:
     def plot_image_histogram(self,
                              image,
                              logscale=False,
+                             bins=None,
                              xlabel=None,
                              ylabel=None,
                              title=None,
@@ -2021,6 +2022,8 @@ class Image:
             ``numpy.ndarray`` specifying the single PIV image.
         :param logscale:
             ``bool`` specifying whether the y-axis should be plotted in the logscale.
+        :param bins:
+            ``int`` specifying the number of bins on the histogram to generate.
         :param xlabel: (optional)
             ``str`` specifying :math:`x`-label.
         :param ylabel: (optional)
@@ -2050,6 +2053,9 @@ class Image:
         if not isinstance(logscale, bool):
             raise ValueError("Parameter `logscale` has to be of type 'bool'.")
 
+        if (bins is not None) and (not isinstance(bins, int)):
+            raise ValueError("Parameter `bins` has to be of type 'int'.")
+
         if (xlabel is not None) and (not isinstance(xlabel, str)):
             raise ValueError("Parameter `xlabel` has to be of type 'str'.")
 
@@ -2074,7 +2080,10 @@ class Image:
 
         fig = plt.figure(figsize=figsize)
 
-        plt.hist(image.ravel(), color=color)
+        if bins is None:
+            plt.hist(image.ravel(), color=color)
+        else:
+            plt.hist(image.ravel(), bins=bins, color=color)
         plt.xlim([0,self.maximum_intensity])
 
         if logscale:
