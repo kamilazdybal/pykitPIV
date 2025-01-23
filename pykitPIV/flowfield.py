@@ -731,7 +731,8 @@ class FlowField:
                                          integral_time_scale=1,
                                          sigma=1,
                                          n_stochastic_particles=10000,
-                                         n_iterations=100):
+                                         n_iterations=100,
+                                         verbose=False):
         """
         Generates a velocity field using the simplified Langevin model (SLM) by solving the following stochastic
         partial differential equation:
@@ -769,7 +770,7 @@ class FlowField:
 
         .. math::
 
-            \\Delta t = \\text{int} \\Big( \\frac{T_L}{n} \\Big) + 1
+            \\Delta t = \\frac{T_L}{n}
 
         Next, a per-pixel velocity is found as an average over the ensemble of stochastic particles present within that pixel.
         In the case where particle drift makes any pixel empty, velocity component is interpolated.
@@ -880,7 +881,9 @@ class FlowField:
 
         for im in range(0, self.n_images):
 
-            # Determine initial velocity for the stochastic particles based on the pixel to which they initially belong:
+            if verbose: print('Processing image ' + str(im) + '...')
+
+            # Determine the initial velocity for the stochastic particles based on the pixel to which they initially belong:
             U_star_mean = np.zeros_like(X)
             V_star_mean = np.zeros_like(Y)
 
@@ -888,51 +891,57 @@ class FlowField:
                 U_star_mean[i] = mean_field[im, 0, int(np.floor(Y[i])), int(np.floor(X[i]))]
                 V_star_mean[i] = mean_field[im, 1, int(np.floor(Y[i])), int(np.floor(X[i]))]
 
-            delta_t = integral_time_scale / 100
-            n_steps = int(integral_time_scale / delta_t) + 1
-            time_vector = np.linspace(0, integral_time_scale, n_iterations)
+            # Define delta t:
+            delta_t = integral_time_scale / n_iterations
 
+            # Define the constant factor from the SLM equation:
             square_root_factor = np.sqrt((1 / integral_time_scale) * 2 * sigma ** 2 * delta_t)
 
-            U_star = np.zeros((n_particles[0], 1))
-            V_star = np.zeros((n_particles[0], 1))
+            # Initialize the
+            U_star = np.zeros((n_stochastic_particles, ))
+            V_star = np.zeros((n_stochastic_particles, ))
 
-            X_positions = np.zeros((n_particles[0], 1))
-            X_positions[:, 0] = X
-            Y_positions = np.zeros((n_particles[0], 1))
-            Y_positions[:, 0] = Y
+            X_positions = np.zeros((n_stochastic_particles, ))
+            X_positions[:] = X
+            Y_positions = np.zeros((n_stochastic_particles, ))
+            Y_positions[:] = Y
 
             # Update the velocity components and the positions of stochastic particles:
-            for i in range(0, n_iterations):
+            for _ in range(0, n_iterations):
 
-                # Update the u-component of velocity:
-                U_star[:, i + 1] = U_star[:, i] - (U_star[:, i] - U_star_mean) * delta_t / TL + square_root_factor * np.random.randn()
+                if verbose: print('\t Iteration ' + str(_) + '...')
 
                 # Update the x-coordinates of the stochastic particles:
-                X_matrix[:, i + 1] = X_matrix[:, i] + U_star[:, i] * delta_t
+                X_positions = X_positions + U_star * delta_t
 
-                # Update the v-component of velocity:
-                V_star[:, i + 1] = V_star[:, i] - (V_star[:, i] - V_star_mean) * delta_t / TL + square_root_factor * np.random.randn()
+                # Update the u-component of velocity:
+                U_star = U_star - (U_star - U_star_mean) * delta_t / integral_time_scale + square_root_factor * np.random.randn()
 
                 # Update the y-coordinate of the stochastic particles:
-                Y_matrix[:, i + 1] = Y_matrix[:, i] + V_star[:, i] * delta_t
+                Y_positions = Y_positions + V_star * delta_t
+
+                # Update the v-component of velocity:
+                V_star = V_star - (V_star - V_star_mean) * delta_t / integral_time_scale + square_root_factor * np.random.randn()
 
             # Average the velocity over the ensemble of stochastic particles in each pixel:
-            U_Langevin = np.zeros((1, 2, H_with_buffer, W_with_buffer))
+            velocity_field_u = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
+            velocity_field_v = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
 
-            for i in range(0, H_with_buffer):
-                for j in range(0, W_with_buffer):
-                    locations = np.where((X_matrix[:, -1] >= j - 0.5) & (X_matrix[:, -1] < j + 0.5) & (Y_matrix[:, -1] >= i - 0.5) & (Y_matrix[:, -1] < i + 0.5))
+            for i in range(0, self.__height_with_buffer):
+                for j in range(0, self.__width_with_buffer):
+
+                    locations = np.where((X_positions >= j - 0.5) & (X_positions < j + 0.5) & (Y_positions >= i - 0.5) & (Y_positions < i + 0.5))
 
                     # Average particle velocities within the control volume defined by one pixel:
-                    U_Langevin[0, 0, i, j] = np.mean(U_star[locations, -1])
-                    U_Langevin[0, 1, i, j] = np.mean(V_star[locations, -1])
-
+                    velocity_field_u[i, j] = np.mean(U_star[locations])
+                    velocity_field_v[i, j] = np.mean(V_star[locations])
 
             self.__velocity_field_magnitude[im, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
             self.__velocity_field[im, 0, :, :] = velocity_field_u
             self.__velocity_field[im, 1, :, :] = velocity_field_v
 
+            # Define the time vector for later:
+            # time_vector = np.linspace(0, integral_time_scale, n_iterations)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
