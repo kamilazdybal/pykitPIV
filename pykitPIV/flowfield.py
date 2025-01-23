@@ -816,7 +816,8 @@ class FlowField:
                                                        integral_time_scale=1,
                                                        sigma=1,
                                                        n_stochastic_particles=10000,
-                                                       n_iterations=100)
+                                                       n_iterations=100,
+                                                       verbose=True)
 
             # Access the velocity components tensor:
             flowfield.velocity_field
@@ -838,6 +839,8 @@ class FlowField:
             ``int`` specifying the number of stochastic particles for which the SLM will be solved.
         :param n_iterations: (optional)
             ``int`` specifying the number of iterations, :math:`n`, during which the finite-difference equations are updated.
+        :param verbose: (optional)
+            ``bool`` for printing verbose details.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -858,6 +861,9 @@ class FlowField:
 
         if (not isinstance(n_iterations, int)):
             raise ValueError("Parameter `n_iterations` has to be of type 'int'.")
+
+        if not isinstance(verbose, bool):
+            raise ValueError("Parameter `verbose` has to be of type 'bool'.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
