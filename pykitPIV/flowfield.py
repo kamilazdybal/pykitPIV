@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.special import chebyu, sph_harm
 import random
 import copy
+import time
 import scipy
 import warnings
 from pykitPIV.particle import Particle
@@ -873,21 +874,25 @@ class FlowField:
                              densities=(__target_particle_density, __target_particle_density),
                              random_seed=self.__random_seed)
 
-        if (not particles.n_of_particles[0] == n_stochastic_particles):
-            raise RuntimeError("The true number of stochastic particles generated is different from the one requested by the user. This should not happen and is the issue of pykitPIV.")
+        if (particles.n_of_particles[0] > n_stochastic_particles+10) or (particles.n_of_particles[0] < n_stochastic_particles-10):
+            raise RuntimeError("The true number of stochastic particles generated (" + str(particles.n_of_particles[0]) + ") is different from the one requested by the user (" + str(n_stochastic_particles) + "). This should not happen and is the issue of pykitPIV.")
+
+        __n_stochastic_particles = particles.n_of_particles[0]
 
         # Coordinates of the stochastic particles:
         X, Y = particles.particle_coordinates[0]
 
+        tic = time.perf_counter()
+
         for im in range(0, self.n_images):
 
-            if verbose: print('Processing image ' + str(im) + '...')
+            if verbose: print('Generating velocity field for image ' + str(im) + '...')
 
             # Determine the initial velocity for the stochastic particles based on the pixel to which they initially belong:
             U_star_mean = np.zeros_like(X)
             V_star_mean = np.zeros_like(Y)
 
-            for i in range(0, n_stochastic_particles):
+            for i in range(0, __n_stochastic_particles):
                 U_star_mean[i] = mean_field[im, 0, int(np.floor(Y[i])), int(np.floor(X[i]))]
                 V_star_mean[i] = mean_field[im, 1, int(np.floor(Y[i])), int(np.floor(X[i]))]
 
@@ -898,18 +903,16 @@ class FlowField:
             square_root_factor = np.sqrt((1 / integral_time_scale) * 2 * sigma ** 2 * delta_t)
 
             # Initialize the
-            U_star = np.zeros((n_stochastic_particles, ))
-            V_star = np.zeros((n_stochastic_particles, ))
+            U_star = np.zeros((__n_stochastic_particles, ))
+            V_star = np.zeros((__n_stochastic_particles, ))
 
-            X_positions = np.zeros((n_stochastic_particles, ))
+            X_positions = np.zeros((__n_stochastic_particles, ))
             X_positions[:] = X
-            Y_positions = np.zeros((n_stochastic_particles, ))
+            Y_positions = np.zeros((__n_stochastic_particles, ))
             Y_positions[:] = Y
 
             # Update the velocity components and the positions of stochastic particles:
             for _ in range(0, n_iterations):
-
-                if verbose: print('\t Iteration ' + str(_) + '...')
 
                 # Update the x-coordinates of the stochastic particles:
                 X_positions = X_positions + U_star * delta_t
@@ -927,14 +930,21 @@ class FlowField:
             velocity_field_u = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
             velocity_field_v = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
 
+            # This part is the largest computational bottleneck -- need to figure out how we can vectorize this code:
+            tic_averaging = time.perf_counter()
+
             for i in range(0, self.__height_with_buffer):
                 for j in range(0, self.__width_with_buffer):
 
+                    # Control volume that spans one pixel:
                     locations = np.where((X_positions >= j - 0.5) & (X_positions < j + 0.5) & (Y_positions >= i - 0.5) & (Y_positions < i + 0.5))
 
                     # Average particle velocities within the control volume defined by one pixel:
                     velocity_field_u[i, j] = np.mean(U_star[locations])
                     velocity_field_v[i, j] = np.mean(V_star[locations])
+
+            toc_averaging = time.perf_counter()
+            if verbose: print(f'\tAveraging time: {(toc_averaging - tic_averaging) / 60:0.1f} minutes.\n')
 
             self.__velocity_field_magnitude[im, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
             self.__velocity_field[im, 0, :, :] = velocity_field_u
@@ -942,6 +952,9 @@ class FlowField:
 
             # Define the time vector for later:
             # time_vector = np.linspace(0, integral_time_scale, n_iterations)
+
+        toc = time.perf_counter()
+        if verbose: print(f'Total time: {(toc - tic) / 60:0.1f} minutes.\n' + '- ' * 40)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
