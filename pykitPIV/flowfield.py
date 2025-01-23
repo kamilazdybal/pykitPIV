@@ -847,11 +847,18 @@ class FlowField:
         Next, a per-pixel velocity is found as an average over the ensemble of stochastic particles present within that pixel.
         In the case where particle drift makes any pixel empty, velocity component is interpolated.
 
-        Note that the stochastic particles for solving the SLM are in practice generated using the ``Particle`` class
-        but they are independent of the seeded particles used for PIV.
-
         For a thorough discussion of SLM see section 12.3 of
         `S.B. Pope - Turbulent Flows (1995) <https://www.cambridge.org/highereducation/books/turbulent-flows/C58EFF59AF9B81AE6CFAC9ED16486B3A#contents>`_.
+
+        .. note::
+
+            Note that the stochastic particles for solving the SLM are in practice generated using the ``Particle`` class
+            but they are independent of the seeded particles used for PIV.
+
+        .. note::
+
+            If the Lagrangian integral time scale is *large*, you may want to create a large image buffer to account
+            for the stochastic particles moving a considerable distance compared to image size.
 
         **Example:**
 
