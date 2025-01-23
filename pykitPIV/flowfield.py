@@ -181,6 +181,77 @@ class FlowField:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def generate_constant_velocity_field(self,
+                                         u_magnitude=(0,4),
+                                         v_magnitude=(0,4)):
+        """
+        Generates a constant velocity field.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import FlowField
+
+            # We are going to generate 10 flow fields for 10 PIV image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (128,128)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images=n_images,
+                                  size=image_size,
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Generate random velocity field:
+            flowfield.generate_constant_velocity_field(u_magnitude=(0,4),
+                                                       v_magnitude=(0,4))
+
+            # Access the velocity components tensor:
+            flowfield.velocity_field
+
+            # Access the velocity field magnitude:
+            flowfield.velocity_field_magnitude
+
+        :param u_magnitude: (optional)
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+            magnitude of the :math:`u` component of velocity.
+        :param v_magnitude: (optional)
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+            magnitude of the :math:`v` component of velocity.
+       """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        check_two_element_tuple(u_magnitude, 'u_magnitude')
+        check_min_max_tuple(u_magnitude, 'u_magnitude')
+        check_two_element_tuple(v_magnitude, 'v_magnitude')
+        check_min_max_tuple(v_magnitude, 'v_magnitude')
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        self.__u_magnitude = u_magnitude
+        self.__v_magnitude = v_magnitude
+
+        self.__velocity_field = np.ones((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
+        self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
+
+        self.__u_magnitude_per_image = np.random.rand(self.__n_images) * (self.__u_magnitude[1] - self.__u_magnitude[0]) + self.__u_magnitude[0]
+        self.__v_magnitude_per_image = np.random.rand(self.__n_images) * (self.__v_magnitude[1] - self.__v_magnitude[0]) + self.__v_magnitude[0]
+
+        for i in range(0, self.n_images):
+
+            self.__velocity_field[i, 0, :, :] = self.__velocity_field[i, 0, :, :] * self.__u_magnitude_per_image[i]
+            self.__velocity_field[i, 1, :, :] = self.__velocity_field[i, 1, :, :] * self.__v_magnitude_per_image[i]
+
+            self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(self.__velocity_field[i, 0, :, :] ** 2 + self.__velocity_field[i, 1, :, :] ** 2)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def generate_random_velocity_field(self,
                                        displacement=(0, 10),
                                        gaussian_filters=(10,30),
