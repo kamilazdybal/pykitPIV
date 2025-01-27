@@ -16,14 +16,14 @@ We also provide an atlas of challenging synthetic velocity fields from analytic 
 The effects of particle drift and diffusion in stationary isotropic turbulence can also be added atop the
 velocity fields using the simplified Langevin model.
 
-The library provides integrations with machine learning algorithms, such as **convolutional neural networks**,
-**variational approaches**, **active learning**, or **reinforcement learning**.
-
 The graph below shows the possible workflows constructed from the five main classes:
 
 .. image:: images/pykitPIV-workflow.svg
     :width: 900
     :align: center
+
+The ``ml`` module provides integrations with machine learning algorithms, such as **convolutional neural networks**,
+**variational approaches**, **active learning**, or **reinforcement learning**.
 
 For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV/BOS images, please
 check the following references:
