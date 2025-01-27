@@ -58,6 +58,7 @@ check the following references:
     user/motion
     user/image
     user/postprocess
+    user/ml
 
 .. toctree::
     :maxdepth: 2
