@@ -2,17 +2,22 @@
     :width: 300
 
 **pykitPIV** (**Py**\ thon **ki**\ nematic **t**\ raining for **P**\ article **I**\ mage **V**\ elocimetry) is a
-PyTorch-compatible, Python package for synthetic PIV image generation.
-It exploits the idea that if the time separation between two PIV images is small,
-kinematic relationship between two consecutive PIV images is sufficient to determine particle displacement fields.
-**pykitPIV** can also operate in the background-oriented Schlieren (BOS) mode.
+Python package that generates rich and reproducible synthetic data for training machine learning algorithms
+in velocimetry and experimental fluid dynamics.
 
-**pykitPIV** provides images of varying complexity in order to exhaust challenging training scenarios.
-The goal of this library is to give the user, or a machine learning algorithm, a lot of flexibility in setting-up
-image generation. The generated image pairs, and the associated flow targets, can be directly used in training
-convolutional neural networks (CNNs) for optical flow estimation.
-The image tensors are compatible with PyTorch and can easily port with convolutional layers
-(``torch.nn.Conv2d``) or with convolutional filters (``torch.nn.functional.conv2d``).
+**pykitPIV** can operate in particle image velocimetry (PIV) and background-oriented Schlieren (BOS) mode.
+It exploits the idea that if the time separation between two experimental images is small,
+kinematic relationship between two consecutive images is sufficient to determine particle displacement fields.
+
+**pykitPIV** gives the user, or the machine-learning agent, a lot of flexibility in selecting
+various parameters that would normally be available in an experimental setting, such as seeding density,
+properties of the laser plane, camera exposure, particle loss, or experimental noise.
+We also provide an atlas of challenging synthetic velocity fields from analytic formulations.
+The effects of particle drift and diffusion in stationary isotropic turbulence can also be added atop the
+velocity fields using the simplified Langevin model.
+
+The library provides integrations with machine learning algorithms, such as **convolutional neural networks**,
+**variational approaches**, **active learning**, or **reinforcement learning**.
 
 The graph below shows the possible workflows constructed from the five main classes:
 
