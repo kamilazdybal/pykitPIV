@@ -20,9 +20,9 @@ from pykitPIV.postprocess import Postprocess
 
 class PIVDataset(Dataset):
     """
-    Loads and stores the **pykitPIV**-generated dataset.
+    Loads and stores the **pykitPIV**-generated dataset for **PyTorch**.
 
-    This class inherits after ``torch.utils.data.Dataset``.
+    This is a subclass of ``torch.utils.data.Dataset``.
 
     **Example:**
 
@@ -33,7 +33,7 @@ class PIVDataset(Dataset):
 
 
     :param path:
-        ``str`` specifying the path to the saved PIV dataset.
+        ``str`` specifying the path to the saved dataset.
     :param transform: (optional)
         ``torchvision.transform`` specifying vision transformations to augment the training dataset.
     """

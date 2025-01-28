@@ -21,8 +21,8 @@ sys.path.insert(0, os.path.abspath('../pykitPIV/'))
 # -- Project information -----------------------------------------------------
 
 project = 'pykitPIV'
-copyright = '2024, Claudio Mucignat, Kamila Zdybał'
-author = 'Claudio Mucignat, Kamila Zdybał'
+copyright = '2025, Kamila Zdybał, Claudio Mucignat, Stefan Kunz, Ivan Lunati'
+author = 'Kamila Zdybał, Claudio Mucignat, Stefan Kunz, Ivan Lunati'
 release = '1.0'
 
 # -- General configuration ---------------------------------------------------
