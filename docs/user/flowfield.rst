@@ -6,6 +6,8 @@ Class: ``FlowField``
 
 .. autoclass:: pykitPIV.flowfield.FlowField
 
+.. autofunction:: pykitPIV.flowfield.FlowField.print_available_fields
+
 .. autofunction:: pykitPIV.flowfield.FlowField.generate_constant_velocity_field
 
 .. autofunction:: pykitPIV.flowfield.FlowField.generate_random_velocity_field

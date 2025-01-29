@@ -51,6 +51,13 @@ check the following references:
     preliminaries/setting-spectra
 
 .. toctree::
+    :maxdepth: 2
+    :caption: Quickstart
+
+    quickstart/quickstart-scripts
+    quickstart/gallery
+
+.. toctree::
     :maxdepth: 5
     :caption: User Guide
 
@@ -60,13 +67,6 @@ check the following references:
     user/image
     user/postprocess
     user/ml
-
-.. toctree::
-    :maxdepth: 2
-    :caption: Quickstart
-
-    quickstart/quickstart-scripts
-    quickstart/gallery
 
 .. toctree::
     :maxdepth: 2

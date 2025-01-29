@@ -127,6 +127,15 @@ class FlowField:
         self.__width_with_buffer = self.size[1] + 2 * self.size_buffer
         self.__size_with_buffer = (self.__height_with_buffer, self.__width_with_buffer)
 
+        # Specify the available velocity fields in this class:
+        self.__available_velocity_fields = {'constant': 'generate_constant_velocity_field',
+                                       'random smooth': 'generate_random_velocity_field',
+                                       'sinusoidal': 'generate_sinusoidal_velocity_field',
+                                       'checkered': 'generate_checkered_velocity_field',
+                                       'Chebyshev polynomials': 'generate_chebyshev_velocity_field',
+                                       'spherical harmonics': 'generate_spherical_harmonics_velocity_field',
+                                       'Langevin': 'generate_langevin_velocity_field'}
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
@@ -178,6 +187,60 @@ class FlowField:
     @property
     def size_with_buffer(self):
         return self.__size_with_buffer
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def print_available_fields(self):
+        """
+        Prints the available velocity fields and points to the function from ``FlowField`` that generates them.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import FlowField
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images=10)
+
+            # Print the available velocity fields:
+            flowfield.print_available_fields()
+
+        The above will print:
+
+        .. code-block:: text
+
+            Velocity fields available in pykitPIV:
+
+            - constant
+                Use function: generate_constant_velocity_field
+
+            - random smooth
+                Use function: generate_random_velocity_field
+
+            - sinusoidal
+                Use function: generate_sinusoidal_velocity_field
+
+            - checkered
+                Use function: generate_checkered_velocity_field
+
+            - Chebyshev
+                Use function: generate_chebyshev_velocity_field
+
+            - spherical harmonics
+                Use function: generate_spherical_harmonics_velocity_field
+
+            - Langevin
+                Use function: generate_langevin_velocity_field
+        """
+
+        print('Velocity fields available in pykitPIV:\n')
+
+        for key, value in self.__available_velocity_fields.items():
+
+            print('- ' + key)
+            print('\tUse function: ' + value)
+            print()
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
