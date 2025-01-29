@@ -20,6 +20,7 @@ Install requirements:
 
 .. code-block:: bash
 
+    pip install numpy
     pip install jupyterlab
     pip install matplotlib
     pip install h5py

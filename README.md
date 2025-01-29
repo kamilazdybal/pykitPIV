@@ -72,6 +72,7 @@ conda activate pykitPIV
 Install requirements:
 
 ```
+pip install numpy
 pip install jupyterlab
 pip install matplotlib
 pip install h5py
