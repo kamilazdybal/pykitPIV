@@ -75,6 +75,7 @@ check the following references:
     tutorials/demo-generate-images
     tutorials/demo-image-statistics
     tutorials/demo-PyTorch-dataloader
+    tutorials/demo-Gymnasium-Env
     tutorials/demo-data-augmentation
     tutorials/demo-import-external-velocity-field
     tutorials/demo-integrate-with-LIMA

@@ -23,6 +23,8 @@ of this class which can be readily accessed from the ``ml`` module:
 
 .. code:: python
 
+    from torch.utils.data import Dataset
+
     class PIVDataset(Dataset):
 
         def __init__(self, dataset, transform=None):
