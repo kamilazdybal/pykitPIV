@@ -29,6 +29,13 @@ Install requirements:
     pip install scipy
     pip install cmcrameri
 
+Additional requirements for the ``ml`` module:
+
+.. code-block:: bash
+
+    pip install torchvision
+    pip install gymnasium
+
 Optional for documentation builds:
 
 .. code-block:: bash

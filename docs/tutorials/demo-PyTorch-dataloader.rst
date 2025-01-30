@@ -6,43 +6,73 @@ Create a **PyTorch** data loader
 Introduction
 ************************************************************
 
-In this tutorial, we code a **PyTorch**-compatible data loader for **pykitPIV**-generated PIV images
-that can be readily used for training ML algorithms.
-We use the **PyTorch**'s dedicated classes, ``torch.utils.data.Dataset`` and ``torch.utils.data.DataLoader``,
-to handle loading training and testing samples.
-You can learn more about the methodology of using Datasets and DataLoaders
+In this tutorial, we create a **PyTorch**-compatible data loader for **pykitPIV**-generated PIV images
+that can be readily used for training ML algorithms. We use the ``PIVDataset`` class from the ``ml`` module
+which is a subclass of **PyTorch**'s ``torch.utils.data.Dataset``.
+We then use **PyTorch**'s ``torch.utils.data.DataLoader`` to handle loading training and testing samples.
+You can learn more about the methodology of using datasets and data loaders
 `in this PyTorch documentation <https://pytorch.org/tutorials/beginner/basics/data_tutorial.html>`_.
 
-.. code:: python
-
-    import numpy as np
-    import h5py
-    from torch.utils.data import Dataset
-    from torch.utils.data import DataLoader
-    from torchvision import transforms
-    import matplotlib.pyplot as plt
-
 ************************************************************
-Upload **pykitPIV**-generated images
+The ``PIVDataset`` class
 ************************************************************
 
-We assume that PIV images have been generated and saved, and are stored under the following ``path``:
+**pykitPIV** provides the ``PIVDataset`` class that is a subclass of the ``torch.utils.data.Dataset`` class.
+It implements three standard methods: ``__init__``, ``__len__``, and ``__getitem__``. Below, we present the content
+of this class which can be readily accessed from the ``ml`` module:
 
 .. code:: python
 
-    path = '../docs/data/pykitPIV-dataset-10-PIV-pairs-256-by-256.h5'
+    class PIVDataset(Dataset):
 
-If you don't have the desired PIV dataset yet, you can use the generic script,
-``/scripts/pykitPIV-generate-images.py``, and run it with, e.g.:
+        def __init__(self, dataset, transform=None):
 
-.. code-block:: bash
+            if isinstance(dataset, str):
 
-    python pykitPIV-generate-images.py --n_images 10 --size_buffer 10 --image_height 256 --image_width 256
+                # Upload the dataset:
+                f = h5py.File(dataset, "r")
+
+                # Access image intensities:
+                self.data = np.array(f["I"]).astype("float32")
+
+                # Access flow targets:
+                self.target = np.array(f["targets"]).astype("float32")
+
+            elif isinstance(dataset, dict):
+
+                # Access image intensities:
+                self.data = np.array(dataset["I"]).astype("float32")
+
+                # Access flow targets:
+                self.target = np.array(dataset["targets"]).astype("float32")
+
+            # Multiply the v-component of velocity by -1:
+            self.target[:,1,:,:] = -self.target[:,1,:,:]
+
+            if isinstance(dataset, str): f.close()
+
+            # Allow for any custom data transforms to be used later:
+            self.transform = transform
+
+        def __len__(self):
+
+            return len(self.data)
+
+        def __getitem__(self, idx):
+
+            # Get the sample:
+            sample = self.data[idx], self.target[idx]
+
+            # Apply any custom data transforms on this sample:
+            if self.transform:
+                sample = self.transform(sample)
+
+        return sample
 
 .. warning::
 
     **pykitPIV**'s PIV images, and the associated targets, are generated assuming that the origin of the coordinate
-    system is the lower-left corner (equivalent to setting ``origin='lower'`` in ``plt.imshow``).
+    system is the lower-left corner (equivalent to setting ``origin='lower'`` in ``plt.imshow()``).
     The *bottom* boundary of a PIV image corresponds to ``[0,:]`` rows from the raw ``numpy`` arrays that store, *e.g.*, the image intensities
     or the velocity components.
     The *top* boundary of a PIV image corresponds to ``[-1,:]`` rows from the raw ``numpy`` arrays.
@@ -60,58 +90,43 @@ If you don't have the desired PIV dataset yet, you can use the generic script,
         :width: 700
         :align: center
 
-************************************************************
-Create a **pykitPIV** ``Dataset`` class
-************************************************************
+*************************************************************************
+Create **PyTorch**-compatible data loaders for **pykitPIV** images
+*************************************************************************
 
-We first create a ``PIVDataset`` class that is a subclass of the ``torch.utils.data.Dataset`` class.
-We implement three standard methods: ``__init__``, ``__len__``, and ``__getitem__``.
+Upload the **pykitPIV**-generated images
+-------------------------------------------------
 
 .. code:: python
 
-    class PIVDataset(Dataset):
-        """
-        Loads and stores the pykitPIV-generated dataset.
-        """
+    import numpy as np
+    import h5py
+    from torch.utils.data import DataLoader
+    from torchvision import transforms
+    import matplotlib.pyplot as plt
+    from pykitPIV.ml import PIVDataset
 
-        def __init__(self, path, transform=None):
+We assume that the PIV/BOS images have been saved and are stored under the following ``path``:
 
-            # Upload the dataset:
-            f = h5py.File(path, "r")
+.. code:: python
 
-            # Access image intensities:
-            self.data = np.array(f["I"]).astype("float32")
+    path = '../docs/data/pykitPIV-dataset-10-PIV-pairs-256-by-256.h5'
 
-            # Access flow targets:
-            self.target = np.array(f["targets"]).astype("float32")
+If you don't have the desired PIV/BOS dataset yet, you can use the generic script,
+``/scripts/pykitPIV-generate-images.py``, and run it with, e.g.:
 
-            # Multiply the v-component of velocity by -1:
-            self.target[:,1,:,:] = -self.target[:,1,:,:]
+.. code-block:: bash
 
-            f.close()
+    python pykitPIV-generate-images.py --n_images 10 --size_buffer 10 --image_height 256 --image_width 256
 
-            # Allow for any custom data transforms to be used later:
-            self.transform = transform
-
-        def __len__(self):
-            return len(self.data)
-
-        def __getitem__(self, idx):
-
-            # Get the sample:
-            sample = self.data[idx], self.target[idx]
-
-            # Apply any custom data transforms on this sample:
-            if self.transform:
-                sample = self.transform(sample)
-
-            return sample
+Load and store **pykitPIV** images
+-------------------------------------------------
 
 We instantiate an object of the ``PIVDataset`` class:
 
 .. code:: python
 
-    PIV_data = PIVDataset(path=path)
+    PIV_data = PIVDataset(dataset=path)
 
 Thanks to the ``__len__`` method, we can now execute the ``len()`` command on the object:
 
@@ -166,28 +181,59 @@ You can use the indexing to visualize the first few samples from the dataset:
     :width: 800
     :align: center
 
-************************************************************************
-Create a **pykitPIV** DataLoaders with train and test samples
-************************************************************************
+Create a ``torch.utils.data.DataLoader`` with train and test samples
+----------------------------------------------------------------------------
 
 First, we allow the user to create custom composition of data transforms that will augment the
-train and test datasets. For more information on
+train and test datasets. For more information on data transforms check this link
+`this link <https://pytorch.org/vision/stable/transforms.html>`_.
 
 .. code:: python
 
     # Create a custom composition of data transforms to augment the training datasets:
     transform = transforms.Compose([transforms.ToTensor()])
 
+Next, we create train and test datasets using an instance of ``PIVDataset`` for each.
+
+The first method assumes that you have a separate file for the train and test samples:
 
 .. code:: python
 
-    # Create train and test datasets:
-    train_dataset = PIVDataset(path=path, transform=transform)
-    test_dataset = PIVDataset(path=path, transform=transform)
+    path_train = '../docs/data/pykitPIV-dataset-10-PIV-pairs-256-by-256-train.h5'
+    path_test = '../docs/data/pykitPIV-dataset-10-PIV-pairs-256-by-256-test.h5'
+
+therefore, you can create:
 
 .. code:: python
 
-    # Create train and test data loaders:
+    train_dataset = PIVDataset(dataset=path_train, transform=transform)
+    test_dataset = PIVDataset(dataset=path_test, transform=transform)
+
+The second method is to upload the dataset dictionary directly, assuming that you have one containing training and
+one containing testing samples. This gives the user a chance for a more flexible train/test split. Note that the
+dictionary has to store image intensities under the key ``"I"`` and image targets under the key ``"targets"``.
+
+.. code:: python
+
+    dataset_train = {"I" : ... ,
+                     "targets" : ...}
+    dataset_test = {"I" : ... ,
+                    "targets" : ...}
+
+In an analogous way, you can create:
+
+.. code:: python
+
+    train_dataset = PIVDataset(dataset=dataset_train, transform=transform)
+    test_dataset = PIVDataset(dataset=dataset_test, transform=transform)
+
+Finally, we create **PyTorch** data loaders for train and test samples. There, we have the option to specify
+various mini-batching parameters such as the the batch size.
+You can check all the available arguments of ``torch.utils.data.DataLoader``
+`here <https://pytorch.org/docs/stable/data.html#torch.utils.data.DataLoader>`_.
+
+.. code:: python
+
     train_loader = DataLoader(train_dataset,
                               batch_size=4,
                               shuffle=True)

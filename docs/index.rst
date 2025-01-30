@@ -70,7 +70,7 @@ check the following references:
 
 .. toctree::
     :maxdepth: 2
-    :caption: Tutorials & Demos
+    :caption: Tutorials
 
     tutorials/demo-generate-images
     tutorials/demo-image-statistics

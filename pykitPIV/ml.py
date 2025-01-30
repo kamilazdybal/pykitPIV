@@ -30,31 +30,46 @@ class PIVDataset(Dataset):
 
         from pykitPIV import PIVDataset
 
+        # Specify the path to the saved dataset:
+        path = 'docs/data/pykitPIV-dataset-10-PIV-pairs-256-by-256.h5'
 
+        # Load and store the dataset:
+        PIV_data = PIVDataset(dataset=path)
 
-    :param path:
+    :param dataset:
         ``str`` specifying the path to the saved dataset.
+        It can also be directly passed as a ``dict`` defining the **pykitPIV** dataset.
     :param transform: (optional)
         ``torchvision.transform`` specifying vision transformations to augment the training dataset.
     """
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def __init__(self, path, transform=None):
+    def __init__(self, dataset, transform=None):
 
-        # Upload the dataset:
-        f = h5py.File(path, "r")
+        if isinstance(dataset, str):
 
-        # Access image intensities:
-        self.data = np.array(f["I"]).astype("float32")
+            # Upload the dataset:
+            f = h5py.File(dataset, "r")
 
-        # Access flow targets:
-        self.target = np.array(f["targets"]).astype("float32")
+            # Access image intensities:
+            self.data = np.array(f["I"]).astype("float32")
+
+            # Access flow targets:
+            self.target = np.array(f["targets"]).astype("float32")
+
+        elif isinstance(dataset, dict):
+
+            # Access image intensities:
+            self.data = np.array(dataset["I"]).astype("float32")
+
+            # Access flow targets:
+            self.target = np.array(dataset["targets"]).astype("float32")
 
         # Multiply the v-component of velocity by -1:
         self.target[:,1,:,:] = -self.target[:,1,:,:]
 
-        f.close()
+        if isinstance(dataset, str): f.close()
 
         # Allow for any custom data transforms to be used later:
         self.transform = transform
