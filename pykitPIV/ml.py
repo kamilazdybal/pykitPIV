@@ -13,6 +13,7 @@ from pykitPIV.motion import Motion
 from pykitPIV.particle import Particle
 from pykitPIV.image import Image
 from pykitPIV.postprocess import Postprocess
+from pykitPIV.flowfield import __available_velocity_fields
 
 ########################################################################################################################
 ########################################################################################################################
@@ -114,7 +115,16 @@ class PIVEnv(gym.Env):
                  interrogation_window_size=(128,128),
                  interrogation_window_size_buffer=10,
                  flowfield_size=(512,2048),
-                 user_flowfield=None):
+                 flowfield_type='random smooth',
+                 flowfield_spec={'gaussian_filters': (30,30),
+                                 'n_gaussian_filter_iter': 1,
+                                 'displacement': (2,2)},
+                 user_flowfield=None,
+                 random_seed=None):
+
+        self.__flowfield_spec = flowfield_spec
+
+        self.random_seed = random_seed
 
         # Size of the interrogation window:
         self.interrogation_window_size = interrogation_window_size
@@ -135,11 +145,13 @@ class PIVEnv(gym.Env):
             flowfield = FlowField(n_images=1,
                                   size=self.flowfield_size,
                                   size_buffer=0,
-                                  random_seed=100)
+                                  random_seed=self.random_seed)
 
-            flowfield.generate_random_velocity_field(gaussian_filters=(30, 30),
-                                                     n_gaussian_filter_iter=10,
-                                                     displacement=(2, 2))
+            if flowfield_type == 'random smooth':
+
+                flowfield.generate_random_velocity_field(gaussian_filters=self.__flowfield_spec['gaussian_filters'],
+                                                         n_gaussian_filter_iter=self.__flowfield_spec['n_gaussian_filter_iter'],
+                                                         displacement=self.__flowfield_spec['displacement'])
 
             self.flowfield = flowfield
 
@@ -178,36 +190,23 @@ class PIVEnv(gym.Env):
         """
 
         # Extract the velocity field under the current interrogation window:
-        h_coordinates = 1
-        w_coordinates = 1
+        h_start = camera_position[0]
+        h_stop = h_start + self.__interrogation_window_size_with_buffer[0]
 
+        w_start = camera_position[1]
+        w_stop = w_start + self.__interrogation_window_size_with_buffer[1]
 
+        velocity_field_at_interrogation_window = self.flowfield.velocity_field_magnitude[0, 0, h_start:h_stop, w_start:w_stop]
 
+        vmin = np.min(self.flowfield.velocity_field_magnitude[0, 0, :, :])
+        vmax = np.max(self.flowfield.velocity_field_magnitude[0, 0, :, :])
 
+        plt.imshow(velocity_field_at_interrogation_window,
+                   origin='lower',
+                   vmin=vmin,
+                   vmax=vmax)
 
-
-
-
-    def plot_state(self,
-                   camera_position,
-                   c='white',
-                   s=10,
-                   lw=2,
-                   figsize=None):
-
-        if figsize is not None:
-            plt.figure(figsize=figsize)
-
-        plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], origin='lower')
-        plt.scatter(camera_position[1]-0.5, camera_position[0]-0.5, c=c, s=s)
-
-        # Visualize a rectangle that defines the current interrogation window:
-        rect = patches.Rectangle((camera_position[1]-0.5, camera_position[0]-0.5),
-                                 self.__interrogation_window_size_with_buffer[1],
-                                 self.__interrogation_window_size_with_buffer[0],
-                                 linewidth=lw, edgecolor=c, facecolor='none')
-        ax = plt.gca()
-        ax.add_patch(rect)
+        plt.colorbar()
 
     def _get_obs(self):
 
@@ -246,10 +245,35 @@ class PIVEnv(gym.Env):
 
 
 
-    def render(self):
 
 
-        pass
+
+
+
+
+    def render(self,
+                   camera_position,
+                   c='white',
+                   s=10,
+                   lw=2,
+                   figsize=None):
+
+        if figsize is not None:
+            plt.figure(figsize=figsize)
+
+        plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], origin='lower')
+        plt.scatter(camera_position[1]-0.5, camera_position[0]-0.5, c=c, s=s)
+
+        # Visualize a rectangle that defines the current interrogation window:
+        rect = patches.Rectangle((camera_position[1]-0.5, camera_position[0]-0.5),
+                                 self.__interrogation_window_size_with_buffer[1],
+                                 self.__interrogation_window_size_with_buffer[0],
+                                 linewidth=lw, edgecolor=c, facecolor='none')
+        ax = plt.gca()
+        ax.add_patch(rect)
+
+        plt.colorbar()
+
 
 
 ########################################################################################################################

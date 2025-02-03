@@ -18,6 +18,15 @@ from pykitPIV.checks import *
 ################################################################################
 ################################################################################
 
+# Specify the available velocity fields in this class:
+__available_velocity_fields = {'constant': 'generate_constant_velocity_field',
+                               'random smooth': 'generate_random_velocity_field',
+                               'sinusoidal': 'generate_sinusoidal_velocity_field',
+                               'checkered': 'generate_checkered_velocity_field',
+                               'Chebyshev polynomials': 'generate_chebyshev_velocity_field',
+                               'spherical harmonics': 'generate_spherical_harmonics_velocity_field',
+                               'Langevin': 'generate_langevin_velocity_field'}
+
 class FlowField:
     """
     Generates or uploads velocity field(s) for a set of ``n_images`` number of PIV image pairs.
@@ -127,15 +136,6 @@ class FlowField:
         self.__width_with_buffer = self.size[1] + 2 * self.size_buffer
         self.__size_with_buffer = (self.__height_with_buffer, self.__width_with_buffer)
 
-        # Specify the available velocity fields in this class:
-        self.__available_velocity_fields = {'constant': 'generate_constant_velocity_field',
-                                       'random smooth': 'generate_random_velocity_field',
-                                       'sinusoidal': 'generate_sinusoidal_velocity_field',
-                                       'checkered': 'generate_checkered_velocity_field',
-                                       'Chebyshev polynomials': 'generate_chebyshev_velocity_field',
-                                       'spherical harmonics': 'generate_spherical_harmonics_velocity_field',
-                                       'Langevin': 'generate_langevin_velocity_field'}
-
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
@@ -236,7 +236,7 @@ class FlowField:
 
         print('Velocity fields available in pykitPIV:\n')
 
-        for key, value in self.__available_velocity_fields.items():
+        for key, value in __available_velocity_fields.items():
 
             print('- ' + key)
             print('\tUse function: ' + value)
