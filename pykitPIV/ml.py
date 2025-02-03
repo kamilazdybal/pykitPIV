@@ -102,7 +102,7 @@ class PIVDataset(Dataset):
 
 class PIVEnv(gym.Env):
     """
-    Provides a virtual PIV/BOS **Gymnasium**-based environment for a reinforcement learning (RL) agent.
+    Provides a virtual PIV **Gymnasium**-based environment for a reinforcement learning (RL) agent.
 
     The agent is free to locate an interrogation window within the larger flow field satisfying certain condition.
 
@@ -112,7 +112,8 @@ class PIVEnv(gym.Env):
     def __init__(self,
                  interrogation_window_size=(128,128),
                  interrogation_window_size_buffer=10,
-                 flowfield_size=(512,2048),):
+                 flowfield_size=(512,2048),
+                 fixed_flowfield=None):
 
         # Size of the interrogation window:
         self.interrogation_window_size = interrogation_window_size
@@ -126,22 +127,34 @@ class PIVEnv(gym.Env):
         # Size of entire visible flow field:
         self.flowfield_size = flowfield_size
 
+        # If the user did not supply their own flow field, a pykitPIV-generated flow field is used:
+        if fixed_flowfield is None:
+
+            # Generate the flow field that is fixed throughout training:
+            flowfield = FlowField(n_images=1,
+                                  size=self.flowfield_size,
+                                  size_buffer=0,
+                                  random_seed=100)
+
+            flowfield.generate_random_velocity_field(gaussian_filters=(30, 30),
+                                                     n_gaussian_filter_iter=10,
+                                                     displacement=(2, 2))
+
+            self.flowfield = flowfield
+
         self.__admissible_observation_space = (self.flowfield_size[0] - self.__interrogation_window_size_with_buffer[0],
                                                self.flowfield_size[1] - self.__interrogation_window_size_with_buffer[1])
 
-        # The observation space is the entire large flow field traversed pixel-by-pixel:
-        self.observation_space = spaces.Dict(
-            {
-                "agent": spaces.Box(low=np.array([0, 0]),
-                                    high=np.array([self.__admissible_observation_space[0], self.__admissible_observation_space[1]]),
-                                    dtype=int),
-            }
-        )
+        # The observation space is the camera's location in the virtual environement. In practice, this is
+        # the position of the camera looking at a specific interrogation window.
+        self.observation_space = spaces.Box(low=np.array([0, 0]),
+                                            high=np.array([self.__admissible_observation_space[0], self.__admissible_observation_space[1]]),
+                                            dtype=int)
 
-        # Actions are the agent's movement on the pixel grid:
+        # Actions are the camera's movement on the pixel grid:
         self.action_space = gym.spaces.Discrete(5)
 
-        # Dictionary maps the abstract actions to the directions on the grid
+        # Dictionary that maps the abstract actions to the directions on the pixel grid:
         self._action_to_direction = {
             0: np.array([1, 0]),  # right
             1: np.array([0, 1]),  # up
@@ -149,18 +162,6 @@ class PIVEnv(gym.Env):
             3: np.array([0, -1]),  # down
             4: np.array([0, 0]),  # stay
         }
-
-        # Generate the flow field that is fixed throughout training:
-        flowfield = FlowField(n_images=1,
-                              size=self.flowfield_size,
-                              size_buffer=0,
-                              random_seed=100)
-
-        flowfield.generate_random_velocity_field(gaussian_filters=(30, 30),
-                                                 n_gaussian_filter_iter=10,
-                                                 displacement=(2, 2))
-
-        self.flowfield = flowfield
 
     def _get_obs(self):
 
@@ -173,7 +174,7 @@ class PIVEnv(gym.Env):
     def reset(self):
 
 
-
+        # Can generate a new flow field, if the user didn't specify a fixed flow field to use.
 
 
 
@@ -184,6 +185,46 @@ class PIVEnv(gym.Env):
         info = self._get_info()
 
         return observation, info
+
+    def step(self):
+
+
+        pass
+
+
+
+    def render(self):
+
+
+        pass
+
+
+########################################################################################################################
+########################################################################################################################
+####
+####    Class: CameraAgent
+####
+########################################################################################################################
+########################################################################################################################
+
+class CameraAgent:
+
+    def __init__(self,
+                 env,
+                 learning_rate=0.001,
+                 initial_epsilon=1.0,
+                 epsilon_decay=,
+                 final_epsilon=,
+                 discount_factor=0.95):
+
+
+        
+
+
+
+
+
+
 
 
 ########################################################################################################################
