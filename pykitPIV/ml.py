@@ -3,6 +3,7 @@ import h5py
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 import matplotlib.pyplot as plt
+import matplotlib.patches as patches
 import gymnasium as gym
 import pygame
 from tf_agents.environments import py_environment
@@ -113,7 +114,7 @@ class PIVEnv(gym.Env):
                  interrogation_window_size=(128,128),
                  interrogation_window_size_buffer=10,
                  flowfield_size=(512,2048),
-                 fixed_flowfield=None):
+                 user_flowfield=None):
 
         # Size of the interrogation window:
         self.interrogation_window_size = interrogation_window_size
@@ -124,11 +125,11 @@ class PIVEnv(gym.Env):
         self.__interrogation_window_size_with_buffer = (self.interrogation_window_size[0] + self.interrogation_window_size_buffer,
                                                         self.interrogation_window_size[1] + self.interrogation_window_size_buffer)
 
-        # Size of entire visible flow field:
-        self.flowfield_size = flowfield_size
-
         # If the user did not supply their own flow field, a pykitPIV-generated flow field is used:
-        if fixed_flowfield is None:
+        if user_flowfield is None:
+
+            # Size of entire visible flow field:
+            self.flowfield_size = flowfield_size
 
             # Generate the flow field that is fixed throughout training:
             flowfield = FlowField(n_images=1,
@@ -142,12 +143,20 @@ class PIVEnv(gym.Env):
 
             self.flowfield = flowfield
 
+        # Otherwise, use the flow field provided by the user:
+        else:
+
+            self.flowfield = user_flowfield
+
+            self.flowfield_size = user.flowfield.shape[2::]
+
+
         self.__admissible_observation_space = (self.flowfield_size[0] - self.__interrogation_window_size_with_buffer[0],
                                                self.flowfield_size[1] - self.__interrogation_window_size_with_buffer[1])
 
         # The observation space is the camera's location in the virtual environement. In practice, this is
         # the position of the camera looking at a specific interrogation window.
-        self.observation_space = spaces.Box(low=np.array([0, 0]),
+        self.observation_space = gym.spaces.Box(low=np.array([0, 0]),
                                             high=np.array([self.__admissible_observation_space[0], self.__admissible_observation_space[1]]),
                                             dtype=int)
 
@@ -163,9 +172,46 @@ class PIVEnv(gym.Env):
             4: np.array([0, 0]),  # stay
         }
 
+    def _record_particles(self, camera_position):
+        """
+        Creates virtual PIV recordings based on the current interrogation window.
+        """
+
+        # Extract the velocity field under the current interrogation window:
+        h_coordinates = 1
+        w_coordinates = 1
+
+
+
+
+
+
+
+
+    def plot_state(self,
+                   camera_position,
+                   c='white',
+                   s=10,
+                   lw=2,
+                   figsize=None):
+
+        if figsize is not None:
+            plt.figure(figsize=figsize)
+
+        plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], origin='lower')
+        plt.scatter(camera_position[1]-0.5, camera_position[0]-0.5, c=c, s=s)
+
+        # Visualize a rectangle that defines the current interrogation window:
+        rect = patches.Rectangle((camera_position[1]-0.5, camera_position[0]-0.5),
+                                 self.__interrogation_window_size_with_buffer[1],
+                                 self.__interrogation_window_size_with_buffer[0],
+                                 linewidth=lw, edgecolor=c, facecolor='none')
+        ax = plt.gca()
+        ax.add_patch(rect)
+
     def _get_obs(self):
 
-        pass
+        return self.observation_space.sample()
 
     def _get_info(self):
 
@@ -175,6 +221,13 @@ class PIVEnv(gym.Env):
 
 
         # Can generate a new flow field, if the user didn't specify a fixed flow field to use.
+
+
+        # Create an initial camera position:
+        camera_position = self.observation_space.sample()
+
+
+
 
 
 
@@ -208,23 +261,20 @@ class PIVEnv(gym.Env):
 ########################################################################################################################
 
 class CameraAgent:
+    """
+    Creates a reinforcement learning agent that operates a virtual camera in a PIV experimental setting
+    and provides a training loop for Q-learning.
+    """
 
     def __init__(self,
                  env,
                  learning_rate=0.001,
                  initial_epsilon=1.0,
-                 epsilon_decay=,
-                 final_epsilon=,
+                 epsilon_decay=0.01,
+                 final_epsilon=0.1,
                  discount_factor=0.95):
 
-
-        
-
-
-
-
-
-
+        pass
 
 
 ########################################################################################################################
