@@ -19,6 +19,16 @@ Reinforcement learning environments
 
 .. autoclass:: pykitPIV.ml.PIVEnv
 
+.. autofunction:: pykitPIV.ml.PIVEnv.record_particles
+
+.. autofunction:: pykitPIV.ml.PIVEnv.reset
+
+.. autofunction:: pykitPIV.ml.PIVEnv.step
+
+.. autofunction:: pykitPIV.ml.PIVEnv.render
+
+.. autoclass:: pykitPIV.ml.CameraAgent
+
 **TF-Agents**-based
 ====================================
 

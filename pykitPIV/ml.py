@@ -108,23 +108,90 @@ class PIVEnv(gym.Env):
 
     The agent is free to locate an interrogation window within the larger flow field satisfying certain condition.
 
+    The larger flowfield can be provided by the user, or a synthetic flowfield using **pykitPIV** can be generated.
+
     This is a subclass of ``gymnasium.Env``.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV.ml import PIVEnv
+
+        # Prepare specs for pykitPIV parameters:
+        particle_spec = {'diameters': (1, 1),
+                         'distances': (2, 2),
+                         'densities': (0.2, 0.2),
+                         'diameter_std': 1,
+                         'seeding_mode': 'random'},
+
+        flowfield_spec = {'gaussian_filters': (30,30),
+                          'n_gaussian_filter_iter': 5,
+                          'displacement': (2,2)},
+
+        motion_spec = {'n_steps': 10,
+                       'time_separation': 5,
+                       'particle_loss': (0, 2),
+                       'particle_gain': (0, 2)},
+
+        image_spec = {'exposures': (0.5, 0.9),
+                      'maximum_intensity': 2**16-1,
+                      'laser_beam_thickness': 1,
+                      'laser_over_exposure': 1,
+                      'laser_beam_shape': 0.95,
+                      'alpha': 1/8,
+                      'clip_intensities': True,
+                      'normalize_intensities': False},
+
+        # Initialize the Gymnasium environment:
+        env = PIVEnv(interrogation_window_size=(100,200),
+                     interrogation_window_size_buffer=10,
+                     particle_spec=particle_spec,
+                     flowfield_size=(500,1000),
+                     flowfield_spec=flowfield_spec,
+                     motion_spec=motion_spec,
+                     image_spec=image_spec,
+                     user_flowfield=None,
+                     random_seed=100)
+
+    :param interrogation_window_size: (optional)
+        ``tuple`` of two ``int`` elements specifying the size of the interrogation window in pixels :math:`[\\text{px}]`.
+        The first number is the window height, :math:`H`, the second number is the window width, :math:`W`.
+    :param interrogation_window_size_buffer: (optional)
+        ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the interrogation window size
+        in the width and height direction.
+        This number should be approximately equal to the maximum displacement that particles are subject to
+        in order to allow new particles to arrive into the image area
+        and prevent spurious disappearance of particles near image boundaries.
+    :param user_flowfield: (optional)
+        ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(1, 2, H+2b, W+2b)`,
+        where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
+        :math:`u` and :math:`v` respectively,
+        :math:`H+2b` is the height and :math:`W+2b` is the width of an interrogation window.
+        **Future functionality can include temporal flow fields.**
+    :param random_seed: (optional)
+        ``int`` specifying the random seed for random number generation in ``numpy``.
+        If specified, all image generation is reproducible.
     """
 
     def __init__(self,
                  interrogation_window_size=(128,128),
                  interrogation_window_size_buffer=10,
+                 user_flowfield=None,
+                 flowfield_size=(512, 2048),
+                 flowfield_type='random smooth',
                  particle_spec={'diameters': (2, 4),
                                 'distances': (2, 2),
                                 'densities': (0.05, 0.2),
                                 'diameter_std': 1,
                                 'seeding_mode': 'random'},
-                 flowfield_size=(512,2048),
-                 flowfield_type='random smooth',
                  flowfield_spec={'gaussian_filters': (30,30),
                                  'n_gaussian_filter_iter': 1,
                                  'displacement': (2,2)},
-                 motion_spec={'n_steps': 10},
+                 motion_spec={'n_steps': 10,
+                              'time_separation': 1,
+                              'particle_loss': (0, 2),
+                              'particle_gain': (0, 2)},
                  image_spec={'exposures': (0.5, 0.9),
                              'maximum_intensity': 2**16-1,
                              'laser_beam_thickness': 1,
@@ -133,11 +200,19 @@ class PIVEnv(gym.Env):
                              'alpha': 1/8,
                              'clip_intensities': True,
                              'normalize_intensities': False},
-                 user_flowfield=None,
                  random_seed=None):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+        # Class init:
+
+        # Size of the interrogation window:
+        self.__interrogation_window_size = interrogation_window_size
+
+        # Size of the buffer for the interrogation window:
+        self.__interrogation_window_size_buffer = interrogation_window_size_buffer
+
+        # Specs for all pykitPIV classes:
         self.__particle_spec = particle_spec
         self.__flowfield_spec = flowfield_spec
         self.__motion_spec = motion_spec
@@ -145,28 +220,25 @@ class PIVEnv(gym.Env):
 
         self.__random_seed = random_seed
 
-        # Size of the interrogation window:
-        self.interrogation_window_size = interrogation_window_size
-
-        # Size of the buffer for the interrogation window:
-        self.interrogation_window_size_buffer = interrogation_window_size_buffer
-
-        self.__interrogation_window_size_with_buffer = (self.interrogation_window_size[0] + 2*self.interrogation_window_size_buffer,
-                                                        self.interrogation_window_size[1] + 2*self.interrogation_window_size_buffer)
+        # Compute the total size of the interrogation window:
+        self.__interrogation_window_size_with_buffer = (self.__interrogation_window_size[0] + 2 * self.__interrogation_window_size_buffer,
+                                                        self.__interrogation_window_size[1] + 2 * self.__interrogation_window_size_buffer)
 
         # If the user did not supply their own flow field, a pykitPIV-generated flow field is used:
         if user_flowfield is None:
 
-            # Size of entire visible flow field:
-            self.flowfield_size = flowfield_size
+            # Size of the entire visible flow field:
+            self.__flowfield_size = flowfield_size
+
+            self.__flowfield_type = flowfield_type
 
             # Generate the flow field that is fixed throughout training:
             flowfield = FlowField(n_images=1,
-                                  size=self.flowfield_size,
+                                  size=self.__flowfield_size,
                                   size_buffer=0,
                                   random_seed=self.__random_seed)
 
-            if flowfield_type == 'random smooth':
+            if self.__flowfield_type == 'random smooth':
 
                 flowfield.generate_random_velocity_field(gaussian_filters=self.__flowfield_spec['gaussian_filters'],
                                                          n_gaussian_filter_iter=self.__flowfield_spec['n_gaussian_filter_iter'],
@@ -179,17 +251,21 @@ class PIVEnv(gym.Env):
 
             self.flowfield = user_flowfield
 
-            self.flowfield_size = user.flowfield.shape[2::]
+            self.__flowfield_size = user.flowfield.shape[2::]
 
+        # Observation space for the RL agent: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        self.__admissible_observation_space = (self.flowfield_size[0] - self.__interrogation_window_size_with_buffer[0],
-                                               self.flowfield_size[1] - self.__interrogation_window_size_with_buffer[1])
+        # Calculate the admissible observation space from which the agent can sample the interrogation windows
+        self.__admissible_observation_space = (self.__flowfield_size[0] - self.__interrogation_window_size_with_buffer[0],
+                                               self.__flowfield_size[1] - self.__interrogation_window_size_with_buffer[1])
 
         # The observation space is the camera's location in the virtual environement. In practice, this is
         # the position of the camera looking at a specific interrogation window.
         self.observation_space = gym.spaces.Box(low=np.array([0, 0]),
                                             high=np.array([self.__admissible_observation_space[0], self.__admissible_observation_space[1]]),
                                             dtype=int)
+
+        # Action space for the RL agent: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Actions are the camera's movement on the pixel grid:
         self.action_space = gym.spaces.Discrete(5)
@@ -203,9 +279,14 @@ class PIVEnv(gym.Env):
             4: np.array([0, 0]),  # stay
         }
 
-    def _record_particles(self, camera_position):
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def record_particles(self, camera_position):
         """
         Creates virtual PIV recordings based on the current interrogation window.
+
+        :param camera_position:
+            ``tuple`` specifying the camera position in pixels :math:`[\\text{px}]`. This defines the bottom-left corner of the interrogation window.
         """
 
         # Extract the velocity field under the current interrogation window:
@@ -222,8 +303,8 @@ class PIVEnv(gym.Env):
 
         # Initialize a particle object:
         particles = Particle(n_images=1,
-                             size=self.interrogation_window_size,
-                             size_buffer=self.interrogation_window_size_buffer,
+                             size=self.__interrogation_window_size,
+                             size_buffer=self.__interrogation_window_size_buffer,
                              diameters=self.__particle_spec['diameters'],
                              distances=self.__particle_spec['distances'],
                              densities=self.__particle_spec['densities'],
@@ -233,19 +314,24 @@ class PIVEnv(gym.Env):
 
         # Initialize a flow field object:
         flowfield = FlowField(n_images=1,
-                              size=self.interrogation_window_size,
-                              size_buffer=self.interrogation_window_size_buffer,
+                              size=self.__interrogation_window_size,
+                              size_buffer=self.__interrogation_window_size_buffer,
                               random_seed=self.__random_seed)
 
         print(velocity_field_at_interrogation_window.shape)
 
-        print(self.interrogation_window_size)
-        print(self.interrogation_window_size_buffer)
+        print(self.__interrogation_window_size)
+        print(self.__interrogation_window_size_buffer)
 
         flowfield.upload_velocity_field(velocity_field_at_interrogation_window)
 
         # Initialize a motion object:
-        motion = Motion(particles, flowfield)
+        motion = Motion(particles,
+                        flowfield,
+                        time_separation=self.__motion_spec['time_separation'],
+                        particle_loss=self.__motion_spec['particle_loss'],
+                        particle_gain=self.__motion_spec['particle_gain'],
+                        random_seed=self.__random_seed)
         motion.runge_kutta_4th(n_steps=self.__motion_spec['n_steps'])
 
         # Initialize an image object:
@@ -263,22 +349,7 @@ class PIVEnv(gym.Env):
                                   clip_intensities=self.__image_spec['clip_intensities'],
                                   normalize_intensities=self.__image_spec['normalize_intensities'])
 
-        image.remove_buffers()
-
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-        # Visualize field:
-        vmin = np.min(self.flowfield.velocity_field_magnitude[0, 0, :, :])
-        vmax = np.max(self.flowfield.velocity_field_magnitude[0, 0, :, :])
-
-        plt.imshow(velocity_field_magnitude_at_interrogation_window[0, 0, :, :],
-                   origin='lower',
-                   vmin=vmin,
-                   vmax=vmax)
-
-        plt.colorbar()
-
-        return image.images_I1, image.images_I2
+        return image
 
     def _get_obs(self):
 
@@ -289,7 +360,9 @@ class PIVEnv(gym.Env):
         pass
 
     def reset(self):
-
+        """
+        Resets
+        """
 
         # Can generate a new flow field, if the user didn't specify a fixed flow field to use.
 
@@ -311,7 +384,9 @@ class PIVEnv(gym.Env):
         return observation, info
 
     def step(self):
-
+        """
+        Steps
+        """
 
         pass
 
@@ -324,11 +399,14 @@ class PIVEnv(gym.Env):
 
 
     def render(self,
-                   camera_position,
-                   c='white',
-                   s=10,
-                   lw=2,
-                   figsize=None):
+               camera_position,
+               c='white',
+               s=10,
+               lw=2,
+               figsize=None):
+        """
+        Renders
+        """
 
         if figsize is not None:
             plt.figure(figsize=figsize)
