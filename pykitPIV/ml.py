@@ -404,7 +404,7 @@ class PIVEnv(gym.Env):
                figsize=None,
                filename=None):
         """
-        Renders the virual wind tunnel with the current interrogation window.
+        Renders the virtual wind tunnel with the current interrogation window.
 
         **Example:**
 
