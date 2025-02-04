@@ -125,9 +125,11 @@ class PIVEnv(gym.Env):
                          'diameter_std': 1,
                          'seeding_mode': 'random'},
 
-        flowfield_spec = {'gaussian_filters': (30,30),
-                          'n_gaussian_filter_iter': 5,
-                          'displacement': (2,2)},
+        flowfield_spec = {'flowfield_size': (512, 2048),
+                          'flowfield_type': 'random smooth',
+                          'gaussian_filters': (30, 30),
+                          'n_gaussian_filter_iter': 1,
+                          'displacement': (2, 2)}
 
         motion_spec = {'n_steps': 10,
                        'time_separation': 5,
@@ -147,27 +149,41 @@ class PIVEnv(gym.Env):
         env = PIVEnv(interrogation_window_size=(100,200),
                      interrogation_window_size_buffer=10,
                      particle_spec=particle_spec,
-                     flowfield_size=(500,1000),
-                     flowfield_spec=flowfield_spec,
                      motion_spec=motion_spec,
                      image_spec=image_spec,
+                     flowfield_spec=flowfield_spec,
                      user_flowfield=None,
                      random_seed=100)
 
-    :param interrogation_window_size: (optional)
+    :param interrogation_window_size:
         ``tuple`` of two ``int`` elements specifying the size of the interrogation window in pixels :math:`[\\text{px}]`.
         The first number is the window height, :math:`H`, the second number is the window width, :math:`W`.
-    :param interrogation_window_size_buffer: (optional)
+    :param interrogation_window_size_buffer:
         ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the interrogation window size
         in the width and height direction.
         This number should be approximately equal to the maximum displacement that particles are subject to
         in order to allow new particles to arrive into the image area
         and prevent spurious disappearance of particles near image boundaries.
+    :param particle_spec:
+        ``dict`` or ``particle.ParticleSpec`` object containing specifications for constructing
+        an instance of ``Particle`` class.
+    :param motion_spec:
+        ``dict`` or ``motion.MotionSpec`` object containing specifications for constructing
+        an instance of ``Motion`` class.
+    :param image_spec:
+        ``dict`` or ``image.ImageSpec`` object containing specifications for constructing
+        an instance of ``Image`` class.
+    :param flowfield_spec: (optional)
+        ``dict`` or ``flowfield.FlowFieldSpec`` object containing specifications for constructing
+        an instance of ``FlowField`` class. If not specified, the user has to provide their own flow field
+        through the ``user_flowfield`` parameter.
     :param user_flowfield: (optional)
         ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(1, 2, H+2b, W+2b)`,
         where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
         :math:`u` and :math:`v` respectively,
         :math:`H+2b` is the height and :math:`W+2b` is the width of an interrogation window.
+        If not specified, the user has to provide a flow field specification
+        through the ``flowfield_spec`` parameter to create a synthetic **pykitPIV**-generated flow field.
         **Future functionality can include temporal flow fields.**
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
@@ -175,31 +191,13 @@ class PIVEnv(gym.Env):
     """
 
     def __init__(self,
-                 interrogation_window_size=(128,128),
-                 interrogation_window_size_buffer=10,
+                 interrogation_window_size,
+                 interrogation_window_size_buffer,
+                 particle_spec,
+                 motion_spec,
+                 image_spec,
+                 flowfield_spec=None,
                  user_flowfield=None,
-                 flowfield_size=(512, 2048),
-                 flowfield_type='random smooth',
-                 particle_spec={'diameters': (2, 4),
-                                'distances': (2, 2),
-                                'densities': (0.05, 0.2),
-                                'diameter_std': 1,
-                                'seeding_mode': 'random'},
-                 flowfield_spec={'gaussian_filters': (30,30),
-                                 'n_gaussian_filter_iter': 1,
-                                 'displacement': (2,2)},
-                 motion_spec={'n_steps': 10,
-                              'time_separation': 1,
-                              'particle_loss': (0, 2),
-                              'particle_gain': (0, 2)},
-                 image_spec={'exposures': (0.5, 0.9),
-                             'maximum_intensity': 2**16-1,
-                             'laser_beam_thickness': 1,
-                             'laser_over_exposure': 1,
-                             'laser_beam_shape': 0.95,
-                             'alpha': 1/8,
-                             'clip_intensities': True,
-                             'normalize_intensities': False},
                  random_seed=None):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -228,9 +226,9 @@ class PIVEnv(gym.Env):
         if user_flowfield is None:
 
             # Size of the entire visible flow field:
-            self.__flowfield_size = flowfield_size
+            self.__flowfield_size = self.__flowfield_spec['flowfield_size']
 
-            self.__flowfield_type = flowfield_type
+            self.__flowfield_type = self.__flowfield_spec['flowfield_type']
 
             # Generate the flow field that is fixed throughout training:
             flowfield = FlowField(n_images=1,
@@ -250,6 +248,8 @@ class PIVEnv(gym.Env):
         else:
 
             self.flowfield = user_flowfield
+
+            self.__flowfield_type = 'user'
 
             self.__flowfield_size = user.flowfield.shape[2::]
 
@@ -426,8 +426,6 @@ class PIVEnv(gym.Env):
 
         .. image:: ../images/ml_PIVEnv_render.png
             :width: 500
-
-
         """
 
         if figsize is not None:
