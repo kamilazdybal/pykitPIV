@@ -114,17 +114,36 @@ class PIVEnv(gym.Env):
     def __init__(self,
                  interrogation_window_size=(128,128),
                  interrogation_window_size_buffer=10,
+                 particle_spec={'diameters': (2, 4),
+                                'distances': (2, 2),
+                                'densities': (0.05, 0.2),
+                                'diameter_std': 1,
+                                'seeding_mode': 'random'},
                  flowfield_size=(512,2048),
                  flowfield_type='random smooth',
                  flowfield_spec={'gaussian_filters': (30,30),
                                  'n_gaussian_filter_iter': 1,
                                  'displacement': (2,2)},
+                 motion_spec={'n_steps': 10},
+                 image_spec={'exposures': (0.5, 0.9),
+                             'maximum_intensity': 2**16-1,
+                             'laser_beam_thickness': 1,
+                             'laser_over_exposure': 1,
+                             'laser_beam_shape': 0.95,
+                             'alpha': 1/8,
+                             'clip_intensities': True,
+                             'normalize_intensities': False},
                  user_flowfield=None,
                  random_seed=None):
 
-        self.__flowfield_spec = flowfield_spec
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        self.random_seed = random_seed
+        self.__particle_spec = particle_spec
+        self.__flowfield_spec = flowfield_spec
+        self.__motion_spec = motion_spec
+        self.__image_spec = image_spec
+
+        self.__random_seed = random_seed
 
         # Size of the interrogation window:
         self.interrogation_window_size = interrogation_window_size
@@ -145,7 +164,7 @@ class PIVEnv(gym.Env):
             flowfield = FlowField(n_images=1,
                                   size=self.flowfield_size,
                                   size_buffer=0,
-                                  random_seed=self.random_seed)
+                                  random_seed=self.__random_seed)
 
             if flowfield_type == 'random smooth':
 
@@ -196,12 +215,53 @@ class PIVEnv(gym.Env):
         w_start = camera_position[1]
         w_stop = w_start + self.__interrogation_window_size_with_buffer[1]
 
-        velocity_field_at_interrogation_window = self.flowfield.velocity_field_magnitude[0, 0, h_start:h_stop, w_start:w_stop]
+        velocity_field_magnitude_at_interrogation_window = self.flowfield.velocity_field_magnitude[:, :, h_start:h_stop, w_start:w_stop]
+        velocity_field_at_interrogation_window = self.flowfield.velocity_field[:, :, h_start:h_stop, w_start:w_stop]
+
+        # Construct virtual PIV measurements: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Initialize a particle object:
+        particles = Particle(n_images=1,
+                             size=self.interrogation_window_size,
+                             size_buffer=self.interrogation_window_size_buffer,
+                             diameters=self.__particle_spec['diameters'],
+                             distances=self.__particle_spec['distances'],
+                             densities=self.__particle_spec['densities'],
+                             diameter_std=self.__particle_spec['diameter_std'],
+                             seeding_mode=self.__particle_spec['seeding_mode'],
+                             random_seed=self.__random_seed)
+
+        # Initialize a flow field object:
+        flowfield = FlowField(n_images=1,
+                              size=self.interrogation_window_size,
+                              size_buffer=self.interrogation_window_size_buffer,
+                              random_seed=self.__random_seed)
+
+        flowfield.upload_velocity_field(velocity_field_at_interrogation_window)
+
+        # Initialize a motion object:
+        motion = Motion(particles, flowfield)
+        motion.runge_kutta_4th(n_steps=self.__motion_spec['n_steps'])
+
+        # Initialize an image object:
+        image = Image(random_seed=self.__random_seed)
+        image.add_particles(particles)
+        image.add_flowfield(flowfield)
+        image.add_motion(motion)
+
+        image.add_reflected_light(exposures=,
+                                  maximum_intensity=,
+                                  laser_beam_thickness=,
+                                  laser_over_exposure=,
+                                  laser_beam_shape=,
+                                  alpha=,
+                                  clip_intensities=,
+                                  normalize_intensities=)
 
         vmin = np.min(self.flowfield.velocity_field_magnitude[0, 0, :, :])
         vmax = np.max(self.flowfield.velocity_field_magnitude[0, 0, :, :])
 
-        plt.imshow(velocity_field_at_interrogation_window,
+        plt.imshow(velocity_field_magnitude_at_interrogation_window[0, 0, :, :],
                    origin='lower',
                    vmin=vmin,
                    vmax=vmax)
