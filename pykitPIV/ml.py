@@ -285,8 +285,22 @@ class PIVEnv(gym.Env):
         """
         Creates virtual PIV recordings based on the current interrogation window.
 
+        **Example:**
+
+        .. code:: python
+
+            # Once the environment has been initialized:
+            env = PIVEnv(...)
+
+            # We can sample an observation which is the camera position:
+            camera_position = env.observation_space.sample()
+
+            # We can now create a virtual PIV recording at that camera position:
+            image_obj = env.record_particles(camera_position)
+
         :param camera_position:
-            ``tuple`` specifying the camera position in pixels :math:`[\\text{px}]`. This defines the bottom-left corner of the interrogation window.
+            ``tuple`` specifying the camera position in pixels :math:`[\\text{px}]`.
+            This defines the bottom-left corner of the interrogation window.
         """
 
         # Extract the velocity field under the current interrogation window:
@@ -351,17 +365,9 @@ class PIVEnv(gym.Env):
 
         return image
 
-    def _get_obs(self):
-
-        return self.observation_space.sample()
-
-    def _get_info(self):
-
-        pass
-
     def reset(self):
         """
-        Resets
+        Resets the environement to a random initial state.
         """
 
         # Can generate a new flow field, if the user didn't specify a fixed flow field to use.
@@ -370,32 +376,24 @@ class PIVEnv(gym.Env):
         # Create an initial camera position:
         camera_position = self.observation_space.sample()
 
+        # Record PIV images at that camera position:
+        image_obj = self.record_particles(camera_position)
+
+        # Perform LIMA inference of the displacement field from the recorded PIV images:
+        # General abstraction will be:
+        # prediction = LIMA(image_obj)
 
 
 
 
-
-
-
-
-        observation = self._get_obs()
-        info = self._get_info()
-
-        return observation, info
+        return camera_position
 
     def step(self):
         """
-        Steps
+        Makes one step in the environement which moves the camera to a new position.
         """
 
         pass
-
-
-
-
-
-
-
 
 
     def render(self,
@@ -405,7 +403,31 @@ class PIVEnv(gym.Env):
                lw=2,
                figsize=None):
         """
-        Renders
+        Renders the virual wind tunnel with the current interrogation window.
+
+        **Example:**
+
+        .. code:: python
+
+            # Once the environment has been initialized:
+            env = PIVEnv(...)
+
+            # We can sample an observation which is the camera position:
+            camera_position = env.observation_space.sample()
+
+            # And we can render the virtual wind tunnel with the current interrogation window:
+            env.render(camera_position,
+                       c='white',
+                       s=20,
+                       lw=1,
+                       figsize=(12,6))
+
+        One example rendering of the virtual wind tunnel can look like this:
+
+        .. image:: ../images/ml_PIVEnv_render.png
+            :width: 500
+
+
         """
 
         if figsize is not None:
@@ -424,7 +446,7 @@ class PIVEnv(gym.Env):
 
         plt.colorbar()
 
-
+        return plt
 
 ########################################################################################################################
 ########################################################################################################################
