@@ -151,8 +151,8 @@ class PIVEnv(gym.Env):
         # Size of the buffer for the interrogation window:
         self.interrogation_window_size_buffer = interrogation_window_size_buffer
 
-        self.__interrogation_window_size_with_buffer = (self.interrogation_window_size[0] + self.interrogation_window_size_buffer,
-                                                        self.interrogation_window_size[1] + self.interrogation_window_size_buffer)
+        self.__interrogation_window_size_with_buffer = (self.interrogation_window_size[0] + 2*self.interrogation_window_size_buffer,
+                                                        self.interrogation_window_size[1] + 2*self.interrogation_window_size_buffer)
 
         # If the user did not supply their own flow field, a pykitPIV-generated flow field is used:
         if user_flowfield is None:
@@ -237,6 +237,11 @@ class PIVEnv(gym.Env):
                               size_buffer=self.interrogation_window_size_buffer,
                               random_seed=self.__random_seed)
 
+        print(velocity_field_at_interrogation_window.shape)
+
+        print(self.interrogation_window_size)
+        print(self.interrogation_window_size_buffer)
+
         flowfield.upload_velocity_field(velocity_field_at_interrogation_window)
 
         # Initialize a motion object:
@@ -249,15 +254,20 @@ class PIVEnv(gym.Env):
         image.add_flowfield(flowfield)
         image.add_motion(motion)
 
-        image.add_reflected_light(exposures=,
-                                  maximum_intensity=,
-                                  laser_beam_thickness=,
-                                  laser_over_exposure=,
-                                  laser_beam_shape=,
-                                  alpha=,
-                                  clip_intensities=,
-                                  normalize_intensities=)
+        image.add_reflected_light(exposures=self.__image_spec['exposures'],
+                                  maximum_intensity=self.__image_spec['maximum_intensity'],
+                                  laser_beam_thickness=self.__image_spec['laser_beam_thickness'],
+                                  laser_over_exposure=self.__image_spec['laser_over_exposure'],
+                                  laser_beam_shape=self.__image_spec['laser_beam_shape'],
+                                  alpha=self.__image_spec['alpha'],
+                                  clip_intensities=self.__image_spec['clip_intensities'],
+                                  normalize_intensities=self.__image_spec['normalize_intensities'])
 
+        image.remove_buffers()
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Visualize field:
         vmin = np.min(self.flowfield.velocity_field_magnitude[0, 0, :, :])
         vmax = np.max(self.flowfield.velocity_field_magnitude[0, 0, :, :])
 
@@ -267,6 +277,8 @@ class PIVEnv(gym.Env):
                    vmax=vmax)
 
         plt.colorbar()
+
+        return image.images_I1, image.images_I2
 
     def _get_obs(self):
 
