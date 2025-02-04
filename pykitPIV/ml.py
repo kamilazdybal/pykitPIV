@@ -123,18 +123,18 @@ class PIVEnv(gym.Env):
                          'distances': (2, 2),
                          'densities': (0.2, 0.2),
                          'diameter_std': 1,
-                         'seeding_mode': 'random'},
+                         'seeding_mode': 'random'}
 
-        flowfield_spec = {'flowfield_size': (512, 2048),
+        flowfield_spec = {'flowfield_size': (500, 1000),
                           'flowfield_type': 'random smooth',
                           'gaussian_filters': (30, 30),
-                          'n_gaussian_filter_iter': 1,
+                          'n_gaussian_filter_iter': 5,
                           'displacement': (2, 2)}
 
         motion_spec = {'n_steps': 10,
                        'time_separation': 5,
                        'particle_loss': (0, 2),
-                       'particle_gain': (0, 2)},
+                       'particle_gain': (0, 2)}
 
         image_spec = {'exposures': (0.5, 0.9),
                       'maximum_intensity': 2**16-1,
@@ -143,7 +143,7 @@ class PIVEnv(gym.Env):
                       'laser_beam_shape': 0.95,
                       'alpha': 1/8,
                       'clip_intensities': True,
-                      'normalize_intensities': False},
+                      'normalize_intensities': False}
 
         # Initialize the Gymnasium environment:
         env = PIVEnv(interrogation_window_size=(100,200),
@@ -401,7 +401,8 @@ class PIVEnv(gym.Env):
                c='white',
                s=10,
                lw=2,
-               figsize=None):
+               figsize=None,
+               filename=None):
         """
         Renders the virual wind tunnel with the current interrogation window.
 
@@ -425,7 +426,7 @@ class PIVEnv(gym.Env):
         One example rendering of the virtual wind tunnel can look like this:
 
         .. image:: ../images/ml_PIVEnv_render.png
-            :width: 500
+            :width: 800
         """
 
         if figsize is not None:
@@ -443,6 +444,8 @@ class PIVEnv(gym.Env):
         ax.add_patch(rect)
 
         plt.colorbar()
+
+        plt.savefig(filename, dpi=300, bbox_inches='tight')
 
         return plt
 
