@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import gymnasium as gym
 import pygame
-from tf_agents.environments import py_environment
+# from tf_agents.environments import py_environment
 from pykitPIV.checks import *
 from pykitPIV.flowfield import FlowField
 from pykitPIV.motion import Motion
@@ -482,14 +482,14 @@ class CameraAgent:
 ########################################################################################################################
 ########################################################################################################################
 
-class PIVPyEnvironment(py_environment.PyEnvironment):
-    """
-    Provides a virtual PIV/BOS **TF-Agents**-based environment for a reinforcement learning (RL) agent.
-
-    This is a subclass of ``tf_agents.environments.py_environment.PyEnvironment``.
-    """
-
-    def __init__(self, size=(128,128)):
-
-        # The size of the square grid
-        self.size = size
+# class PIVPyEnvironment(py_environment.PyEnvironment):
+#     """
+#     Provides a virtual PIV/BOS **TF-Agents**-based environment for a reinforcement learning (RL) agent.
+#
+#     This is a subclass of ``tf_agents.environments.py_environment.PyEnvironment``.
+#     """
+#
+#     def __init__(self, size=(128,128)):
+#
+#         # The size of the square grid
+#         self.size = size

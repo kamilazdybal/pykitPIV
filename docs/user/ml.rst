@@ -32,4 +32,3 @@ Reinforcement learning environments
 **TF-Agents**-based
 ====================================
 
-.. autoclass:: pykitPIV.ml.PIVPyEnvironment
