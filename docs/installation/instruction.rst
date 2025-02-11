@@ -34,6 +34,8 @@ Additional requirements for the ``ml`` module:
 .. code-block:: bash
 
     pip install torchvision
+    pip install tensorflow
+    pip install tf-agents
     pip install gymnasium
     pip install tqdm
     pip install onnxruntime

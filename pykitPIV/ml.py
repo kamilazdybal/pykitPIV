@@ -185,6 +185,12 @@ class PIVEnv(gym.Env):
         If not specified, the user has to provide a flow field specification
         through the ``flowfield_spec`` parameter to create a synthetic **pykitPIV**-generated flow field.
         **Future functionality can include temporal flow fields.**
+    :param inference_model: (optional)
+        inference model for predicting flow targets from PIV image intensities. It can be a CNN-based or WIDIM-based model.
+        If set to ``None``, inference is not done, instead the true flow within the interrogation window is returned.
+        The inference model is assumed to be calibrated, i.e., it must be able to take as an input the raw PIV images,
+        and pre-process them as needed. The inference model has to have a method ``inference_model.inference()``
+        implemented that only returns the predicted flow targets tensor of size :math:`(1, 2, H+2b, W+2b)`.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
         If specified, all image generation is reproducible.
@@ -198,6 +204,7 @@ class PIVEnv(gym.Env):
                  image_spec,
                  flowfield_spec=None,
                  user_flowfield=None,
+                 inference_model=None,
                  random_seed=None):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -216,6 +223,7 @@ class PIVEnv(gym.Env):
         self.__motion_spec = motion_spec
         self.__image_spec = image_spec
 
+        self.__inference_model = inference_model
         self.__random_seed = random_seed
 
         # Compute the total size of the interrogation window:
@@ -379,18 +387,25 @@ class PIVEnv(gym.Env):
         # Record PIV images at that camera position:
         image_obj = self.record_particles(camera_position)
 
-        # Perform LIMA inference of the displacement field from the recorded PIV images:
-        # General abstraction will be:
-        # prediction = LIMA(image_obj)
+        images_I1 = image_obj.remove_buffers(image_obj.images_I1)
+        images_I2 = image_obj.remove_buffers(image_obj.images_I2)
 
+        images_tensor = image_obj.concatenate_tensors((images_I1, images_I2))
 
+        targets_tensor = image_obj.remove_buffers(image_obj.get_displacement_field())
 
+        if self.__inference_model is not None:
+            # Perform inference of the displacement field from the recorded PIV images:
+            prediction_tensor = self.__inference_model.inference(images_tensor[0,:,:,:].astype(np.float32))
+        else:
+            # Return the true displacement field under this interrogation window:
+            prediction_tensor = targets_tensor
 
-        return camera_position
+        return camera_position, prediction_tensor, targets_tensor
 
     def step(self):
         """
-        Makes one step in the environement which moves the camera to a new position.
+        Makes one step in the environment which moves the camera to a new position.
         """
 
         pass
