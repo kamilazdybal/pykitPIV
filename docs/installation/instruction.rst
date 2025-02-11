@@ -35,8 +35,11 @@ Additional requirements for the ``ml`` module:
 
     pip install torchvision
     pip install gymnasium
+    pip install tqdm
+    pip install onnxruntime
+    pip install pygame
 
-Optional for documentation builds:
+Optional for local documentation builds:
 
 .. code-block:: bash
 
