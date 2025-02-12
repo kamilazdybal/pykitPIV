@@ -251,8 +251,6 @@ class PIVEnv(gym.Env):
                                                          n_gaussian_filter_iter=self.__flowfield_spec['n_gaussian_filter_iter'],
                                                          displacement=self.__flowfield_spec['displacement'])
 
-                print(np.max(flowfield.velocity_field_magnitude[0,0,:,:]))
-
             self.flowfield = flowfield
 
         # Otherwise, use the flow field provided by the user:
@@ -343,11 +341,6 @@ class PIVEnv(gym.Env):
                               size_buffer=self.__interrogation_window_size_buffer,
                               random_seed=self.__random_seed)
 
-        print(velocity_field_at_interrogation_window.shape)
-
-        print(self.__interrogation_window_size)
-        print(self.__interrogation_window_size_buffer)
-
         flowfield.upload_velocity_field(velocity_field_at_interrogation_window)
 
         # Initialize a motion object:
@@ -431,13 +424,8 @@ class PIVEnv(gym.Env):
             This defines the bottom-left corner of the interrogation window.
         """
 
-        print(action)
-        print(self.__camera_position)
-
         # Map the action (element of {0,1,2,3,4}) to the new camera position:
         direction = self._action_to_direction[action]
-
-        print(direction)
 
         # Take the step in the environment:
         # (We clip the camera position to make sure that we don't leave the grid bounds)
@@ -446,8 +434,6 @@ class PIVEnv(gym.Env):
 
         # Reset the camera position:
         self.__camera_position = camera_position
-
-        print(self.__camera_position)
 
         # An environment is completed if and only if the agent has reached the target
         terminated = False
@@ -563,7 +549,7 @@ class PIVEnv(gym.Env):
         prediction_magnitude = np.sqrt(self.__prediction_tensor[0, 0, :, :] ** 2 + self.__prediction_tensor[0, 1, :, :] ** 2)
         ims = plt.imshow(prediction_magnitude, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
         plt.colorbar(ims)
-        plt.title('Inference', fontsize=fontsize))
+        plt.title('Inference', fontsize=fontsize)
 
         plt.savefig(filename, dpi=300, bbox_inches='tight')
 
