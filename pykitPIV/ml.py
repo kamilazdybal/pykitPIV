@@ -404,16 +404,29 @@ class PIVEnv(gym.Env):
 
         return prediction_tensor, targets_tensor
 
-    def reset(self):
+    def reset(self, imposed_camera_position=None):
         """
         Resets the environement to a random initial state.
         """
 
+        # THERE HAS TO BE A CHECK HERE WHETHER THE IMPOSED CAMERA POSITION IS POSSIBLE!
+
+
+
+
+
+
+
+
         # Future functionality: Can generate a new flow field, if the user didn't specify a fixed flow field to use.
 
-        # Create an initial camera position:
-        camera_position = self.observation_space.sample()
-        self.__camera_position = camera_position
+        if imposed_camera_position is None:
+            # Create an initial camera position:
+            camera_position = self.observation_space.sample()
+            self.__camera_position = camera_position
+        else:
+            camera_position = imposed_camera_position
+            self.__camera_position = camera_position
 
         # Record PIV images at that camera position:
         image_obj = self.record_particles(camera_position)
@@ -484,6 +497,10 @@ class PIVEnv(gym.Env):
                figsize=None,
                normalize_cbars=False,
                cmap='viridis',
+               add_streamplot=False,
+               streamplot_density=1,
+               streamplot_color='k',
+               streamplot_linewidth=1,
                filename=None):
         """
         Renders the virtual wind tunnel with the current interrogation window.
@@ -523,9 +540,22 @@ class PIVEnv(gym.Env):
         spec = figure.add_gridspec(ncols=9, nrows=3, width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1, 0.2, 1], height_ratios=[2, 0.2, 1])
 
         figure_WT = figure.add_subplot(spec[0, 0:9])
-        ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], cmap=cmap, origin='lower')
+        ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], cmap=cmap, origin='lower', zorder=0)
         plt.colorbar(ims)
-        plt.scatter(camera_position[1]-0.5, camera_position[0]-0.5, c=c, s=s)
+
+        if add_streamplot:
+            X = np.arange(0, self.flowfield.size[1], 1)
+            Y = np.arange(0, self.flowfield.size[0], 1)
+
+            plt.streamplot(X, Y,
+                           self.flowfield.velocity_field[0, 0, :, :],
+                           self.flowfield.velocity_field[0, 1, :, :],
+                           density=streamplot_density,
+                           color=streamplot_color,
+                           linewidth=streamplot_linewidth,
+                           zorder=1)
+
+        plt.scatter(camera_position[1]-0.5, camera_position[0]-0.5, c=c, s=s, zorder=2)
 
         if normalize_cbars:
             vmin = np.min(self.flowfield.velocity_field_magnitude[0,0,:,:])
@@ -538,7 +568,7 @@ class PIVEnv(gym.Env):
         rect = patches.Rectangle((camera_position[1]-0.5, camera_position[0]-0.5),
                                  self.__interrogation_window_size_with_buffer[1],
                                  self.__interrogation_window_size_with_buffer[0],
-                                 linewidth=lw, edgecolor=c, facecolor='none')
+                                 linewidth=lw, edgecolor=c, facecolor='none', zorder=2)
         ax = plt.gca()
         ax.add_patch(rect)
         plt.title('Virtual wind tunnel', fontsize=fontsize)
@@ -546,8 +576,21 @@ class PIVEnv(gym.Env):
         # Visualize the target under the interrogation window:
         figure.add_subplot(spec[2, 0])
         targets_magnitude = np.sqrt(self.__targets_tensor[0,0,:,:]**2 + self.__targets_tensor[0,1,:,:]**2)
-        ims = plt.imshow(targets_magnitude, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
+        ims = plt.imshow(targets_magnitude, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, zorder=0)
         plt.colorbar(ims)
+
+        if add_streamplot:
+            X = np.arange(0, self.__interrogation_window_size[1], 1)
+            Y = np.arange(0, self.__interrogation_window_size[0], 1)
+
+            plt.streamplot(X, Y,
+                           self.__targets_tensor[0,0,:,:],
+                           self.__targets_tensor[0,1,:,:],
+                           density=streamplot_density/5,
+                           color=streamplot_color,
+                           linewidth=streamplot_linewidth,
+                           zorder=1)
+
         plt.title('Target', fontsize=fontsize)
 
         # Visualize I1:
@@ -569,6 +612,19 @@ class PIVEnv(gym.Env):
         prediction_magnitude = np.sqrt(self.__prediction_tensor[0, 0, :, :] ** 2 + self.__prediction_tensor[0, 1, :, :] ** 2)
         ims = plt.imshow(prediction_magnitude, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
         plt.colorbar(ims)
+
+        if add_streamplot:
+            X = np.arange(0, self.__interrogation_window_size[1], 1)
+            Y = np.arange(0, self.__interrogation_window_size[0], 1)
+
+            plt.streamplot(X, Y,
+                           self.__prediction_tensor[0,0,:,:],
+                           self.__prediction_tensor[0,1,:,:],
+                           density=streamplot_density/5,
+                           color=streamplot_color,
+                           linewidth=streamplot_linewidth,
+                           zorder=1)
+
         plt.title('Inference', fontsize=fontsize)
 
         # Visualize the error map between the target and the inference:
