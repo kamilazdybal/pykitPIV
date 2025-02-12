@@ -84,6 +84,10 @@ class Motion:
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         percentage of lost particles between two consecutive PIV images. This percentage of particles from image :math:`I_1` will be randomly
         added in image :math:`I_2`. This parameter mimics the gain of luminosity for new particles that arrive into the laser plane.
+    :param verbose: (optional)
+        ``bool`` specifying if the verbose print statements should be displayed.
+    :param random_seed: (optional)
+        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
 
     **Attributes:**
 
@@ -138,6 +142,9 @@ class Motion:
         # Check that a velocity field is present in the FlowField class object:
         if flowfield.velocity_field is None:
             raise AttributeError("No velocity field is generated in the FlowField class object.")
+
+        if not isinstance(verbose, bool):
+            raise ValueError("Parameter `verbose` has to be of type 'bool'.")
 
         if random_seed is not None:
             if type(random_seed) != int:

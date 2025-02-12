@@ -30,6 +30,8 @@ class Image:
         # Initialize an image object:
         image = Image(random_seed=100)
 
+    :param verbose: (optional)
+        ``bool`` specifying if the verbose print statements should be displayed.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
 
@@ -61,6 +63,8 @@ class Image:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Input parameter check:
+        if not isinstance(verbose, bool):
+            raise ValueError("Parameter `verbose` has to be of type 'bool'.")
 
         if random_seed is not None:
             if type(random_seed) != int:
