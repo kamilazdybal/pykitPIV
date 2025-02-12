@@ -107,6 +107,13 @@ class PIVEnv(gym.Env):
     Provides a virtual PIV **Gymnasium**-based environment for a reinforcement learning (RL) agent.
 
     The agent is free to locate an interrogation window within the larger flow field satisfying certain condition.
+    The agent moves smoothly from one interrogation window to the next, always performing one of the five actions:
+
+    - `0`: Move up
+    - `1`: Move right
+    - `2`: Move down
+    - `3`: Move left
+    - `4`: Stay
 
     The larger flowfield can be provided by the user, or a synthetic flowfield using **pykitPIV** can be generated.
 
@@ -288,6 +295,14 @@ class PIVEnv(gym.Env):
             4: np.array([0, 0]),  # stay
         }
 
+        self._action_to_verbose_direction = {
+            0: 'Up',
+            1: 'Right',
+            2: 'Down'
+            3: 'Left'
+            4: 'Stay'
+        }
+
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def record_particles(self, camera_position):
@@ -413,7 +428,9 @@ class PIVEnv(gym.Env):
 
         return camera_position, prediction_tensor, targets_tensor
 
-    def step(self, action):
+    def step(self,
+             action,
+             verbose=False):
         """
         Makes one step in the environment which moves the camera to a new position, and computes the associated reward
         for taking that step. The reward is computed based on the PIV images seen at that position, converted
@@ -426,6 +443,9 @@ class PIVEnv(gym.Env):
 
         # Map the action (element of {0,1,2,3,4}) to the new camera position:
         direction = self._action_to_direction[action]
+
+        if verbose:
+            print('Action ' + str(action) + ': ' + self._action_to_verbose_direction[action])
 
         # Take the step in the environment:
         # (We clip the camera position to make sure that we don't leave the grid bounds)
