@@ -102,6 +102,7 @@ class Motion:
                  time_separation=1,
                  particle_loss=(0, 2),
                  particle_gain=(0, 2),
+                 verbose=False,
                  random_seed=None):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,6 +152,7 @@ class Motion:
         self.__flowfield = flowfield
         self.__time_separation = time_separation
         self.__particle_loss = particle_loss
+        self.__verbose = verbose
         self.__random_seed = random_seed
 
         # Initialize particle coordinates:
@@ -249,7 +251,7 @@ class Motion:
         idx_removed = np.random.choice(np.array([i for i in range(0,n_particles)]), int(current_loss_percentage*n_particles/100), replace=False)
         idx_retained = [ii for ii in range(0, n_particles) if ii not in idx_removed]
 
-        print('Image ' + str(idx+1) + ':\t' + str(n_particles - len(idx_retained)) + ' particles lost')
+        if self.__verbose: print('Image ' + str(idx+1) + ':\t' + str(n_particles - len(idx_retained)) + ' particles lost')
 
         return idx_retained
 

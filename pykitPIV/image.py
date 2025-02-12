@@ -55,6 +55,7 @@ class Image:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def __init__(self,
+                 verbose=False,
                  random_seed=None):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,6 +71,7 @@ class Image:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Class init:
+        self.__verbose = verbose
         self.__random_seed = random_seed
 
         # Initialize images:
@@ -160,7 +162,7 @@ class Image:
         self.__images_I1 = self.__particles.particle_positions
         self.__images_I2 = self.__particles.particle_positions
 
-        print('Particles added to the image.')
+        if self.__verbose: print('Particles added to the image.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -205,7 +207,7 @@ class Image:
 
         self.__flowfield = flowfield
 
-        print('Velocity field added to the image.')
+        if self.__verbose: print('Velocity field added to the image.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -260,7 +262,7 @@ class Image:
 
         self.__motion = motion
 
-        print('Particle movement added to the image.')
+        if self.__verbose: print('Particle movement added to the image.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -762,7 +764,7 @@ class Image:
 
                 self.__images_I1 = images_I1
 
-            print('Reflected light added to images I1.')
+            if self.__verbose: print('Reflected light added to images I1.')
 
         # Add light to image I2:
         if self.__motion is not None:
@@ -793,7 +795,7 @@ class Image:
 
                 self.__images_I2 = images_I2
 
-            print('Reflected light added to images I2.')
+            if self.__verbose: print('Reflected light added to images I2.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
