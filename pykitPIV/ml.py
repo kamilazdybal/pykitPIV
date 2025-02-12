@@ -186,11 +186,12 @@ class PIVEnv(gym.Env):
         through the ``flowfield_spec`` parameter to create a synthetic **pykitPIV**-generated flow field.
         **Future functionality can include temporal flow fields.**
     :param inference_model: (optional)
-        inference model for predicting flow targets from PIV image intensities. It can be a CNN-based or WIDIM-based model.
+        inference model for predicting flow targets from PIV image intensities. It can be a CNN-based or a WIDIM-based model.
         If set to ``None``, inference is not done, instead the true flow within the interrogation window is returned.
-        The inference model is assumed to be calibrated, i.e., it must be able to take as an input the raw PIV images,
-        and pre-process them as needed. The inference model has to have a method ``inference_model.inference()``
+        The inference model has to have a method ``inference_model.inference()``
         implemented that only returns the predicted flow targets tensor of size :math:`(1, 2, H+2b, W+2b)`.
+        The ``inference_model.inference()`` method is assumed to be calibrated, i.e., it must be able to take
+        as an input the raw PIV images and pre-process them as needed.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
         If specified, all image generation is reproducible.
@@ -250,6 +251,8 @@ class PIVEnv(gym.Env):
                                                          n_gaussian_filter_iter=self.__flowfield_spec['n_gaussian_filter_iter'],
                                                          displacement=self.__flowfield_spec['displacement'])
 
+                print(np.max(flowfield.velocity_field_magnitude[0,0,:,:]))
+
             self.flowfield = flowfield
 
         # Otherwise, use the flow field provided by the user:
@@ -280,10 +283,10 @@ class PIVEnv(gym.Env):
 
         # Dictionary that maps the abstract actions to the directions on the pixel grid:
         self._action_to_direction = {
-            0: np.array([1, 0]),  # right
-            1: np.array([0, 1]),  # up
-            2: np.array([-1, 0]),  # left
-            3: np.array([0, -1]),  # down
+            0: np.array([1, 0]),  # up
+            1: np.array([0, 1]),  # right
+            2: np.array([-1, 0]),  # down
+            3: np.array([0, -1]),  # left
             4: np.array([0, 0]),  # stay
         }
 
@@ -378,11 +381,11 @@ class PIVEnv(gym.Env):
         Resets the environement to a random initial state.
         """
 
-        # Can generate a new flow field, if the user didn't specify a fixed flow field to use.
-
+        # Future functionality: Can generate a new flow field, if the user didn't specify a fixed flow field to use.
 
         # Create an initial camera position:
         camera_position = self.observation_space.sample()
+        self.__camera_position = camera_position
 
         # Record PIV images at that camera position:
         image_obj = self.record_particles(camera_position)
@@ -403,13 +406,39 @@ class PIVEnv(gym.Env):
 
         return camera_position, prediction_tensor, targets_tensor
 
-    def step(self):
+    def step(self, action):
         """
-        Makes one step in the environment which moves the camera to a new position.
+        Makes one step in the environment which moves the camera to a new position, and computes the associated reward
+        for taking that step.
+
+        :param action:
+            ``tuple`` specifying the camera position in pixels :math:`[\\text{px}]`.
+            This defines the bottom-left corner of the interrogation window.
         """
 
-        pass
+        print(action)
+        print(self.__camera_position)
 
+        # Map the action (element of {0,1,2,3,4}) to the new camera position:
+        direction = self._action_to_direction[action]
+
+        print(direction)
+
+        # Take the step.
+        # We clip the camera position to make sure that we don't leave the grid bounds:
+        self.__camera_position[0] = np.clip(self.__camera_position[0] + direction[0], 0, self.__admissible_observation_space[0])
+        self.__camera_position[1] = np.clip(self.__camera_position[1] + direction[1], 0, self.__admissible_observation_space[1])
+
+        print(self.__camera_position)
+
+        # An environment is completed if and only if the agent has reached the target
+        terminated = False
+        truncated = False
+
+        # Reward construction:
+        reward = 1 if terminated else 0
+
+        return self.__camera_position, reward, terminated, truncated
 
     def render(self,
                camera_position,
@@ -447,7 +476,8 @@ class PIVEnv(gym.Env):
         if figsize is not None:
             plt.figure(figsize=figsize)
 
-        plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], origin='lower')
+        ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], origin='lower')
+        plt.colorbar(ims)
         plt.scatter(camera_position[1]-0.5, camera_position[0]-0.5, c=c, s=s)
 
         # Visualize a rectangle that defines the current interrogation window:
@@ -457,8 +487,6 @@ class PIVEnv(gym.Env):
                                  linewidth=lw, edgecolor=c, facecolor='none')
         ax = plt.gca()
         ax.add_patch(rect)
-
-        plt.colorbar()
 
         plt.savefig(filename, dpi=300, bbox_inches='tight')
 
