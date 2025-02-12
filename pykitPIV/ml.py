@@ -520,9 +520,9 @@ class PIVEnv(gym.Env):
         else:
             figure = plt.figure(figsize=(25, 10))
 
-        spec = figure.add_gridspec(ncols=7, nrows=3, width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1], height_ratios=[2, 0.2, 1])
+        spec = figure.add_gridspec(ncols=9, nrows=3, width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1, 0.2, 1], height_ratios=[2, 0.2, 1])
 
-        figure_WT = figure.add_subplot(spec[0, 0:7])
+        figure_WT = figure.add_subplot(spec[0, 0:9])
         ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], cmap=cmap, origin='lower')
         plt.colorbar(ims)
         plt.scatter(camera_position[1]-0.5, camera_position[0]-0.5, c=c, s=s)
@@ -570,6 +570,15 @@ class PIVEnv(gym.Env):
         ims = plt.imshow(prediction_magnitude, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
         plt.colorbar(ims)
         plt.title('Inference', fontsize=fontsize)
+
+        # Visualize the error map between the target and the inference:
+        figure.add_subplot(spec[2, 8])
+        prediction_error = np.abs(targets_magnitude - prediction_magnitude)
+        normalizer = np.max(targets_magnitude) - np.min(targets_magnitude)
+        error_map = prediction_error/normalizer*100
+        ims = plt.imshow(error_map, origin='lower', cmap='Greys')
+        plt.colorbar(ims)
+        plt.title('Error %: ' + str(round(np.mean(error_map), 1)), fontsize=fontsize)
 
         plt.savefig(filename, dpi=300, bbox_inches='tight')
 
