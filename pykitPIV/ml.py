@@ -394,10 +394,6 @@ class PIVEnv(gym.Env):
             # Return the true displacement field under this interrogation window:
             prediction_tensor = targets_tensor
 
-        # Save the prediction tensor and the targets tensor as globally-available variables:
-        self.__prediction_tensor = prediction_tensor
-        self.__targets_tensor = targets_tensor
-
         return prediction_tensor, targets_tensor
 
     def reset(self):
@@ -413,9 +409,14 @@ class PIVEnv(gym.Env):
 
         # Record PIV images at that camera position:
         image_obj = self.record_particles(camera_position)
+        self.__image_obj = image_obj
 
         # Make inference of displacement field based on the recorded PIV images:
         prediction_tensor, targets_tensor = self.make_inference(image_obj)
+
+        # Save the prediction tensor and the targets tensor as globally-available variables:
+        self.__prediction_tensor = prediction_tensor
+        self.__targets_tensor = targets_tensor
 
         return camera_position, prediction_tensor, targets_tensor
 
@@ -456,9 +457,14 @@ class PIVEnv(gym.Env):
 
         # Record PIV images at that camera position:
         image_obj = self.record_particles(camera_position)
+        self.__image_obj = image_obj
 
         # Make inference of displacement field based on the recorded PIV images:
         prediction_tensor, targets_tensor = self.make_inference(image_obj)
+
+        # Save the prediction tensor and the targets tensor as globally-available variables:
+        self.__prediction_tensor = prediction_tensor
+        self.__targets_tensor = targets_tensor
 
         reward = 1 if terminated else 0
 
@@ -470,6 +476,8 @@ class PIVEnv(gym.Env):
                s=10,
                lw=2,
                figsize=None,
+               normalize_cbars=False,
+               cmap='viridis',
                filename=None):
         """
         Renders the virtual wind tunnel with the current interrogation window.
@@ -497,12 +505,28 @@ class PIVEnv(gym.Env):
             :width: 800
         """
 
-        if figsize is not None:
-            plt.figure(figsize=figsize)
+        __visualize = ['displacement', 'velocity']
 
-        ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], origin='lower')
+        fontsize = 14
+
+        if figsize is not None:
+            figure = plt.figure(figsize=figsize)
+        else:
+            figure = plt.figure(figsize=(25, 10))
+
+        spec = figure.add_gridspec(ncols=7, nrows=3, width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1], height_ratios=[2, 0.2, 1])
+
+        figure_WT = figure.add_subplot(spec[0, 0:7])
+        ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], cmap=cmap, origin='lower')
         plt.colorbar(ims)
         plt.scatter(camera_position[1]-0.5, camera_position[0]-0.5, c=c, s=s)
+
+        if normalize_cbars:
+            vmin = np.min(self.flowfield.velocity_field_magnitude[0,0,:,:])
+            vmax = np.max(self.flowfield.velocity_field_magnitude[0,0,:,:])
+        else:
+            vmin = None
+            vmax = None
 
         # Visualize a rectangle that defines the current interrogation window:
         rect = patches.Rectangle((camera_position[1]-0.5, camera_position[0]-0.5),
@@ -511,6 +535,35 @@ class PIVEnv(gym.Env):
                                  linewidth=lw, edgecolor=c, facecolor='none')
         ax = plt.gca()
         ax.add_patch(rect)
+        plt.title('Virtual wind tunnel', fontsize=fontsize)
+
+        # Visualize the target under the interrogation window:
+        figure.add_subplot(spec[2, 0])
+        targets_magnitude = np.sqrt(self.__targets_tensor[0,0,:,:]**2 + self.__targets_tensor[0,1,:,:]**2)
+        ims = plt.imshow(targets_magnitude, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
+        plt.colorbar(ims)
+        plt.title('Target', fontsize=fontsize)
+
+        # Visualize I1:
+        figure.add_subplot(spec[2, 2])
+        images_I1 = self.__image_obj.remove_buffers(self.__image_obj.images_I1)
+        ims = plt.imshow(images_I1[0,0,:,:], origin='lower', cmap='Greys_r')
+        plt.colorbar(ims)
+        plt.title(r'$I_1$', fontsize=fontsize)
+
+        # Visualize I2:
+        figure.add_subplot(spec[2, 4])
+        images_I2 = self.__image_obj.remove_buffers(self.__image_obj.images_I2)
+        ims = plt.imshow(images_I2[0,0,:,:], origin='lower', cmap='Greys_r')
+        plt.colorbar(ims)
+        plt.title(r'$I_2$', fontsize=fontsize)
+
+        # Visualize inference under the interrogation window:
+        figure.add_subplot(spec[2, 6])
+        prediction_magnitude = np.sqrt(self.__prediction_tensor[0, 0, :, :] ** 2 + self.__prediction_tensor[0, 1, :, :] ** 2)
+        ims = plt.imshow(prediction_magnitude, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
+        plt.colorbar(ims)
+        plt.title('Inference', fontsize=fontsize))
 
         plt.savefig(filename, dpi=300, bbox_inches='tight')
 
