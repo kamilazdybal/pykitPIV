@@ -376,6 +376,30 @@ class PIVEnv(gym.Env):
 
         return image
 
+    def make_inference(self, image_obj):
+        """
+        Makes inference of the displacement field based on the recorded PIV images.
+        """
+
+        images_I1 = image_obj.remove_buffers(image_obj.images_I1)
+        images_I2 = image_obj.remove_buffers(image_obj.images_I2)
+
+        images_tensor = image_obj.concatenate_tensors((images_I1, images_I2))
+        targets_tensor = image_obj.remove_buffers(image_obj.get_displacement_field())
+
+        if self.__inference_model is not None:
+            # Perform inference of the displacement field from the recorded PIV images:
+            prediction_tensor = self.__inference_model.inference(images_tensor[0,:,:,:].astype(np.float32))
+        else:
+            # Return the true displacement field under this interrogation window:
+            prediction_tensor = targets_tensor
+
+        # Save the prediction tensor and the targets tensor as globally-available variables:
+        self.__prediction_tensor = prediction_tensor
+        self.__targets_tensor = targets_tensor
+
+        return prediction_tensor, targets_tensor
+
     def reset(self):
         """
         Resets the environement to a random initial state.
@@ -390,26 +414,16 @@ class PIVEnv(gym.Env):
         # Record PIV images at that camera position:
         image_obj = self.record_particles(camera_position)
 
-        images_I1 = image_obj.remove_buffers(image_obj.images_I1)
-        images_I2 = image_obj.remove_buffers(image_obj.images_I2)
-
-        images_tensor = image_obj.concatenate_tensors((images_I1, images_I2))
-
-        targets_tensor = image_obj.remove_buffers(image_obj.get_displacement_field())
-
-        if self.__inference_model is not None:
-            # Perform inference of the displacement field from the recorded PIV images:
-            prediction_tensor = self.__inference_model.inference(images_tensor[0,:,:,:].astype(np.float32))
-        else:
-            # Return the true displacement field under this interrogation window:
-            prediction_tensor = targets_tensor
+        # Make inference of displacement field based on the recorded PIV images:
+        prediction_tensor, targets_tensor = self.make_inference(image_obj)
 
         return camera_position, prediction_tensor, targets_tensor
 
     def step(self, action):
         """
         Makes one step in the environment which moves the camera to a new position, and computes the associated reward
-        for taking that step.
+        for taking that step. The reward is computed based on the PIV images seen at that position, converted
+        to a continuous displacement field recovered by an inference model (either CNN-based or WIDIM-based).
 
         :param action:
             ``tuple`` specifying the camera position in pixels :math:`[\\text{px}]`.
@@ -424,10 +438,13 @@ class PIVEnv(gym.Env):
 
         print(direction)
 
-        # Take the step.
-        # We clip the camera position to make sure that we don't leave the grid bounds:
-        self.__camera_position[0] = np.clip(self.__camera_position[0] + direction[0], 0, self.__admissible_observation_space[0])
-        self.__camera_position[1] = np.clip(self.__camera_position[1] + direction[1], 0, self.__admissible_observation_space[1])
+        # Take the step in the environment:
+        # (We clip the camera position to make sure that we don't leave the grid bounds)
+        camera_position = np.array([np.clip(self.__camera_position[0] + direction[0], 0, self.__admissible_observation_space[0]),
+                                    np.clip(self.__camera_position[1] + direction[1], 0, self.__admissible_observation_space[1])])
+
+        # Reset the camera position:
+        self.__camera_position = camera_position
 
         print(self.__camera_position)
 
@@ -435,10 +452,17 @@ class PIVEnv(gym.Env):
         terminated = False
         truncated = False
 
-        # Reward construction:
+        # Reward construction: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Record PIV images at that camera position:
+        image_obj = self.record_particles(camera_position)
+
+        # Make inference of displacement field based on the recorded PIV images:
+        prediction_tensor, targets_tensor = self.make_inference(image_obj)
+
         reward = 1 if terminated else 0
 
-        return self.__camera_position, reward, terminated, truncated
+        return camera_position, reward, terminated, truncated
 
     def render(self,
                camera_position,
