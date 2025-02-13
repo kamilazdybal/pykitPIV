@@ -278,8 +278,8 @@ class PIVEnv(gym.Env):
         # The observation space is the camera's location in the virtual environement. In practice, this is
         # the position of the camera looking at a specific interrogation window.
         self.observation_space = gym.spaces.Box(low=np.array([0, 0]),
-                                            high=np.array([self.__admissible_observation_space[0], self.__admissible_observation_space[1]]),
-                                            dtype=int)
+                                                high=np.array([self.__admissible_observation_space[0], self.__admissible_observation_space[1]]),
+                                                dtype=int)
 
         # Action space for the RL agent: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -409,14 +409,13 @@ class PIVEnv(gym.Env):
         Resets the environement to a random initial state.
         """
 
-        # THERE HAS TO BE A CHECK HERE WHETHER THE IMPOSED CAMERA POSITION IS POSSIBLE!
-
-
-
-
-
-
-
+        # Check whether the user-specified camera position is possible given the admissible observation space
+        # and the size of the interrogation window:
+        if imposed_camera_position is not None:
+            if (imposed_camera_position[0] < 0) or (imposed_camera_position[0] > self.__admissible_observation_space[0]):
+                raise ValueError("The user-imposed camera position falls outside of the admissible virtual environment!")
+            if imposed_camera_position[1] < 0 or imposed_camera_position[1] > self.__admissible_observation_space[1]:
+                raise ValueError("The user-imposed camera position falls outside of the admissible virtual environment!")
 
         # Future functionality: Can generate a new flow field, if the user didn't specify a fixed flow field to use.
 
