@@ -1027,7 +1027,7 @@ class FlowField:
         __n_stochastic_particles = particles.n_of_particles[0]
 
         # Coordinates of the stochastic particles:
-        X, Y = particles.particle_coordinates[0]
+        Y, X = particles.particle_coordinates[0]
 
         tic = time.perf_counter()
 
