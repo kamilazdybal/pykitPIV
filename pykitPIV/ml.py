@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import gymnasium as gym
 import pygame
+import tensorflow as tf
 # from tf_agents.environments import py_environment
 from pykitPIV.checks import *
 from pykitPIV.flowfield import FlowField
@@ -258,7 +259,6 @@ class PIVEnv(gym.Env):
                                                          n_gaussian_filter_iter=self.__flowfield_spec['n_gaussian_filter_iter'],
                                                          displacement=self.__flowfield_spec['displacement'])
 
-
             if 'apply_SLM' in self.__flowfield_spec.keys():
                 if self.__flowfield_spec['apply_SLM']:
 
@@ -315,7 +315,9 @@ class PIVEnv(gym.Env):
             4: 'Stay',
         }
 
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        self._n_actions = 5
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def record_particles(self, camera_position):
         """
@@ -396,6 +398,8 @@ class PIVEnv(gym.Env):
 
         return image
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def make_inference(self, image_obj):
         """
         Makes inference of the displacement field based on the recorded PIV images.
@@ -415,6 +419,8 @@ class PIVEnv(gym.Env):
             prediction_tensor = targets_tensor
 
         return prediction_tensor, targets_tensor
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def reset(self, imposed_camera_position=None):
         """
@@ -451,6 +457,8 @@ class PIVEnv(gym.Env):
         self.__targets_tensor = targets_tensor
 
         return camera_position, prediction_tensor, targets_tensor
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def step(self,
              action,
@@ -499,6 +507,8 @@ class PIVEnv(gym.Env):
         reward = 1 if terminated else 0
 
         return camera_position, reward, terminated, truncated
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def render(self,
                camera_position,
@@ -550,7 +560,8 @@ class PIVEnv(gym.Env):
 
         spec = figure.add_gridspec(ncols=9, nrows=3, width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1, 0.2, 1], height_ratios=[2, 0.2, 1])
 
-        figure_WT = figure.add_subplot(spec[0, 0:9])
+        # Visualize a rectangle that defines the virtual wind tunnel:
+        figure.add_subplot(spec[0, 0:9])
         ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], cmap=cmap, origin='lower', zorder=0)
         plt.colorbar(ims)
 
@@ -662,36 +673,169 @@ class PIVEnv(gym.Env):
 class CameraAgent:
     """
     Creates a reinforcement learning agent that operates a virtual camera in a PIV experimental setting
-    and provides a training loop for Q-learning.
+    and provides a training loop for Q-learning. Q-learning uses a deep neural network (DNN) model.
+
+    :param env:
+        ``gym.Env`` specifying the virtual environment.
+    :param q_network:
+        ``tf.keras.Model`` specifying the deep neural network for Q-learning.
     """
 
     def __init__(self,
                  env,
+                 target_q_network,
+                 selected_q_network,
+                 memory,
+                 memory_size=100,
+                 batch_size=10,
                  learning_rate=0.001,
+                 optimizer='RMSprop',
                  initial_epsilon=1.0,
                  epsilon_decay=0.01,
                  final_epsilon=0.1,
                  discount_factor=0.95):
 
-        pass
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Class init:
+
+        # Define the environment for the camera agent:
+        self.env = env
+        self.n_actions = self.env._n_actions
+
+        print('The uploaded environment has ' + str(self.n_actions) + ' actions.')
+
+        # We have two Q-networks, the target Q-network:
+        self.target_q_network = target_q_network
+
+        # But the target network will be synchronized with the selected Q-network only once every few episodes:
+        self.selected_q_network = selected_q_network
+
+        # This prevents the Q-network from competing against itself.
+
+        # Parameters of training the DNN:
+        self.batch_size = batch_size
+        self.learning_rate = learning_rate
+        if optimizer == 'RMSprop':
+            self.optimizer = tf.keras.optimizers.RMSprop(learning_rate=self.learning_rate)
+
+        self.target_q_network.compile(self.optimizer, loss=tf.keras.losses.MeanSquaredError())
+        self.selected_q_network.compile(self.optimizer, loss=tf.keras.losses.MeanSquaredError())
+        self.MSE_losses = []
+
+        # Reinforcement learning parameters:
+        self.initial_epsilon = initial_epsilon
+        self.epsilon_decay = epsilon_decay
+        self.final_epsilon = final_epsilon
+        self.discount_factor = discount_factor
+
+        # Memory replay parameters:
+        self.memory = memory
+        self.memory_size = memory_size
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def choose_action(self,
+                      camera_position,
+                      centers=None,
+                      scales=None):
+        """
+        Defines an epsilon-greedy choice of the next best action to select.
+        """
+
+        # Select random action with probability epsilon:
+        if np.random.rand() < epsilon:
+            return np.random.choice(self.num_actions)
+
+        # Select best action with probability (1 - epsilon):
+        else:
+            if (centers is not None) and (scales is not None):
+                preprocessed_camera_position = ((camera_position[0] - centers[0]) / scales[0], (camera_position[1] - center[1]) / scales[1])
+                preprocessed_camera_position = np.reshape(preprocessed_camera_position, (1, -1))
+
+            else:
+                preprocessed_camera_position = camera_position
+
+            q_values = self.target_q_network.predict(preprocessed_camera_position, verbose=0)
+
+            return np.argmax(q_values)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def remember(self, state, action, reward, next_state):
+        self.memory.add((state, action, reward, next_state))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def train(self, current_lr):
+
+        # Before the buffer fills with actual data, we're not training yet:
+        if len(self.memory.buffer) < self.batch_size:
+            return
+
+        # Now we can start sampling batches from the memory:
+        minibatch = self.memory.sample(self.batch_size)
+
+        BATCH_camera_position = np.zeros((self.batch_size, 2))
+        BATCH_q_values = np.zeros((self.batch_size, self.n_actions))
+
+        for i, batch_content in enumerate(minibatch):
+            state, action, reward, next_state = batch_content
+
+            state = np.reshape(state, (1, -1))
+            next_state = np.reshape(next_state, (1, -1))
+
+            # Compute the Q-value we want to have for this (state, action) pair:
+            next_q_values = self.target_q_network.predict(next_state, verbose=0)
+            target_q_value = reward + self.discount_factor * np.max(next_q_values, axis=-1)
+
+            # Compute the Q-value we actually have for this (state, action) pair:
+            q_values = self.selected_q_network.predict(state, verbose=0)
+
+            # Swap the Q-value we actually have for the target Q-value for this action:
+            q_values[0][action] = target_q_value[0]
+
+            # Create a batch:
+            BATCH_state[i, :] = state
+            BATCH_q_values[i, :] = q_values
+
+        self.optimizer.learning_rate.assign(current_lr)
+
+        # Teach the Q-network to predict the target Q-values over the current batch:
+        history = self.selected_q_network.fit(BATCH_state,
+                                              BATCH_q_values,
+                                              epochs=n_epochs,
+                                              verbose=0)
+
+        self.MSE_losses.append(history.history['loss'])
+
+    def update_target_network(self):
+
+        self.target_q_network.set_weights(self.selected_q_network.get_weights())
+
+    def view_weights(self):
+
+        return self.target_q_network.get_weights()
 
 
-########################################################################################################################
-########################################################################################################################
-####
-####    Class: PIVPyEnvironment
-####
-########################################################################################################################
-########################################################################################################################
 
-# class PIVPyEnvironment(py_environment.PyEnvironment):
-#     """
-#     Provides a virtual PIV/BOS **TF-Agents**-based environment for a reinforcement learning (RL) agent.
-#
-#     This is a subclass of ``tf_agents.environments.py_environment.PyEnvironment``.
-#     """
-#
-#     def __init__(self, size=(128,128)):
-#
-#         # The size of the square grid
-#         self.size = size
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
