@@ -676,29 +676,72 @@ class CameraAgent:
     Creates a reinforcement learning agent that operates a virtual camera in a PIV experimental setting
     and provides a training loop for Q-learning. Q-learning uses a deep neural network (DNN) model.
 
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV.ml import PIVEnv
+        from pykitPIV.ml import CameraAgent
+        import tensorflow as tf
+
+        # Initialize the environment:
+        env = PIVEnv(...)
+
+        # Create a simple model for the Q-network:
+        class QNetwork(tf.keras.Model):
+
+            def __init__(self, n_actions):
+
+                super(QNetwork, self).__init__()
+
+                self.dense1 = tf.keras.layers.Dense(10, activation='linear', kernel_initializer=tf.keras.initializers.Ones)
+                self.dense2 = tf.keras.layers.Dense(10, activation='linear', kernel_initializer=tf.keras.initializers.Ones)
+                self.output_layer = tf.keras.layers.Dense(n_actions, activation='linear', kernel_initializer=tf.keras.initializers.Ones)
+
+            def call(self, state):
+
+                x = self.dense1(state)
+                x = self.dense2(x)
+
+        return self.output_layer(x)
+
+        # Initialize the camera agent:
+        ca = CameraAgent(env=env,
+                         target_q_network=QNetwork(env.n_actions),
+                         selected_q_network=QNetwork(env.n_actions),
+                         memory_size=1000,
+                         batch_size=10,
+                         n_epochs=10,
+                         learning_rate=0.001,
+                         optimizer='RMSprop',
+                         initial_epsilon=1.0,
+                         epsilon_decay=0.01,
+                         final_epsilon=0.1,
+                         discount_factor=0.95)
+
     :param env:
         ``gym.Env`` specifying the virtual environment.
     :param target_q_network:
         ``tf.keras.Model`` specifying the deep neural network that will be the target network for Q-learning.
     :param selected_q_network:
         ``tf.keras.Model`` specifying the deep neural network that will be the temporary network for Q-learning.
-    :param memory_size:
+    :param memory_size:  (optional)
         ``int`` specifying the size of the memory bank.
-    :param batch_size:
+    :param batch_size:  (optional)
         ``int`` specifying the batch size for training the Q-network for after each step in the environment.
-    :param n_epochs:
+    :param n_epochs:  (optional)
         ``int`` specifying the number of epochs to train the Q-network for after each step in the environment.
-    :param learning_rate:
+    :param learning_rate:  (optional)
         ``float`` specifying the learning rate.
-    :param optimizer:
+    :param optimizer:  (optional)
         ``str`` specifying the gradient descent optimizer to use.
-    :param initial_epsilon:
+    :param initial_epsilon:  (optional)
         ``float`` specifying the initial exploration probability, :math:`\epsilon`.
-    :param epsilon_decay:
+    :param epsilon_decay:  (optional)
         ``float`` specifying the decay of the exploration probability.
-    :param final_epsilon:
+    :param final_epsilon:  (optional)
         ``float`` specifying the final exploration probability, :math:`\epsilon`.
-    :param discount_factor:
+    :param discount_factor:  (optional)
         ``float`` specifying the discount factor, :math:`\gamma`.
     """
 
@@ -804,9 +847,22 @@ class CameraAgent:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def train(self, current_lr):
+    def train(self, current_lr=0.001):
         """
         Trains the Q-network with the outcome of a single step in the environment.
+
+        **Example:**
+
+        .. code:: python
+
+            # Once the camera agent has been initialized:
+            ca = CameraAgent(...)
+
+            # We can train the agent with a single pass of a batch of training data:
+            ca.train(current_lr=0.001)
+
+        :param current_lr: (optional)
+            ``float`` specifying the learning rate to use in the current pass over the minibatch.
         """
 
         # Before the buffer fills with actual data, we're not training yet:
@@ -858,9 +914,23 @@ class CameraAgent:
         """
         Synchronizes the target Q-network with the selected Q-network.
 
-        This function should only be called once every a couple of episodes.
+        This function should be called once every a couple of episodes.
 
         Too frequent synchronizations can make the target Q-network to compete with itself and can slow down learning.
+
+        **Example:**
+
+        .. code:: python
+
+            # The general abstraction for synchronizing the two Q-networks in a training loop can be the following:
+            for episode in range(0,n_episodes):
+
+                ...
+
+                # Synchronize the networks once every 10 episodes:
+                if (episode+1) % 10 == 0:
+                    ca.update_target_network()
+
         """
 
         self.target_q_network.set_weights(self.selected_q_network.get_weights())
@@ -868,6 +938,16 @@ class CameraAgent:
     def view_weights(self):
         """
         Returns the latest weights and biases of the target Q-network.
+
+        **Example:**
+
+        .. code:: python
+
+            # Once the camera agent has been initialized:
+            ca = CameraAgent(...)
+
+            # View the current target Q-network weights:
+            ca.view_weights()
         """
 
         return self.target_q_network.get_weights()
