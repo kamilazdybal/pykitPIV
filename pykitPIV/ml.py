@@ -682,16 +682,31 @@ class CameraAgent:
         ``tf.keras.Model`` specifying the deep neural network that will be the target network for Q-learning.
     :param selected_q_network:
         ``tf.keras.Model`` specifying the deep neural network that will be the temporary network for Q-learning.
-    :param memory:
-        ``
-
+    :param memory_size:
+        ``int`` specifying the size of the memory bank.
+    :param batch_size:
+        ``int`` specifying the batch size for training the Q-network for after each step in the environment.
+    :param n_epochs:
+        ``int`` specifying the number of epochs to train the Q-network for after each step in the environment.
+    :param learning_rate:
+        ``float`` specifying the learning rate.
+    :param optimizer:
+        ``str`` specifying the gradient descent optimizer to use.
+    :param initial_epsilon:
+        ``float`` specifying the initial exploration probability, :math:`\epsilon`.
+    :param epsilon_decay:
+        ``float`` specifying the decay of the exploration probability.
+    :param final_epsilon:
+        ``float`` specifying the final exploration probability, :math:`\epsilon`.
+    :param discount_factor:
+        ``float`` specifying the discount factor, :math:`\gamma`.
     """
 
     def __init__(self,
                  env,
                  target_q_network,
                  selected_q_network,
-                 memory_size=100,
+                 memory_size=1000,
                  batch_size=10,
                  n_epochs=10,
                  learning_rate=0.001,
@@ -701,7 +716,7 @@ class CameraAgent:
                  final_epsilon=0.1,
                  discount_factor=0.95):
 
-        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Class init:
 
@@ -765,14 +780,14 @@ class CameraAgent:
         if np.random.rand() < epsilon:
             return np.random.choice(self.num_actions)
 
-        # Select best action with probability (1 - epsilon):
+        # Select the currently best action with probability (1 - epsilon):
         else:
             if (centers is not None) and (scales is not None):
                 preprocessed_camera_position = ((camera_position[0] - centers[0]) / scales[0], (camera_position[1] - center[1]) / scales[1])
                 preprocessed_camera_position = np.reshape(preprocessed_camera_position, (1, -1))
 
             else:
-                preprocessed_camera_position = camera_position
+                preprocessed_camera_position = np.reshape(camera_position, (1, -1))
 
             q_values = self.target_q_network.predict(preprocessed_camera_position, verbose=0)
 
@@ -781,21 +796,30 @@ class CameraAgent:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def remember(self, camera_position, action, reward, next_camera_position):
+        """
+        Adds a step in the environment to the memory bank.
+        """
+
         self.memory.add((camera_position, action, reward, next_camera_position))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def train(self, current_lr):
+        """
+        Trains the Q-network with the outcome of a single step in the environment.
+        """
 
         # Before the buffer fills with actual data, we're not training yet:
         if len(self.memory.buffer) < self.batch_size:
             return
 
+        # Once the memory buffer holds enough observations...
+
         # Now we can start sampling batches from the memory:
         minibatch = self.memory.sample(self.batch_size)
 
-        BATCH_camera_position = np.zeros((self.batch_size, 2))
-        BATCH_q_values = np.zeros((self.batch_size, self.n_actions))
+        batch_camera_positions = np.zeros((self.batch_size, 2))
+        batch_q_values = np.zeros((self.batch_size, self.n_actions))
 
         for i, batch_content in enumerate(minibatch):
 
@@ -808,31 +832,43 @@ class CameraAgent:
             next_q_values = self.target_q_network.predict(next_camera_position, verbose=0)
             target_q_value = reward + self.discount_factor * np.max(next_q_values, axis=-1)
 
-            # Compute the Q-value we actually have for this (state, action) pair:
+            # Compute the Q-value we actually have for this (camera_position, action) pair:
             q_values = self.selected_q_network.predict(camera_position, verbose=0)
 
             # Swap the Q-value we actually have for the target Q-value for this action:
             q_values[0][action] = target_q_value[0]
 
             # Create a batch:
-            BATCH_camera_position[i, :] = camera_position
-            BATCH_q_values[i, :] = q_values
+            batch_camera_positions[i, :] = camera_position
+            batch_q_values[i, :] = q_values
 
+        # Update the optimizer with the current learning rate:
         self.optimizer.learning_rate.assign(current_lr)
 
         # Teach the Q-network to predict the target Q-values over the current batch:
-        history = self.selected_q_network.fit(BATCH_camera_position,
-                                              BATCH_q_values,
-                                              epochs=n_epochs,
+        history = self.selected_q_network.fit(batch_camera_positions,
+                                              batch_q_values,
+                                              epochs=self.n_epochs,
                                               verbose=0)
 
+        # Append the losses:
         self.MSE_losses.append(history.history['loss'])
 
     def update_target_network(self):
+        """
+        Synchronizes the target Q-network with the selected Q-network.
+
+        This function should only be called once every a couple of episodes.
+
+        Too frequent synchronizations can make the target Q-network to compete with itself and can slow down learning.
+        """
 
         self.target_q_network.set_weights(self.selected_q_network.get_weights())
 
     def view_weights(self):
+        """
+        Returns the latest weights and biases of the target Q-network.
+        """
 
         return self.target_q_network.get_weights()
 

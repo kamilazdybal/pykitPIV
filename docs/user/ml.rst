@@ -31,6 +31,16 @@ Reinforcement learning environments
 
 .. autoclass:: pykitPIV.ml.CameraAgent
 
+.. autofunction:: pykitPIV.ml.CameraAgent.choose_action
+
+.. autofunction:: pykitPIV.ml.CameraAgent.remember
+
+.. autofunction:: pykitPIV.ml.CameraAgent.train
+
+.. autofunction:: pykitPIV.ml.CameraAgent.update_target_network
+
+.. autofunction:: pykitPIV.ml.CameraAgent.view_weights
+
 **TF-Agents**-based
 ====================================
 

@@ -40,6 +40,7 @@ Additional requirements for the ``ml`` module:
     pip install tqdm
     pip install onnxruntime
     pip install pygame
+    pip install opencv-python
 
 Optional for local documentation builds:
 
