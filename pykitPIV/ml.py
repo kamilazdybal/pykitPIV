@@ -7,8 +7,8 @@ import matplotlib.patches as patches
 from collections import deque
 import gymnasium as gym
 import pygame
+import random
 import tensorflow as tf
-# from tf_agents.environments import py_environment
 from pykitPIV.checks import *
 from pykitPIV.flowfield import FlowField
 from pykitPIV.motion import Motion
@@ -316,7 +316,13 @@ class PIVEnv(gym.Env):
             4: 'Stay',
         }
 
-        self._n_actions = 5
+        self.__n_actions = 5
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    @property
+    def n_actions(self):
+        return self.__n_actions
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -687,7 +693,7 @@ class CameraAgent:
         # Initialize the environment:
         env = PIVEnv(...)
 
-        # Create a simple model for the Q-network:
+        # Create a simple neural network model for the Q-network:
         class QNetwork(tf.keras.Model):
 
             def __init__(self, n_actions):
@@ -703,7 +709,7 @@ class CameraAgent:
                 x = self.dense1(state)
                 x = self.dense2(x)
 
-        return self.output_layer(x)
+                return self.output_layer(x)
 
         # Initialize the camera agent:
         ca = CameraAgent(env=env,
@@ -714,9 +720,6 @@ class CameraAgent:
                          n_epochs=10,
                          learning_rate=0.001,
                          optimizer='RMSprop',
-                         initial_epsilon=1.0,
-                         epsilon_decay=0.01,
-                         final_epsilon=0.1,
                          discount_factor=0.95)
 
     :param env:
@@ -735,12 +738,6 @@ class CameraAgent:
         ``float`` specifying the learning rate.
     :param optimizer:  (optional)
         ``str`` specifying the gradient descent optimizer to use.
-    :param initial_epsilon:  (optional)
-        ``float`` specifying the initial exploration probability, :math:`\epsilon`.
-    :param epsilon_decay:  (optional)
-        ``float`` specifying the decay of the exploration probability.
-    :param final_epsilon:  (optional)
-        ``float`` specifying the final exploration probability, :math:`\epsilon`.
     :param discount_factor:  (optional)
         ``float`` specifying the discount factor, :math:`\gamma`.
     """
@@ -754,9 +751,6 @@ class CameraAgent:
                  n_epochs=10,
                  learning_rate=0.001,
                  optimizer='RMSprop',
-                 initial_epsilon=1.0,
-                 epsilon_decay=0.01,
-                 final_epsilon=0.1,
                  discount_factor=0.95):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -765,7 +759,7 @@ class CameraAgent:
 
         # Define the environment for the camera agent:
         self.env = env
-        self.n_actions = self.env._n_actions
+        self.n_actions = self.env.n_actions
 
         print('The uploaded environment has ' + str(self.n_actions) + ' actions.')
 
@@ -789,9 +783,6 @@ class CameraAgent:
         self.MSE_losses = []
 
         # Reinforcement learning parameters:
-        self.initial_epsilon = initial_epsilon
-        self.epsilon_decay = epsilon_decay
-        self.final_epsilon = final_epsilon
         self.discount_factor = discount_factor
 
         # Memory replay parameters:
@@ -813,6 +804,7 @@ class CameraAgent:
 
     def choose_action(self,
                       camera_position,
+                      epsilon,
                       centers=None,
                       scales=None):
         """
@@ -821,7 +813,7 @@ class CameraAgent:
 
         # Select random action with probability epsilon:
         if np.random.rand() < epsilon:
-            return np.random.choice(self.num_actions)
+            return np.random.choice(self.n_actions)
 
         # Select the currently best action with probability (1 - epsilon):
         else:
