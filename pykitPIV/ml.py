@@ -4,6 +4,7 @@ from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
+from collections import deque
 import gymnasium as gym
 import pygame
 import tensorflow as tf
@@ -677,17 +678,22 @@ class CameraAgent:
 
     :param env:
         ``gym.Env`` specifying the virtual environment.
-    :param q_network:
-        ``tf.keras.Model`` specifying the deep neural network for Q-learning.
+    :param target_q_network:
+        ``tf.keras.Model`` specifying the deep neural network that will be the target network for Q-learning.
+    :param selected_q_network:
+        ``tf.keras.Model`` specifying the deep neural network that will be the temporary network for Q-learning.
+    :param memory:
+        ``
+
     """
 
     def __init__(self,
                  env,
                  target_q_network,
                  selected_q_network,
-                 memory,
                  memory_size=100,
                  batch_size=10,
+                 n_epochs=10,
                  learning_rate=0.001,
                  optimizer='RMSprop',
                  initial_epsilon=1.0,
@@ -715,6 +721,7 @@ class CameraAgent:
 
         # Parameters of training the DNN:
         self.batch_size = batch_size
+        self.n_epochs = n_epochs
         self.learning_rate = learning_rate
         if optimizer == 'RMSprop':
             self.optimizer = tf.keras.optimizers.RMSprop(learning_rate=self.learning_rate)
@@ -730,8 +737,19 @@ class CameraAgent:
         self.discount_factor = discount_factor
 
         # Memory replay parameters:
-        self.memory = memory
+
+        class ReplayBuffer:
+            def __init__(self, max_size):
+                self.buffer = deque(maxlen=max_size)
+
+            def add(self, experience):
+                self.buffer.append(experience)
+
+            def sample(self, batch_size):
+                return random.sample(self.buffer, batch_size)
+
         self.memory_size = memory_size
+        self.memory = ReplayBuffer(self.memory_size)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -762,8 +780,8 @@ class CameraAgent:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def remember(self, state, action, reward, next_state):
-        self.memory.add((state, action, reward, next_state))
+    def remember(self, camera_position, action, reward, next_camera_position):
+        self.memory.add((camera_position, action, reward, next_camera_position))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -780,29 +798,30 @@ class CameraAgent:
         BATCH_q_values = np.zeros((self.batch_size, self.n_actions))
 
         for i, batch_content in enumerate(minibatch):
-            state, action, reward, next_state = batch_content
 
-            state = np.reshape(state, (1, -1))
-            next_state = np.reshape(next_state, (1, -1))
+            camera_position, action, reward, next_state = batch_content
 
-            # Compute the Q-value we want to have for this (state, action) pair:
-            next_q_values = self.target_q_network.predict(next_state, verbose=0)
+            camera_position = np.reshape(camera_position, (1, -1))
+            next_camera_position = np.reshape(next_camera_position, (1, -1))
+
+            # Compute the Q-value we want to have for this (camera_position, action) pair:
+            next_q_values = self.target_q_network.predict(next_camera_position, verbose=0)
             target_q_value = reward + self.discount_factor * np.max(next_q_values, axis=-1)
 
             # Compute the Q-value we actually have for this (state, action) pair:
-            q_values = self.selected_q_network.predict(state, verbose=0)
+            q_values = self.selected_q_network.predict(camera_position, verbose=0)
 
             # Swap the Q-value we actually have for the target Q-value for this action:
             q_values[0][action] = target_q_value[0]
 
             # Create a batch:
-            BATCH_state[i, :] = state
+            BATCH_camera_position[i, :] = camera_position
             BATCH_q_values[i, :] = q_values
 
         self.optimizer.learning_rate.assign(current_lr)
 
         # Teach the Q-network to predict the target Q-values over the current batch:
-        history = self.selected_q_network.fit(BATCH_state,
+        history = self.selected_q_network.fit(BATCH_camera_position,
                                               BATCH_q_values,
                                               epochs=n_epochs,
                                               verbose=0)
