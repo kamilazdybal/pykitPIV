@@ -17,6 +17,11 @@ Reinforcement learning environments
 **Gymnasium**-based
 ====================================
 
+Below, you will find reinforcement learning (RL) environments that are subclasses of
+`gymnasium.Env <https://gymnasium.farama.org/api/env/#gymnasium.Env>`_ -
+a class coming from OpenAI's `Gymnasium <https://gymnasium.farama.org/>`_ library that provides the basic
+structure for any RL environment.
+
 .. autoclass:: pykitPIV.ml.PIVEnv
 
 .. autofunction:: pykitPIV.ml.PIVEnv.record_particles

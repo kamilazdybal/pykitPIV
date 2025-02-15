@@ -121,7 +121,7 @@ html_static_path = []
 
 html_theme = "furo"
 
-html_logo = "images/pykitPIV-logo.png"
+html_logo = "images/pykitPIV-logo.svg"
 
 html_theme_options = {
     "dark_css_variables": {

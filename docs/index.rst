@@ -1,9 +1,9 @@
-.. image:: images/pykitPIV-logo.png
-    :width: 300
+.. image:: images/pykitPIV-logo-large.svg
+    :width: 700
+    :align: center
 
-**pykitPIV** (**Py**\ thon **ki**\ nematic **t**\ raining for **P**\ article **I**\ mage **V**\ elocimetry) is a
-Python package that generates rich and reproducible synthetic data for training machine learning algorithms
-in velocimetry, a subfield of experimental fluid dynamics.
+**pykitPIV** is a Python package that provides rich and reproducible synthetic data and virtual environments
+for training machine learning algorithms in velocimetry.
 
 **pykitPIV** gives the user, or the machine-learning agent, a lot of flexibility in selecting
 various parameters that would normally be available in an experimental setting, such as seeding density,
