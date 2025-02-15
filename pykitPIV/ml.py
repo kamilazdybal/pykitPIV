@@ -871,7 +871,7 @@ class CameraAgent:
 
         for i, batch_content in enumerate(minibatch):
 
-            camera_position, action, reward, next_state = batch_content
+            camera_position, action, reward, next_camera_position = batch_content
 
             camera_position = np.reshape(camera_position, (1, -1))
             next_camera_position = np.reshape(next_camera_position, (1, -1))
