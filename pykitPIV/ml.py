@@ -1121,9 +1121,11 @@ class Rewards:
             - **reward** - ``float`` specifying the reward, :math:`R`.
         """
 
-        from pykitPIV.flowfield import q_criterion
+        from pykitPIV.flowfield import compute_q_criterion
 
-        reward = transformation(q_criterion(velocity_field))
+        reward = transformation(compute_q_criterion(velocity_field))
+
+        if self.__verbose: print(reward)
 
         return reward
 
