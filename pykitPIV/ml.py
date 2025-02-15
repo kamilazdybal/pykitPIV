@@ -1078,7 +1078,8 @@ class Rewards:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def q_criterion(self,
-                    velocity_field):
+                    velocity_field,
+                    transformation=None):
         """
         Computes the reward based on the Q-criterion.
 
@@ -1103,16 +1104,18 @@ class Rewards:
             where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
             :math:`u` and :math:`v` respectively,
             :math:`H_{\\text{i}}+b` is the height and :math:`W_{\\text{i}}+b` is the width of the interrogation window.
+        :param transformation: (optional)
+            ``function`` specifying arbitrary transformation of the Q-criterion.
 
         :return:
             - **reward** - ``float`` specifying the reward, :math:`R`.
         """
 
-        reward = 1
-
+        if transformation is None:
+            reward = q_criterion(velocity_field)
+        else:
+            reward = transformation(q_criterion(velocity_field))
 
         return reward
-
-
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
