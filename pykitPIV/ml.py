@@ -106,20 +106,31 @@ class PIVDataset(Dataset):
 
 class PIVEnv(gym.Env):
     """
-    Provides a virtual PIV **Gymnasium**-based environment for a reinforcement learning (RL) agent.
+    Provides a `Gymnasium <https://gymnasium.farama.org/>`_-based virtual PIV environment for a reinforcement learning (RL) agent.
 
-    The agent is free to locate an interrogation window within the larger flow field satisfying certain condition.
-    The agent moves smoothly from one interrogation window to the next, always performing one of the five actions:
+    The environment simulates a 2D section in a wind tunnel of a user-specified size, with synthetic or user-specified
+    static velocity field and provides synthetic PIV recordings under a (usually smaller) interrogation window.
+    The overall mechanics of this class is visualized below:
 
-    - `0`: Move up
-    - `1`: Move right
-    - `2`: Move down
-    - `3`: Move left
+    .. image:: ../images/PIVEnv.png
+        :width: 700
+        :align: center
+
+    The RL agent interacting with this environment is free to locate an interrogation window within
+    the larger flow field satisfying certain condition
+    modeled by the reward function (see the parameter ``reward_function`` in the ``PIVEnv.step()`` method).
+    The agent moves smoothly, i.e., pixel-by-pixel from one interrogation window to the next,
+    always performing one of the five actions:
+
+    - `0`: Move up by one pixel
+    - `1`: Move right by one pixel
+    - `2`: Move down by one pixel
+    - `3`: Move left by one pixel
     - `4`: Stay
 
-    The larger flowfield can be provided by the user, or a synthetic flowfield using **pykitPIV** can be generated.
+    **Future functionality will include temporally-evolving flow fields.**
 
-    This is a subclass of ``gymnasium.Env``.
+    This is a subclass of `gymnasium.Env <https://gymnasium.farama.org/api/env/#gymnasium.Env>`_.
 
     **Example:**
 
@@ -187,21 +198,23 @@ class PIVEnv(gym.Env):
         an instance of ``FlowField`` class. If not specified, the user has to provide their own flow field
         through the ``user_flowfield`` parameter.
     :param user_flowfield: (optional)
-        ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(1, 2, H+2b, W+2b)`,
+        ``numpy.ndarray`` specifying the velocity components for the entire virtual wind tunnel.
+        It should be of size :math:`(1, 2, H_{\\text{wt}}, W_{\\text{wt}})`,
         where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
         :math:`u` and :math:`v` respectively,
-        :math:`H+2b` is the height and :math:`W+2b` is the width of an interrogation window.
+        :math:`H_{\\text{wt}}` is the height and :math:`W_{\\text{wt}}` is the width of the virtual wind tunnel.
         If not specified, the user has to provide a flow field specification
         through the ``flowfield_spec`` parameter to create a synthetic **pykitPIV**-generated flow field.
         **Future functionality will include temporally-evolving flow fields.**
     :param inference_model: (optional)
         ``class`` specifying the inference model for predicting flow targets from PIV image intensities.
         It can be a CNN-based or a WIDIM-based model.
-        If set to ``None``, inference is not done, instead the true flow target within the interrogation window is returned.
+        If set to ``None``, inference is not done, instead the true flow target within the interrogation window is
+        returned.
         The inference model has to have a method ``inference_model.inference()``
         that returns the predicted flow targets tensor of size :math:`(1, 2, H+2b, W+2b)`.
-        The ``inference_model.inference()`` method is assumed to be calibrated, i.e., it must be able to take
-        as an input the raw PIV images and pre-process them as needed.
+        The ``inference_model.inference()`` method must be able to take as an input the raw PIV images and
+        pre-process them as needed.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
         If specified, all image generation is reproducible.
@@ -528,8 +541,8 @@ class PIVEnv(gym.Env):
         :param action:
             ``tuple`` specifying the action to be taken at the current step in the environment.
         :param reward_function:
-            ``function`` specifying the entire dynamics of reward construction as a function of predicted and/or true
-            flow targets.
+            ``function`` specifying the dynamics of the reward construction as a function of predicted and/or true
+            flow targets. It can be one of the rewards functions from the ``pykitPIV.Rewards`` class.
         :param verbose: (optional)
             ``bool`` specifying if the verbose print statements should be displayed.
         """
@@ -1001,18 +1014,104 @@ class CameraAgent:
 
 
 
+########################################################################################################################
+########################################################################################################################
+####
+####    Class: Rewards
+####
+########################################################################################################################
+########################################################################################################################
 
 
+class Rewards:
+    """
+    Provides custom reward functions that are applicable to various tasks related to navigating a virtual wind tunnel
+    and a virtual PIV experiment.
+
+    Each function returns the reward, :math:`R`.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV.ml import Rewards
+
+        # Instantiate an object of the Rewards class:
+        rewards = Rewards()
+
+    :param verbose: (optional)
+        ``bool`` specifying if the verbose print statements should be displayed.
+    :param random_seed: (optional)
+        ``int`` specifying the random seed for random number generation in ``numpy``.
+        If specified, all image generation is reproducible.
+    """
+
+    def __init__(self,
+                 verbose=False,
+                 random_seed=None):
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+        if not isinstance(verbose, bool):
+            raise ValueError("Parameter `verbose` has to be of type 'bool'.")
+
+        if random_seed is not None:
+            if type(random_seed) != int:
+                raise ValueError("Parameter `random_seed` has to be of type 'int'.")
+            else:
+                np.random.seed(seed=random_seed)
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Class init:
+        self.__verbose = verbose
+        self.__random_seed = random_seed
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    # Properties coming from user inputs:
+    @property
+    def random_seed(self):
+        return self.__random_seed
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def q_criterion(self,
+                    velocity_field):
+        """
+        Computes the reward based on the Q-criterion.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV.ml import Rewards
+
+            # Once we have a velocity field specified:
+            velocity_field = ...
+
+            # Instantiate an object of the Rewards class:
+            rewards = Rewards()
+
+            # Compute the reward based on the Q-criterion for the present velocity field:
+            reward = rewards.q_criterion(velocity_field=velocity_field)
+
+        :param velocity_field:
+            ``numpy.ndarray`` specifying the velocity components under the interrogation window.
+            It should be of size :math:`(1, 2, H_{\\text{i}}+b, W_{\\text{i}}+b)`,
+            where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
+            :math:`u` and :math:`v` respectively,
+            :math:`H_{\\text{i}}+b` is the height and :math:`W_{\\text{i}}+b` is the width of the interrogation window.
+
+        :return:
+            - **reward** - ``float`` specifying the reward, :math:`R`.
+        """
+
+        reward = 1
 
 
-
-
-
-
-
-
-
-
+        return reward
 
 
 
