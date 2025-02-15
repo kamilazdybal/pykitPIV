@@ -519,6 +519,7 @@ class PIVEnv(gym.Env):
     def step(self,
              action,
              reward_function,
+             reward_transformation,
              verbose=False):
         """
         Makes one step in the environment which moves the camera to a new position, and computes the associated reward
@@ -574,8 +575,8 @@ class PIVEnv(gym.Env):
         self.__prediction_tensor = prediction_tensor
         self.__targets_tensor = targets_tensor
 
-        reward = reward_function(prediction_tensor,
-                                 targets_tensor)
+        reward = reward_function(velocity_field=prediction_tensor,
+                                 transformation=reward_transformation)
 
         return camera_position, reward
 
@@ -1079,7 +1080,7 @@ class Rewards:
 
     def q_criterion(self,
                     velocity_field,
-                    transformation=None):
+                    transformation):
         """
         Computes the reward based on the Q-criterion.
 
@@ -1095,8 +1096,16 @@ class Rewards:
             # Instantiate an object of the Rewards class:
             rewards = Rewards()
 
+            # Design a custom transformation that looks for vorticity-dominated regions
+            # (as opposed to shear-dominated regions)
+            # and computes the maximum value of the Q-criterion in that region:
+            def transformation(Q):
+                Q = np.max(Q.clip(min=0))
+                return Q
+
             # Compute the reward based on the Q-criterion for the present velocity field:
-            reward = rewards.q_criterion(velocity_field=velocity_field)
+            reward = rewards.q_criterion(velocity_field=velocity_field,
+                                         transformation=transformation)
 
         :param velocity_field:
             ``numpy.ndarray`` specifying the velocity components under the interrogation window.
@@ -1104,17 +1113,17 @@ class Rewards:
             where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
             :math:`u` and :math:`v` respectively,
             :math:`H_{\\text{i}}+b` is the height and :math:`W_{\\text{i}}+b` is the width of the interrogation window.
-        :param transformation: (optional)
-            ``function`` specifying arbitrary transformation of the Q-criterion.
+        :param transformation:
+            ``function`` specifying an arbitrary transformation of the Q-criterion
+            and an arbitrary compression of the Q-criterion field to a single value.
 
         :return:
             - **reward** - ``float`` specifying the reward, :math:`R`.
         """
 
-        if transformation is None:
-            reward = q_criterion(velocity_field)
-        else:
-            reward = transformation(q_criterion(velocity_field))
+        from pykitPIV.flowfield import q_criterion
+
+        reward = transformation(q_criterion(velocity_field))
 
         return reward
 

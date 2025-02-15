@@ -24,6 +24,8 @@ Class: ``FlowField``
 
 .. autofunction:: pykitPIV.flowfield.FlowField.upload_velocity_field
 
-.. autofunction:: pykitPIV.flowfield.FlowField.compute_divergence
+.. autofunction:: pykitPIV.flowfield.compute_divergence
 
-.. autofunction:: pykitPIV.flowfield.FlowField.compute_vorticity
+.. autofunction:: pykitPIV.flowfield.compute_vorticity
+
+.. autofunction:: pykitPIV.flowfield.compute_q_criterion
