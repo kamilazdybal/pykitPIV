@@ -49,3 +49,15 @@ structure for any RL environment.
 **TF-Agents**-based
 ====================================
 
+
+
+
+*********************************************
+Custom reinforcement learning rewards
+*********************************************
+
+.. autoclass:: pykitPIV.ml.Rewards
+
+.. autofunction:: pykitPIV.ml.Rewards.q_criterion
+
+

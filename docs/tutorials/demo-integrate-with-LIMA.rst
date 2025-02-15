@@ -9,6 +9,15 @@ Introduction
 In this tutorial, we show how the synthetic PIV image generation can be integrated with training the
 lightweight image matching architecture (LIMA) model in one Python workflow.
 
+For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV/BOS images, please
+check the following references:
+
+- `Kinematic training of convolutional neural networks for particle image velocimetry <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae/meta>`_
+
+- `A lightweight neural network designed for fluid velocimetry <https://link.springer.com/article/10.1007/s00348-023-03695-8>`_
+
+- `A lightweight convolutional neural network to reconstruct deformation in BOS recordings <https://link.springer.com/article/10.1007/s00348-023-03618-7>`_
+
 .. code:: python
 
     import numpy as np

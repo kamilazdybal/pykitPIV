@@ -16,23 +16,16 @@ velocity fields using the simplified Langevin model (SLM).
 It exploits the idea that if the time separation between two experimental images is small,
 kinematic relationship between two consecutive images is sufficient to determine particle displacement fields.
 
-The graph below shows the possible workflows constructed from the five main classes:
+The graph below shows the possible workflows constructed from the five main classes that act as a
+virtual experimental setup, or a *virtual wind tunnel*.
+The ``ml`` module connects with each of the five main classes and provides integrations with machine learning
+algorithms, such as **convolutional neural networks**, **reinforcement learning**, **variational approaches**,
+and **active learning**. ML agents have freedom in interacting with the virtual experiment and can be trained
+to perform a variety of tasks using diverse rewards.
 
-.. image:: images/pykitPIV-workflow.svg
+.. image:: images/pykitPIV-modules.svg
     :width: 900
     :align: center
-
-The ``ml`` module provides integrations with machine learning algorithms, such as **convolutional neural networks**,
-**variational approaches**, **active learning**, or **reinforcement learning**.
-
-For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV/BOS images, please
-check the following references:
-
-- `Kinematic training of convolutional neural networks for particle image velocimetry <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae/meta>`_
-
-- `A lightweight neural network designed for fluid velocimetry <https://link.springer.com/article/10.1007/s00348-023-03695-8>`_
-
-- `A lightweight convolutional neural network to reconstruct deformation in BOS recordings <https://link.springer.com/article/10.1007/s00348-023-03618-7>`_
 
 ------------------------------------------------------------------------------------------------------------------------
 
