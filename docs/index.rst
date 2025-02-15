@@ -12,16 +12,16 @@ We also provide an atlas of challenging synthetic velocity fields from analytic 
 The effects of particle drift and diffusion in stationary isotropic turbulence can also be added atop the
 velocity fields using the simplified Langevin model (SLM).
 
-**pykitPIV** can operate in particle image velocimetry (PIV) and background-oriented Schlieren (BOS) mode.
-It exploits the idea that if the time separation between two experimental images is small,
+**pykitPIV** can operate in particle image velocimetry (PIV) and background-oriented Schlieren (BOS) modes.
+It exploits the idea that if the time separation between two experimental images is small, the
 kinematic relationship between two consecutive images is sufficient to determine particle displacement fields.
 
-The graph below shows the possible workflows constructed from the five main classes that act as a
-virtual experimental setup, or a *virtual wind tunnel*.
-The ``ml`` module connects with each of the five main classes and provides integrations with machine learning
-algorithms, such as **convolutional neural networks**, **reinforcement learning**, **variational approaches**,
-and **active learning**. ML agents have freedom in interacting with the virtual experiment and can be trained
-to perform a variety of tasks using diverse rewards.
+The graph below shows possible workflows constructed from the five main classes that mimic an experimental setup
+and act as a *virtual wind tunnel*.
+The machine learning module (``pykitPIV.ml``) connects with each of the five main classes and provides integrations
+with machine learning algorithms, such as **convolutional neural networks**, **reinforcement learning**,
+**variational approaches**, and **active learning**. Machine-learning agents have freedom in interacting with
+the virtual experiment and can be trained to perform a variety of tasks using diverse custom-built rewards.
 
 .. image:: images/pykitPIV-modules.svg
     :width: 900
