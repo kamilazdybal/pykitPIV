@@ -193,12 +193,13 @@ class PIVEnv(gym.Env):
         :math:`H+2b` is the height and :math:`W+2b` is the width of an interrogation window.
         If not specified, the user has to provide a flow field specification
         through the ``flowfield_spec`` parameter to create a synthetic **pykitPIV**-generated flow field.
-        **Future functionality can include temporal flow fields.**
+        **Future functionality will include temporally-evolving flow fields.**
     :param inference_model: (optional)
-        inference model for predicting flow targets from PIV image intensities. It can be a CNN-based or a WIDIM-based model.
-        If set to ``None``, inference is not done, instead the true flow within the interrogation window is returned.
+        ``class`` specifying the inference model for predicting flow targets from PIV image intensities.
+        It can be a CNN-based or a WIDIM-based model.
+        If set to ``None``, inference is not done, instead the true flow target within the interrogation window is returned.
         The inference model has to have a method ``inference_model.inference()``
-        implemented that only returns the predicted flow targets tensor of size :math:`(1, 2, H+2b, W+2b)`.
+        that returns the predicted flow targets tensor of size :math:`(1, 2, H+2b, W+2b)`.
         The ``inference_model.inference()`` method is assumed to be calibrated, i.e., it must be able to take
         as an input the raw PIV images and pre-process them as needed.
     :param random_seed: (optional)
@@ -344,8 +345,13 @@ class PIVEnv(gym.Env):
             image_obj = env.record_particles(camera_position)
 
         :param camera_position:
-            ``tuple`` specifying the camera position in pixels :math:`[\\text{px}]`.
+            ``numpy.ndarray`` specifying the camera position in pixels :math:`[\\text{px}]`.
             This defines the bottom-left corner of the interrogation window.
+            Example can be ``numpy.array([10,50])`` which positions camera at the location :math:`10 \\text{px}`
+            along the height dimension and :math:`50 \\text{px}` along the width dimension.
+
+        :return:
+            - **image** - ``pykitPIV.Image`` object specifying the generated PIV image pairs.
         """
 
         # Extract the velocity field under the current interrogation window:
@@ -410,6 +416,13 @@ class PIVEnv(gym.Env):
     def make_inference(self, image_obj):
         """
         Makes inference of the displacement field based on the recorded PIV images.
+
+        :param image_obj:
+            ``pykitPIV.Image`` object specifying the generated PIV image pairs.
+
+        :return:
+            - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of predicted flow targets.
+            - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of true flow targets.
         """
 
         images_I1 = image_obj.remove_buffers(image_obj.images_I1)
@@ -431,7 +444,30 @@ class PIVEnv(gym.Env):
 
     def reset(self, imposed_camera_position=None):
         """
-        Resets the environement to a random initial state.
+        Resets the environment to a random or user-imposed initial state.
+
+        **Example:**
+
+        .. code:: python
+
+            # Once the environment has been initialized:
+            env = PIVEnv(...)
+
+            # We reset the environment to create its initial state:
+            initial_camera_position, _, _ = env.reset()
+
+        :param imposed_camera_position: (optional)
+            ``numpy.ndarray`` of two elements specifying the initial camera position in pixels :math:`[\\text{px}]`.
+            This defines the bottom-left corner of the interrogation window. Example can be ``numpy.array([10,50])`` which
+            positions camera at the location :math:`10 \\text{px}` along the height dimension and :math:`50 \\text{px}`
+            along the width dimension. If not specified, random camera position is selected through
+            ``env.observation_space.sample()``.
+
+        :return:
+            - **camera_position** - ``numpy.ndarray`` of two elements specifying the initial camera position in
+              pixels :math:`[\\text{px}]`.
+            - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of predicted flow targets.
+            - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of true flow targets.
         """
 
         # Check whether the user-specified camera position is possible given the admissible observation space
@@ -469,15 +505,33 @@ class PIVEnv(gym.Env):
 
     def step(self,
              action,
+             reward_function,
              verbose=False):
         """
         Makes one step in the environment which moves the camera to a new position, and computes the associated reward
         for taking that step. The reward is computed based on the PIV images seen at that position, converted
         to a continuous displacement field recovered by an inference model (either CNN-based or WIDIM-based).
 
+        **Example:**
+
+        .. code:: python
+
+            # Once the environment has been initialized:
+            env = PIVEnv(...)
+
+            # We reset the environment to create its initial state:
+            initial_camera_position, _, _ = env.reset()
+
+            # Now we can take a step in the environment by selecting one of the five actions:
+            new_camera_position, reward = env.step(action=4)
+
         :param action:
-            ``tuple`` specifying the camera position in pixels :math:`[\\text{px}]`.
-            This defines the bottom-left corner of the interrogation window.
+            ``tuple`` specifying the action to be taken at the current step in the environment.
+        :param reward_function:
+            ``function`` specifying the entire dynamics of reward construction as a function of predicted and/or true
+            flow targets.
+        :param verbose: (optional)
+            ``bool`` specifying if the verbose print statements should be displayed.
         """
 
         # Map the action (element of {0,1,2,3,4}) to the new camera position:
@@ -494,10 +548,6 @@ class PIVEnv(gym.Env):
         # Reset the camera position:
         self.__camera_position = camera_position
 
-        # An environment is completed if and only if the agent has reached the target
-        terminated = False
-        truncated = False
-
         # Reward construction: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Record PIV images at that camera position:
@@ -511,9 +561,10 @@ class PIVEnv(gym.Env):
         self.__prediction_tensor = prediction_tensor
         self.__targets_tensor = targets_tensor
 
-        reward = 1 if terminated else 0
+        reward = reward_function(prediction_tensor,
+                                 targets_tensor)
 
-        return camera_position, reward, terminated, truncated
+        return camera_position, reward
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
