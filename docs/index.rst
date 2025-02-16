@@ -10,18 +10,24 @@ various parameters that would normally be available in an experimental setting, 
 properties of the laser plane, camera exposure, particle loss, or experimental noise.
 We also provide an atlas of challenging synthetic velocity fields from analytic formulations.
 The effects of particle drift and diffusion in stationary isotropic turbulence can also be added atop the
-velocity fields using the simplified Langevin model (SLM).
+velocity fields using the simplified Langevin model (SLM). In addition, a variational approach can
+connect with the real wind tunnel experimentation and use a generative model to sample new training data
+that belongs to the distribution of the specific experimental setting.
+This can help in re-training machine-learning agents whenever there is a need to extend their range of operation
+to new experimental scenarios.
 
 **pykitPIV** can operate in particle image velocimetry (PIV) and background-oriented Schlieren (BOS) modes.
 It exploits the idea that if the time separation between two experimental images is small, the
 kinematic relationship between two consecutive images is sufficient to determine particle displacement fields.
 
-The graph below shows possible workflows constructed from the five main classes that mimic an experimental setup
-and act as a *virtual wind tunnel*.
+The graph below shows the overview of functionalities and possible workflows constructed
+from the five main classes that mimic an experimental setup and act as a *virtual wind tunnel*.
 The machine learning module (``pykitPIV.ml``) connects with each of the five main classes and provides integrations
-with machine learning algorithms, such as **convolutional neural networks**, **reinforcement learning**,
-**variational approaches**, and **active learning**. Machine-learning agents have freedom in interacting with
-the virtual experiment and can be trained to perform a variety of tasks using diverse custom-built rewards.
+with algorithms such as **convolutional neural networks**, **reinforcement learning**,
+**variational and generative approaches**, and **active learning**.
+Machine-learning agents have freedom in interacting with the virtual experiment,
+can assimilate data from real experiment, and can be trained to perform a variety of
+tasks using diverse custom-built rewards.
 
 .. image:: images/pykitPIV-modules.svg
     :width: 900

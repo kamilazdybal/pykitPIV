@@ -101,13 +101,14 @@ We describe \texttt{pykitPIV}, a Python library for generating synthetic images 
 \end{abstract}
 
 \begin{keywords}
-particle image velocimetry; flow estimation; convolutional neural networks; machine learning; Python; PyTorch
+particle image velocimetry; flow estimation; convolutional neural networks; machine learning; reinforcement learning; Python
 \end{keywords}
 
 \maketitle
 
 \section{Motivation and significance\label{sec:introduction}}
 
+Machine learning is permeating scientific and engineering disciplines, and experimental fluid dynamics is no exception.
 The last decade has seen advances in training convolutional neural networks (CNNs) for optical flow estimation, \textit{i.e.}, predicting motion information from recorded image frames separated by a short time interval. To date, numerous network architectures have been developed that are highly specialized for this application. These include various implementations of FlowNets \citep{dosovitskiy2015flownet, ilg2017flownet, hui2018liteflownet}, the spatial pyramid network (SPyNet) \cite{ranjan2017optical}, the pyramid, warping, and cost-volume network (PWC-Net) \cite{sun2018pwc}, and, more recently, the recurrent all-pairs field transforms (RAFT) \cite{teed2020raft}. In addition, the introduction of iterative residual refinement (IRR) \cite{hur2019iterative} allowed for a significant reduction in the number of trainable parameters thanks to weight sharing at several levels of successively upscaled image resolution.
 
 Experimental fluid dynamics can especially profit from those architectures. Specifically, particle image velocimetry (PIV) and background-oriented Schlieren (BOS) are experimental techniques used to visualize flow patterns with high precision. Their main goal is to predict flow targets, such as displacement fields, velocity components, or vorticity, either from paired snapshots of illuminated tracer particles injected into the flow (PIV) or from recorded deformations of the dotted background image. Recently, RAFT-PIV \cite{lagemann2021deep} and lightweight image-matching architecture (LIMA) \citep{manickathan2023lightweight} were proposed as versions of CNNs that are further optimized for inference from velocimetry experiments. Thanks to their targeted architecture and parameters, both RAFT-PIV and LIMA achieve high accuracy and per-pixel spatial resolution. The successes of RAFT-PIV and LIMA have been demonstrated on a number of classic experimental fluid dynamics settings such as flow behind a cylinder, boundary layer flow, or convective flow of a hot air plume \cite{mucignat2023lightweight}.
@@ -129,7 +130,7 @@ To advance the development and performance of ML algorithms for complex experime
 \vspace{-0.4 in}
 \includegraphics[width=\textwidth]{pykitPIV-modules.pdf}
 \vspace{10 pt}
-\caption{\footnotesize Order of using the five main \texttt{pykitPIV} classes. At each stage of synthetic image generation, the user has freedom in selecting various parameters that would normally be available in an experimental setting such as seeding density, properties of the laser plane, camera exposure, particle loss, or experimental noise.}
+\caption{\footnotesize Order of using the five main \texttt{pykitPIV} classes that act as a virtual experimental setup with which the ML module, \texttt{pykitPIV.ml}, interacts. At each stage of synthetic image generation, the user, or the ML agent, has freedom in selecting various parameters that would normally be available in an experimental setting such as the seeding density, properties of the laser plane, camera exposure, particle loss, or experimental noise. The various ML components can also communicate and enrich each other.}
 \label{fig:pykitPIV-overview}
 \end{figure*}
 
