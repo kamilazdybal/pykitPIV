@@ -5,8 +5,11 @@ Module: ``ml``
 #######################
 
 *********************************************
-**PyTorch** primitives
+Data primitives and data loaders
 *********************************************
+
+**PyTorch**-based
+====================================
 
 .. autoclass:: pykitPIV.ml.PIVDataset
 

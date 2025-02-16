@@ -80,13 +80,13 @@ of this class which can be readily accessed from the ``ml`` module:
     The *top* boundary of a PIV image corresponds to ``[-1,:]`` rows from the raw ``numpy`` arrays.
 
     Whenever the PIV images need to be interpreted with the origin in the upper-left corner
-    (equivalent to setting ``origin='upper'`` in ``plt.imshow``), the :math:`v`-component of velocity has to be multiplied by :math:`-1`.
+    (equivalent to setting ``origin='upper'`` in ``plt.imshow()``), the :math:`v`-component of velocity has to be multiplied by :math:`-1`.
     This is the case when using the generated **pykitPIV** dataset as raw ``numpy`` arrays, such as in an input/output
     to a convolutional neural network (CNN). A CNN processes arrays assuming that the *top* boundary is ``[0,:]`` and the *bottom*
     boundary is ``[-1,:]``. With this flip, the :math:`v`-component of velocity has to swap sign, such that whatever was a positive
     :math:`v`-component (from the old *bottom* to *top*) now is a negative :math:`v`-component (from the new *top* to *bottom*).
 
-    This preserves the effect (divergence or convergence) that the :math:`v`-component of velocity has on the particles.
+    This preserves the effect (divergence or convergence) that the :math:`v`-component of velocity has on particles.
 
     .. image:: ../images/pykitPIV-dataloader-warning.svg
         :width: 700
