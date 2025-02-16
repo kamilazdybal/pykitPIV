@@ -33,6 +33,25 @@ tasks using diverse custom-built rewards.
     :width: 900
     :align: center
 
+Kamila Zdybał is **pykitPIV**'s primary author and point of contact and can be contacted by email at ``kamila.zdybal@empa.ch``.
+Other authors who contributed to **pykitPIV** are Claudio Mucignat, Stephan Kunz, and Ivan Lunati.
+
+If you use **pykitPIV** in your work, we will appreciate the citation to the following paper:
+
+.. code-block:: text
+
+        @article{pykitPIV2025,
+        title = "pykitPIV: Rich and reproducible virtual training of machine learning algorithms in velocimetry",
+        journal = "SoftwareX",
+        volume = "",
+        pages = "",
+        year = "2025",
+        issn = "",
+        doi = "",
+        url = "https://github.com/kamilazdybal/pykitPIV}",
+        author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
+        }
+
 ------------------------------------------------------------------------------------------------------------------------
 
 .. toctree::
