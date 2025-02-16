@@ -177,7 +177,8 @@ class PIVEnv(gym.Env):
 
     :param interrogation_window_size:
         ``tuple`` of two ``int`` elements specifying the size of the interrogation window in pixels :math:`[\\text{px}]`.
-        The first number is the window height, :math:`H`, the second number is the window width, :math:`W`.
+        The first number is the window height, :math:`H_{\\text{i}}`,
+        the second number is the window width, :math:`W_{\\text{i}}`.
     :param interrogation_window_size_buffer:
         ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the interrogation window size
         in the width and height direction.
@@ -212,7 +213,7 @@ class PIVEnv(gym.Env):
         If set to ``None``, inference is not done, instead the true flow target within the interrogation window is
         returned.
         The inference model has to have a method ``inference_model.inference()``
-        that returns the predicted flow targets tensor of size :math:`(1, 2, H+2b, W+2b)`.
+        that returns the predicted flow targets tensor of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`.
         The ``inference_model.inference()`` method must be able to take as an input the raw PIV images and
         pre-process them as needed.
     :param random_seed: (optional)
@@ -305,7 +306,8 @@ class PIVEnv(gym.Env):
         # The observation space is the camera's location in the virtual environement. In practice, this is
         # the position of the camera looking at a specific interrogation window.
         self.observation_space = gym.spaces.Box(low=np.array([0, 0]),
-                                                high=np.array([self.__admissible_observation_space[0], self.__admissible_observation_space[1]]),
+                                                high=np.array([self.__admissible_observation_space[0],
+                                                               self.__admissible_observation_space[1]]),
                                                 dtype=int)
 
         # Action space for the RL agent: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -314,7 +316,7 @@ class PIVEnv(gym.Env):
         self.action_space = gym.spaces.Discrete(5)
 
         # Dictionary that maps the abstract actions to the directions on the pixel grid:
-        self._action_to_direction = {
+        self.__action_to_direction = {
             0: np.array([1, 0]),  # up
             1: np.array([0, 1]),  # right
             2: np.array([-1, 0]),  # down
@@ -322,7 +324,7 @@ class PIVEnv(gym.Env):
             4: np.array([0, 0]),  # stay
         }
 
-        self._action_to_verbose_direction = {
+        self.__action_to_verbose_direction = {
             0: 'Up',
             1: 'Right',
             2: 'Down',
@@ -333,6 +335,14 @@ class PIVEnv(gym.Env):
         self.__n_actions = 5
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    @property
+    def action_to_direction(self):
+        return self.__action_to_direction
+
+    @property
+    def action_to_verbose_direction(self):
+        return self.__action_to_verbose_direction
 
     @property
     def n_actions(self):
@@ -428,14 +438,14 @@ class PIVEnv(gym.Env):
 
     def make_inference(self, image_obj):
         """
-        Makes inference of the displacement field based on the recorded PIV images.
+        Makes inference of the displacement field under the interrogation window based on the recorded PIV images.
 
         :param image_obj:
             ``pykitPIV.Image`` object specifying the generated PIV image pairs.
 
         :return:
             - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of predicted flow targets.
-            - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of true flow targets.
+            - **targets_tensor** - ``numpy.ndarray`` specifying the tensor of true flow targets.
         """
 
         images_I1 = image_obj.remove_buffers(image_obj.images_I1)
@@ -463,11 +473,16 @@ class PIVEnv(gym.Env):
 
         .. code:: python
 
+            import numpy as np
+
             # Once the environment has been initialized:
             env = PIVEnv(...)
 
-            # We reset the environment to create its initial state:
+            # We reset the environment to create its random initial state:
             initial_camera_position, _, _ = env.reset()
+
+            # Optionally, we can impose an initial state:
+            initial_camera_position, _, _ = env.reset(imposed_camera_position=np.array([10,50]))
 
         :param imposed_camera_position: (optional)
             ``numpy.ndarray`` of two elements specifying the initial camera position in pixels :math:`[\\text{px}]`.
@@ -480,7 +495,7 @@ class PIVEnv(gym.Env):
             - **camera_position** - ``numpy.ndarray`` of two elements specifying the initial camera position in
               pixels :math:`[\\text{px}]`.
             - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of predicted flow targets.
-            - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of true flow targets.
+            - **targets_tensor** - ``numpy.ndarray`` specifying the tensor of true flow targets.
         """
 
         # Check whether the user-specified camera position is possible given the admissible observation space
@@ -530,29 +545,47 @@ class PIVEnv(gym.Env):
 
         .. code:: python
 
+            from pykitPIV.ml import Rewards
+
             # Once the environment has been initialized:
             env = PIVEnv(...)
 
             # We reset the environment to create its initial state:
             initial_camera_position, _, _ = env.reset()
 
+            # We create a reward function by polling from one of the pykitPIV.Rewards methods.
+            # Here, we use the reward based on the Q-criterion:
+            rewards = Rewards(verbose=True)
+            reward_function = rewards.q_criterion
+
+            # We also define a function that will transform and reduce the Q-criterion to provide the reward value:
+            def reward_transformation(Q):
+                Q = np.max(Q.clip(min=0))
+                return Q
+
             # Now we can take a step in the environment by selecting one of the five actions:
-            new_camera_position, reward = env.step(action=4)
+            new_camera_position, reward = env.step(action=4,
+                                                   reward_function=reward_function,
+                                                   reward_transformation=reward_transformation,
+                                                   verbose=True)
 
         :param action:
             ``tuple`` specifying the action to be taken at the current step in the environment.
         :param reward_function:
             ``function`` specifying the dynamics of the reward construction as a function of predicted and/or true
             flow targets. It can be one of the rewards functions from the ``pykitPIV.Rewards`` class.
+        :param reward_transformation:
+            ``function`` specifying an arbitrary transformation of the reward function
+            and an arbitrary compression of the reward function to a single value.
         :param verbose: (optional)
             ``bool`` specifying if the verbose print statements should be displayed.
         """
 
         # Map the action (element of {0,1,2,3,4}) to the new camera position:
-        direction = self._action_to_direction[action]
+        direction = self.action_to_direction[action]
 
         if verbose:
-            print('Action ' + str(action) + ': ' + self._action_to_verbose_direction[action])
+            print('Action ' + str(action) + ': ' + self.action_to_verbose_direction[action])
 
         # Take the step in the environment:
         # (We clip the camera position to make sure that we don't leave the grid bounds)
@@ -1009,12 +1042,6 @@ class CameraAgent:
 
         return self.target_q_network.get_weights()
 
-
-
-
-
-
-
 ########################################################################################################################
 ########################################################################################################################
 ####
@@ -1022,7 +1049,6 @@ class CameraAgent:
 ####
 ########################################################################################################################
 ########################################################################################################################
-
 
 class Rewards:
     """
@@ -1089,12 +1115,14 @@ class Rewards:
         .. code:: python
 
             from pykitPIV.ml import Rewards
+            import numpy as np
 
-            # Once we have a velocity field specified:
+            # Once we have the velocity field specified:
             velocity_field = ...
 
             # Instantiate an object of the Rewards class:
-            rewards = Rewards()
+            rewards = Rewards(verbose=True,
+                              random_seed=None)
 
             # Design a custom transformation that looks for vorticity-dominated regions
             # (as opposed to shear-dominated regions)
@@ -1109,10 +1137,11 @@ class Rewards:
 
         :param velocity_field:
             ``numpy.ndarray`` specifying the velocity components under the interrogation window.
-            It should be of size :math:`(1, 2, H_{\\text{i}}+b, W_{\\text{i}}+b)`,
+            It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
             where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
             :math:`u` and :math:`v` respectively,
-            :math:`H_{\\text{i}}+b` is the height and :math:`W_{\\text{i}}+b` is the width of the interrogation window.
+            :math:`H_{\\text{i}}+2b` is the height and
+            :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
         :param transformation:
             ``function`` specifying an arbitrary transformation of the Q-criterion
             and an arbitrary compression of the Q-criterion field to a single value.
