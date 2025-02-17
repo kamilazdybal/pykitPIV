@@ -4,6 +4,8 @@
 Class: ``Motion``
 ####################
 
+.. autoclass:: pykitPIV.motion.MotionSpecs
+
 .. autoclass:: pykitPIV.motion.Motion
 
 .. autofunction:: pykitPIV.motion.Motion.forward_euler

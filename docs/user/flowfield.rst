@@ -4,6 +4,8 @@
 Class: ``FlowField``
 ####################
 
+.. autoclass:: pykitPIV.flowfield.FlowFieldSpecs
+
 .. autoclass:: pykitPIV.flowfield.FlowField
 
 .. autofunction:: pykitPIV.flowfield.FlowField.print_available_fields

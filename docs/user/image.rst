@@ -4,6 +4,8 @@
 Class: ``Image``
 ####################
 
+.. autoclass:: pykitPIV.image.ImageSpecs
+
 .. autoclass:: pykitPIV.image.Image
 
 .. autofunction:: pykitPIV.image.Image.add_particles

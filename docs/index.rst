@@ -33,7 +33,7 @@ tasks using diverse custom-built rewards.
     :width: 900
     :align: center
 
-Kamila Zdybał is **pykitPIV**'s primary author and point of contact and can be contacted by email at ``kamila.zdybal@empa.ch``.
+Kamila Zdybał is **pykitPIV**'s primary developer and point of contact and can be contacted by email at ``kamila.zdybal@empa.ch``.
 Other authors who contributed to **pykitPIV** are Claudio Mucignat, Stephan Kunz, and Ivan Lunati.
 
 If you use **pykitPIV** in your work, we will appreciate the citation to the following paper:
