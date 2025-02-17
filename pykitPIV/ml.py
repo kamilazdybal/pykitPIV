@@ -185,6 +185,10 @@ class PIVEnv(gym.Env):
         This number should be approximately equal to the maximum displacement that particles are subject to
         in order to allow new particles to arrive into the image area
         and prevent spurious disappearance of particles near image boundaries.
+    :param cues_function:
+        ``function`` specifying the computation of cues that the RL agent senses. The cues are the input parameters
+        to the Q-network. This function has to return a ``numpy`` array of shape ``(1, N)``
+        of :math:`N` cues computed from the predicted displacement field tensor.
     :param particle_spec:
         ``dict`` or ``particle.ParticleSpec`` object containing specifications for constructing
         an instance of ``Particle`` class.
@@ -224,6 +228,7 @@ class PIVEnv(gym.Env):
     def __init__(self,
                  interrogation_window_size,
                  interrogation_window_size_buffer,
+                 cues_function,
                  particle_spec,
                  motion_spec,
                  image_spec,
@@ -241,6 +246,8 @@ class PIVEnv(gym.Env):
 
         # Size of the buffer for the interrogation window:
         self.__interrogation_window_size_buffer = interrogation_window_size_buffer
+
+        self.cues_function = cues_function
 
         # Specifications for Particle class:
         if isinstance(particle_spec, dict):
@@ -519,8 +526,10 @@ class PIVEnv(gym.Env):
         :return:
             - **camera_position** - ``numpy.ndarray`` of two elements specifying the initial camera position in
               pixels :math:`[\\text{px}]`.
-            - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of predicted flow targets.
             - **targets_tensor** - ``numpy.ndarray`` specifying the tensor of true flow targets.
+            - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of predicted flow targets.
+            - **cues** - ``numpy.ndarray`` specifying the cues that the RL agent will later be sensing.
+            The cues are computed based on ``prediction_tensor``.
         """
 
         # Check whether the user-specified camera position is possible given the admissible observation space
@@ -552,7 +561,13 @@ class PIVEnv(gym.Env):
         self.__prediction_tensor = prediction_tensor
         self.__targets_tensor = targets_tensor
 
-        return camera_position, prediction_tensor, targets_tensor
+        # Compute the cues based on the current prediction tensor:
+        cues = self.cues_function(prediction_tensor)
+
+        # Find out how many cues the RL agent will be looking at, this is useful information for later:
+        (_, self.__n_cues) = np.shape(cues)
+
+        return camera_position, targets_tensor, prediction_tensor, cues
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -788,7 +803,8 @@ class PIVEnv(gym.Env):
         plt.colorbar(ims)
         plt.title('Error %: ' + str(round(np.mean(error_map), 1)), fontsize=fontsize)
 
-        plt.savefig(filename, dpi=300, bbox_inches='tight')
+        if filename is not None:
+            plt.savefig(filename, dpi=300, bbox_inches='tight')
 
         return plt
 
@@ -926,28 +942,44 @@ class CameraAgent:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def choose_action(self,
-                      camera_position,
-                      epsilon,
-                      centers=None,
-                      scales=None):
+                      cues,
+                      epsilon):
         """
-        Defines an epsilon-greedy choice of the next best action to select.
+        Defines an :math:`\epsilon`-greedy choice of the next best action to select.
+
+        If the probability is less than :math:`\epsilon`, action is selected at random.
+
+        If the probability is higher than or equal to :math:`\epsilon`, action is selected based on the cues that
+        are the characteristic of the flow field inside the current interrogation window at location defined by
+        the camera position (``camera_position``).
+
+        :param cues:
+            ``numpy.ndarray`` specifying :math:`N` cues that the RL agent senses. The cues are the input parameters
+            to the Q-network. It has to have size ``(1, N)``.
+        :param epsilon:
+            ``float`` specifying the exploration probability, :math:`\epsilon`. It has to be between 0 and 1.
         """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+        if not isinstance(epsilon, float):
+            raise ValueError("Parameter `epsilon` has to be of type 'float'.")
+
+        if epsilon < 0 or epsilon > 1:
+            raise ValueError("Parameter `epsilon` has to be between 0 and 1.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Select random action with probability epsilon:
         if np.random.rand() < epsilon:
+
             return np.random.choice(self.n_actions)
 
         # Select the currently best action with probability (1 - epsilon):
         else:
-            if (centers is not None) and (scales is not None):
-                preprocessed_camera_position = ((camera_position[0] - centers[0]) / scales[0], (camera_position[1] - center[1]) / scales[1])
-                preprocessed_camera_position = np.reshape(preprocessed_camera_position, (1, -1))
 
-            else:
-                preprocessed_camera_position = np.reshape(camera_position, (1, -1))
-
-            q_values = self.target_q_network.predict(preprocessed_camera_position, verbose=0)
+            q_values = self.target_q_network.predict(cues, verbose=0)
 
             return np.argmax(q_values)
 
@@ -962,7 +994,8 @@ class CameraAgent:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def train(self, current_lr=0.001):
+    def train(self,
+              current_lr=0.001):
         """
         Trains the Q-network with the outcome of a single step in the environment.
 
@@ -989,35 +1022,32 @@ class CameraAgent:
         # Now we can start sampling batches from the memory:
         minibatch = self.memory.sample(self.batch_size)
 
-        batch_camera_positions = np.zeros((self.batch_size, 2))
+        batch_cues = np.zeros((self.batch_size, self.env.__n_cues))
         batch_q_values = np.zeros((self.batch_size, self.n_actions))
 
         for i, batch_content in enumerate(minibatch):
 
-            camera_position, action, reward, next_camera_position = batch_content
+            cues, action, reward, next_cues = batch_content
 
-            camera_position = np.reshape(camera_position, (1, -1))
-            next_camera_position = np.reshape(next_camera_position, (1, -1))
-
-            # Compute the Q-value we want to have for this (camera_position, action) pair:
-            next_q_values = self.target_q_network.predict(next_camera_position, verbose=0)
+            # Compute the Q-value we want to have for this (cues, action) pair:
+            next_q_values = self.target_q_network.predict(next_cues, verbose=0)
             target_q_value = reward + self.discount_factor * np.max(next_q_values, axis=-1)
 
-            # Compute the Q-value we actually have for this (camera_position, action) pair:
-            q_values = self.selected_q_network.predict(camera_position, verbose=0)
+            # Compute the Q-value we actually have for this (cues, action) pair:
+            q_values = self.selected_q_network.predict(cues, verbose=0)
 
             # Swap the Q-value we actually have for the target Q-value for this action:
             q_values[0][action] = target_q_value[0]
 
             # Create a batch:
-            batch_camera_positions[i, :] = camera_position
+            batch_cues[i, :] = cues
             batch_q_values[i, :] = q_values
 
         # Update the optimizer with the current learning rate:
         self.optimizer.learning_rate.assign(current_lr)
 
         # Teach the Q-network to predict the target Q-values over the current batch:
-        history = self.selected_q_network.fit(batch_camera_positions,
+        history = self.selected_q_network.fit(batch_cues,
                                               batch_q_values,
                                               epochs=self.n_epochs,
                                               verbose=0)
