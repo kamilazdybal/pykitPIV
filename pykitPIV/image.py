@@ -2,11 +2,32 @@ import h5py
 import matplotlib.animation as animation
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
-
 from pykitPIV.checks import *
 from pykitPIV.flowfield import FlowField
 from pykitPIV.motion import Motion
 from pykitPIV.particle import Particle
+
+########################################################################################################################
+########################################################################################################################
+####
+####    Class: ImageSpecs
+####
+########################################################################################################################
+########################################################################################################################
+
+class ImageSpecs:
+    """
+    Configuration object for the ``Image`` class.
+    """
+
+    def __init__(self,
+                 n_images,
+                 size=(512, 512),
+                 size_buffer=10):
+
+        self.n_images = n_images
+        self.size = size
+        self.size_buffer = size_buffer
 
 ########################################################################################################################
 ########################################################################################################################

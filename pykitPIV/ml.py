@@ -10,10 +10,10 @@ import pygame
 import random
 import tensorflow as tf
 from pykitPIV.checks import *
-from pykitPIV.flowfield import FlowField
-from pykitPIV.motion import Motion
-from pykitPIV.particle import Particle
-from pykitPIV.image import Image
+from pykitPIV.flowfield import FlowField, FlowFieldSpecs
+from pykitPIV.motion import Motion, MotionSpecs
+from pykitPIV.particle import Particle, ParticleSpecs
+from pykitPIV.image import Image, ImageSpecs
 from pykitPIV.postprocess import Postprocess
 from pykitPIV.flowfield import __available_velocity_fields
 
@@ -242,10 +242,25 @@ class PIVEnv(gym.Env):
         # Size of the buffer for the interrogation window:
         self.__interrogation_window_size_buffer = interrogation_window_size_buffer
 
-        # Specs for all pykitPIV classes:
+        # Specifications for Particle class:
+        if isinstance(particle_spec, dict):
+            particle_spec = ParticleSpecs(**particle_spec)
+        elif not isinstance(particle_spec, ParticleSpecs):
+            raise TypeError("Particle specifications have to be of type 'dict' or 'pykitPIV.particle.ParticleSpecs'.")
         self.__particle_spec = particle_spec
-        self.__flowfield_spec = flowfield_spec
+
+        # Specifications for Motion class:
+        if isinstance(motion_spec, dict):
+            motion_spec = MotionSpecs(**motion_spec)
+        elif not isinstance(motion_spec, MotionSpecs):
+            raise TypeError("Motion specifications have to be of type 'dict' or 'pykitPIV.motion.MotionSpecs'.")
         self.__motion_spec = motion_spec
+
+        # Specifications for Image class:
+        if isinstance(image_spec, dict):
+            image_spec = ImageSpecs(**image_spec)
+        elif not isinstance(image_spec, ImageSpecs):
+            raise TypeError("Image specifications have to be of type 'dict' or 'pykitPIV.image.ImageSpecs'.")
         self.__image_spec = image_spec
 
         self.__inference_model = inference_model
@@ -258,10 +273,20 @@ class PIVEnv(gym.Env):
         # If the user did not supply their own flow field, a pykitPIV-generated flow field is used:
         if user_flowfield is None:
 
-            # Size of the entire visible flow field:
-            self.__flowfield_size = self.__flowfield_spec['flowfield_size']
+            if flowfield_spec is None:
+                raise ValueError('At least one has to be specified: `user_flowfield` or `flowfield_spec`.')
 
-            self.__flowfield_type = self.__flowfield_spec['flowfield_type']
+            # Specifications for Flowfield class:
+            if isinstance(flowfield_spec, dict):
+                flowfield_spec = FlowFieldSpecs(**flowfield_spec)
+            elif not isinstance(flowfield_spec, FlowFieldSpecs):
+                raise TypeError("Flow field specifications have to be of type 'dict' or 'pykitPIV.flowfield.FlowFieldSpecs'.")
+            self.__flowfield_spec = flowfield_spec
+
+            # Size of the entire visible flow field:
+            self.__flowfield_size = self.__flowfield_spec.flowfield_size.
+
+            self.__flowfield_type = self.__flowfield_spec.flowfield_type
 
             # Generate the flow field that is fixed throughout training:
             flowfield = FlowField(n_images=1,
@@ -271,19 +296,19 @@ class PIVEnv(gym.Env):
 
             if self.__flowfield_type == 'random smooth':
 
-                flowfield.generate_random_velocity_field(gaussian_filters=self.__flowfield_spec['gaussian_filters'],
-                                                         n_gaussian_filter_iter=self.__flowfield_spec['n_gaussian_filter_iter'],
-                                                         displacement=self.__flowfield_spec['displacement'])
+                flowfield.generate_random_velocity_field(gaussian_filters=self.__flowfield_spec.gaussian_filters,
+                                                         n_gaussian_filter_iter=self.__flowfield_spec.n_gaussian_filter_iter,
+                                                         displacement=self.__flowfield_spec.displacement)
 
             if 'apply_SLM' in self.__flowfield_spec.keys():
-                if self.__flowfield_spec['apply_SLM']:
+                if self.__flowfield_spec.apply_SLM.:
 
                     # Solve the simplified Langevin model (SLM) for the mean velocity fields:
                     flowfield.generate_langevin_velocity_field(mean_field=flowfield.velocity_field,
-                                                               integral_time_scale=self.__flowfield_spec['integral_time_scale'],
-                                                               sigma=self.__flowfield_spec['sigma'],
-                                                               n_stochastic_particles=self.__flowfield_spec['n_stochastic_particles'],
-                                                               n_iterations=self.__flowfield_spec['n_iterations'],
+                                                               integral_time_scale=self.__flowfield_spec.integral_time_scale,
+                                                               sigma=self.__flowfield_spec.sigma,
+                                                               n_stochastic_particles=self.__flowfield_spec.n_stochastic_particles,
+                                                               n_iterations=self.__flowfield_spec.n_iterations,
                                                                verbose=False)
 
             self.flowfield = flowfield
@@ -393,44 +418,45 @@ class PIVEnv(gym.Env):
         particles = Particle(n_images=1,
                              size=self.__interrogation_window_size,
                              size_buffer=self.__interrogation_window_size_buffer,
-                             diameters=self.__particle_spec['diameters'],
-                             distances=self.__particle_spec['distances'],
-                             densities=self.__particle_spec['densities'],
-                             diameter_std=self.__particle_spec['diameter_std'],
-                             seeding_mode=self.__particle_spec['seeding_mode'],
-                             random_seed=self.__random_seed)
+                             diameters=self.__particle_spec.diameters,
+                             distances=self.__particle_spec.distances,
+                             densities=self.__particle_spec.densities,
+                             diameter_std=self.__particle_spec.diameter_std,
+                             seeding_mode=self.__particle_spec.seeding_mode,
+                             random_seed=self.__particle_spec.random_seed)
 
         # Initialize a flow field object:
         flowfield = FlowField(n_images=1,
                               size=self.__interrogation_window_size,
                               size_buffer=self.__interrogation_window_size_buffer,
-                              random_seed=self.__random_seed)
+                              random_seed=None)
 
         flowfield.upload_velocity_field(velocity_field_at_interrogation_window)
 
         # Initialize a motion object:
         motion = Motion(particles,
                         flowfield,
-                        time_separation=self.__motion_spec['time_separation'],
-                        particle_loss=self.__motion_spec['particle_loss'],
-                        particle_gain=self.__motion_spec['particle_gain'],
-                        random_seed=self.__random_seed)
-        motion.runge_kutta_4th(n_steps=self.__motion_spec['n_steps'])
+                        time_separation=self.__motion_spec.time_separation,
+                        particle_loss=self.__motion_spec.particle_loss,
+                        particle_gain=self.__motion_spec.particle_gain,
+                        random_seed=self.__motion_spec.random_seed)
+
+        motion.runge_kutta_4th(n_steps=self.__motion_spec.n_steps)
 
         # Initialize an image object:
-        image = Image(random_seed=self.__random_seed)
+        image = Image(random_seed=self.__image_spec.random_seed)
         image.add_particles(particles)
         image.add_flowfield(flowfield)
         image.add_motion(motion)
 
-        image.add_reflected_light(exposures=self.__image_spec['exposures'],
-                                  maximum_intensity=self.__image_spec['maximum_intensity'],
-                                  laser_beam_thickness=self.__image_spec['laser_beam_thickness'],
-                                  laser_over_exposure=self.__image_spec['laser_over_exposure'],
-                                  laser_beam_shape=self.__image_spec['laser_beam_shape'],
-                                  alpha=self.__image_spec['alpha'],
-                                  clip_intensities=self.__image_spec['clip_intensities'],
-                                  normalize_intensities=self.__image_spec['normalize_intensities'])
+        image.add_reflected_light(exposures=self.__image_spec.exposures,
+                                  maximum_intensity=self.__image_spec.maximum_intensity,
+                                  laser_beam_thickness=self.__image_spec.laser_beam_thickness,
+                                  laser_over_exposure=self.__image_spec.laser_over_exposure,
+                                  laser_beam_shape=self.__image_spec.laser_beam_shape,
+                                  alpha=self.__image_spec.alpha,
+                                  clip_intensities=self.__image_spec.clip_intensities,
+                                  normalize_intensities=self.__image_spec.normalize_intensities)
 
         return image
 

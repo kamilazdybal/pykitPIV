@@ -10,14 +10,6 @@ import warnings
 from pykitPIV.particle import Particle
 from pykitPIV.checks import *
 
-################################################################################
-################################################################################
-####
-####    Class: FlowField
-####
-################################################################################
-################################################################################
-
 # Specify the available velocity fields in this class:
 __available_velocity_fields = {'constant': 'generate_constant_velocity_field',
                                'random smooth': 'generate_random_velocity_field',
@@ -26,6 +18,36 @@ __available_velocity_fields = {'constant': 'generate_constant_velocity_field',
                                'Chebyshev polynomials': 'generate_chebyshev_velocity_field',
                                'spherical harmonics': 'generate_spherical_harmonics_velocity_field',
                                'Langevin': 'generate_langevin_velocity_field'}
+
+########################################################################################################################
+########################################################################################################################
+####
+####    Class: FlowFieldSpecs
+####
+########################################################################################################################
+########################################################################################################################
+
+class FlowFieldSpecs:
+    """
+    Configuration object for the ``FlowField`` class.
+    """
+
+    def __init__(self,
+                 n_images,
+                 size=(512, 512),
+                 size_buffer=10):
+
+        self.n_images = n_images
+        self.size = size
+        self.size_buffer = size_buffer
+
+################################################################################
+################################################################################
+####
+####    Class: FlowField
+####
+################################################################################
+################################################################################
 
 class FlowField:
     """

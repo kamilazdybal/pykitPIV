@@ -14,6 +14,40 @@ from pykitPIV.checks import *
 ########################################################################################################################
 ########################################################################################################################
 ####
+####    Class: ParticleSpecs
+####
+########################################################################################################################
+########################################################################################################################
+
+class ParticleSpecs:
+    """
+    Configuration object for the ``Particle`` class.
+    """
+
+    def __init__(self,
+                 n_images,
+                 size=(512, 512),
+                 size_buffer=10,
+                 diameters=(3, 6),
+                 distances=(0.5, 2),
+                 densities=(0.05, 0.1),
+                 diameter_std=0.1,
+                 seeding_mode='random',
+                 random_seed=None):
+
+        self.n_images = n_images
+        self.size = size
+        self.size_buffer = size_buffer
+        self.diameters = diameters
+        self.distances = distances
+        self.densities = densities
+        self.diameter_std = diameter_std
+        self.seeding_mode = seeding_mode
+        self.random_seed = random_seed
+
+########################################################################################################################
+########################################################################################################################
+####
 ####    Class: Particle
 ####
 ########################################################################################################################
@@ -454,9 +488,6 @@ class Particle:
 
     # ##################################################################################################################
 
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
     def plot(self,
              idx,
              with_buffer=False,
@@ -585,8 +616,6 @@ class Particle:
             plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
         return plt
-        
-
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -613,32 +642,3 @@ class Particle:
         raise NotImplementedError('This function not implemented yet.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-if __name__ == "__main__" :
-
-    case=["PIV","BOS"][1]
-
-    if case=="PIV":   
-        particles = Particle(1, 
-                        size=(128,256), 
-                        size_buffer=10,
-                        diameters=(2, 3),
-                        diameter_std=0.5,
-                        densities=(0.05, 0.051),
-                        seeding_mode="random",
-                        random_seed=100)
- 
-    if case=="BOS":  #BOS
-        particles = Particle(1, 
-                        size=(128,256), 
-                        size_buffer=10,
-                        diameters=(5, 5),
-                        diameter_std=0.0,
-                        densities=(0.9, 0.9),   # 1 particle touches
-                        seeding_mode="poisson",
-                        random_seed=100)
-
-    plt=particles.plot(0)
-    plt.show()
-    print('done')
