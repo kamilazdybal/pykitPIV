@@ -529,7 +529,7 @@ class PIVEnv(gym.Env):
             - **targets_tensor** - ``numpy.ndarray`` specifying the tensor of true flow targets.
             - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of predicted flow targets.
             - **cues** - ``numpy.ndarray`` specifying the cues that the RL agent will later be sensing.
-            The cues are computed based on ``prediction_tensor``.
+              The cues are computed based on ``prediction_tensor``.
         """
 
         # Check whether the user-specified camera position is possible given the admissible observation space
@@ -1075,7 +1075,6 @@ class CameraAgent:
                 # Synchronize the networks once every 10 episodes:
                 if (episode+1) % 10 == 0:
                     ca.update_target_network()
-
         """
 
         self.target_q_network.set_weights(self.selected_q_network.get_weights())
