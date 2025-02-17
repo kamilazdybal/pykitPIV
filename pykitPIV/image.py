@@ -18,6 +18,21 @@ from pykitPIV.particle import Particle
 class ImageSpecs:
     """
     Configuration object for the ``Image`` class.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import ImageSpecs
+
+        # Instantiate an object of ImageSpecs class:
+        image_spec = ImageSpecs()
+
+        # Change one field of motion_spec:
+        image_spec.exposures = (0.95, 0.95)
+
+        # You can print the current values of all attributes:
+        print(image_spec)
     """
 
     def __init__(self,
@@ -47,6 +62,22 @@ class ImageSpecs:
         self.alpha = alpha
         self.clip_intensities = clip_intensities
         self.normalize_intensities = normalize_intensities
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}"
+                f"(n_images={self.n_images},\n"
+                f"size={self.size},\n"
+                f"size_buffer={self.size_buffer},\n"
+                f"random_seed={self.random_seed},\n"
+                f"exposures={self.exposures},\n"
+                f"maximum_intensity={self.maximum_intensity},\n"
+                f"laser_beam_thickness={self.laser_beam_thickness},\n"
+                f"laser_over_exposure={self.laser_over_exposure},\n"
+                f"laser_beam_shape={self.laser_beam_shape},\n"
+                f"alpha={self.alpha},\n"
+                f"clip_intensities={self.clip_intensities},\n"
+                f"normalize_intensities={self.normalize_intensities})"
+                )
 
 ########################################################################################################################
 ########################################################################################################################

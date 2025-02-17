@@ -300,16 +300,15 @@ class PIVEnv(gym.Env):
                                                          n_gaussian_filter_iter=self.__flowfield_spec.n_gaussian_filter_iter,
                                                          displacement=self.__flowfield_spec.displacement)
 
-            if 'apply_SLM' in self.__flowfield_spec.keys():
-                if self.__flowfield_spec.apply_SLM.:
+            if self.__flowfield_spec.apply_SLM:
 
-                    # Solve the simplified Langevin model (SLM) for the mean velocity fields:
-                    flowfield.generate_langevin_velocity_field(mean_field=flowfield.velocity_field,
-                                                               integral_time_scale=self.__flowfield_spec.integral_time_scale,
-                                                               sigma=self.__flowfield_spec.sigma,
-                                                               n_stochastic_particles=self.__flowfield_spec.n_stochastic_particles,
-                                                               n_iterations=self.__flowfield_spec.n_iterations,
-                                                               verbose=False)
+                # Solve the simplified Langevin model (SLM) for the mean velocity fields:
+                flowfield.generate_langevin_velocity_field(mean_field=flowfield.velocity_field,
+                                                           integral_time_scale=self.__flowfield_spec.integral_time_scale,
+                                                           sigma=self.__flowfield_spec.sigma,
+                                                           n_stochastic_particles=self.__flowfield_spec.n_stochastic_particles,
+                                                           n_iterations=self.__flowfield_spec.n_iterations,
+                                                           verbose=False)
 
             self.flowfield = flowfield
 

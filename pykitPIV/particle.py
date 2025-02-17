@@ -22,6 +22,21 @@ from pykitPIV.checks import *
 class ParticleSpecs:
     """
     Configuration object for the ``Particle`` class.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import ParticleSpecs
+
+        # Instantiate an object of ParticleSpecs class:
+        particle_spec = ParticleSpecs()
+
+        # Change one field of particle_spec:
+        particle_spec.diameters = (2,2)
+
+        # You can print the current values of all attributes:
+        print(particle_spec)
     """
 
     def __init__(self,
@@ -44,6 +59,19 @@ class ParticleSpecs:
         self.diameter_std = diameter_std
         self.seeding_mode = seeding_mode
         self.random_seed = random_seed
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}"
+                f"(n_images={self.n_images},\n"
+                f"size={self.size},\n"
+                f"size_buffer={self.size_buffer},\n"
+                f"diameters={self.diameters},\n"
+                f"distances={self.distances},\n"
+                f"densities={self.densities},\n"
+                f"diameter_std={self.diameter_std},\n"
+                f"seeding_mode={self.seeding_mode!r},\n"
+                f"random_seed={self.random_seed})"
+                )
 
 ########################################################################################################################
 ########################################################################################################################

@@ -21,6 +21,21 @@ from pykitPIV.flowfield import FlowField
 class MotionSpecs:
     """
     Configuration object for the ``Motion`` class.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import MotionSpecs
+
+        # Instantiate an object of MotionSpecs class:
+        motion_spec = MotionSpecs()
+
+        # Change one field of motion_spec:
+        motion_spec.time_separation = 0.1
+
+        # You can print the current values of all attributes:
+        print(motion_spec)
     """
 
     def __init__(self,
@@ -41,6 +56,18 @@ class MotionSpecs:
         self.time_separation = time_separation
         self.particle_loss = particle_loss
         self.particle_gain = particle_gain
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}"
+                f"(n_images={self.n_images},\n"
+                f"size={self.size},\n"
+                f"size_buffer={self.size_buffer},\n"
+                f"random_seed={self.random_seed},\n"
+                f"n_steps={self.n_steps},\n"
+                f"time_separation={self.time_separation},\n"
+                f"particle_loss={self.particle_loss},\n"
+                f"particle_gain={self.particle_gain})"
+                )
 
 ################################################################################
 ################################################################################

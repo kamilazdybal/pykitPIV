@@ -30,6 +30,21 @@ __available_velocity_fields = {'constant': 'generate_constant_velocity_field',
 class FlowFieldSpecs:
     """
     Configuration object for the ``FlowField`` class.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import FlowFieldSpecs
+
+        # Instantiate an object of FlowFieldSpecs class:
+        flowfield_spec = FlowFieldSpecs()
+
+        # Change one field of flowfield_spec:
+        flowfield_spec.gaussian_filters = (4,6)
+
+        # You can print the current values of all attributes:
+        print(flowfield_spec)
     """
 
     def __init__(self,
@@ -41,7 +56,7 @@ class FlowFieldSpecs:
                  gaussian_filters=(10, 10),
                  n_gaussian_filter_iter=10,
                  displacement=(2, 2),
-                 apply_SLM=True,
+                 apply_SLM=False,
                  integral_time_scale=1,
                  sigma=1,
                  n_stochastic_particles=1000000,
@@ -60,6 +75,23 @@ class FlowFieldSpecs:
         self.sigma = sigma
         self.n_stochastic_particles = n_stochastic_particles
         self.n_iterations = n_iterations
+
+    def __repr__(self):
+        return (f"{self.__class__.__name__}"
+                f"(n_images={self.n_images},\n"
+                f"size={self.size},\n"
+                f"size_buffer={self.size_buffer},\n"
+                f"random_seed={self.random_seed},\n"
+                f"flowfield_type={self.flowfield_type!r},\n"
+                f"gaussian_filters={self.gaussian_filters},\n"
+                f"n_gaussian_filter_iter={self.n_gaussian_filter_iter},\n"
+                f"displacement={self.displacement},\n"
+                f"apply_SLM={self.apply_SLM},\n"
+                f"integral_time_scale={self.integral_time_scale},\n"
+                f"sigma={self.sigma},\n"
+                f"n_stochastic_particles={self.n_stochastic_particles},\n"
+                f"n_iterations={self.n_iterations})"
+                )
 
 ################################################################################
 ################################################################################
