@@ -526,8 +526,6 @@ class PIVEnv(gym.Env):
         :return:
             - **camera_position** - ``numpy.ndarray`` of two elements specifying the initial camera position in
               pixels :math:`[\\text{px}]`.
-            - **targets_tensor** - ``numpy.ndarray`` specifying the tensor of true flow targets.
-            - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of predicted flow targets.
             - **cues** - ``numpy.ndarray`` specifying the cues that the RL agent will later be sensing.
               The cues are computed based on ``prediction_tensor``.
         """
@@ -567,7 +565,7 @@ class PIVEnv(gym.Env):
         # Find out how many cues the RL agent will be looking at, this is useful information for later:
         (_, self.__n_cues) = np.shape(cues)
 
-        return camera_position, targets_tensor, prediction_tensor, cues
+        return camera_position, cues
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -651,7 +649,14 @@ class PIVEnv(gym.Env):
         reward = reward_function(velocity_field=prediction_tensor,
                                  transformation=reward_transformation)
 
-        return camera_position, reward
+        # Compute the cues based on the current prediction tensor:
+        cues = self.cues_function(prediction_tensor)
+
+        if verbose:
+            print('Cues: ')
+            print(cues)
+
+        return camera_position, cues, reward
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
