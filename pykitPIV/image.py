@@ -21,13 +21,32 @@ class ImageSpecs:
     """
 
     def __init__(self,
-                 n_images,
+                 n_images=1,
                  size=(512, 512),
-                 size_buffer=10):
+                 size_buffer=10,
+                 random_seed=None,
+                 exposures=(0.98, 0.98),
+                 maximum_intensity=2**16 - 1,
+                 laser_beam_thickness=1,
+                 laser_over_exposure=1,
+                 laser_beam_shape=0.95,
+                 alpha=1/8,
+                 clip_intensities=True,
+                 normalize_intensities=False,
+                 ):
 
         self.n_images = n_images
         self.size = size
         self.size_buffer = size_buffer
+        self.random_seed = random_seed
+        self.exposures = exposures
+        self.maximum_intensity = maximum_intensity
+        self.laser_beam_thickness = laser_beam_thickness
+        self.laser_over_exposure = laser_over_exposure
+        self.laser_beam_shape = laser_beam_shape
+        self.alpha = alpha
+        self.clip_intensities = clip_intensities
+        self.normalize_intensities = normalize_intensities
 
 ########################################################################################################################
 ########################################################################################################################

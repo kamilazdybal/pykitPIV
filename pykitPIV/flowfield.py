@@ -33,13 +33,33 @@ class FlowFieldSpecs:
     """
 
     def __init__(self,
-                 n_images,
+                 n_images=1,
                  size=(512, 512),
-                 size_buffer=10):
+                 size_buffer=10,
+                 random_seed=None,
+                 flowfield_type='random smooth',
+                 gaussian_filters=(10, 10),
+                 n_gaussian_filter_iter=10,
+                 displacement=(2, 2),
+                 apply_SLM=True,
+                 integral_time_scale=1,
+                 sigma=1,
+                 n_stochastic_particles=1000000,
+                 n_iterations=100):
 
         self.n_images = n_images
         self.size = size
         self.size_buffer = size_buffer
+        self.random_seed = random_seed
+        self.flowfield_type = flowfield_type
+        self.gaussian_filters = gaussian_filters
+        self.n_gaussian_filter_iter = n_gaussian_filter_iter
+        self.displacement = displacement
+        self.apply_SLM = apply_SLM
+        self.integral_time_scale = integral_time_scale
+        self.sigma = sigma
+        self.n_stochastic_particles = n_stochastic_particles
+        self.n_iterations = n_iterations
 
 ################################################################################
 ################################################################################

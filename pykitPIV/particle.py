@@ -25,7 +25,7 @@ class ParticleSpecs:
     """
 
     def __init__(self,
-                 n_images,
+                 n_images=1,
                  size=(512, 512),
                  size_buffer=10,
                  diameters=(3, 6),

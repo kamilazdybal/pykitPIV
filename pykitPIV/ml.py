@@ -145,7 +145,7 @@ class PIVEnv(gym.Env):
                          'diameter_std': 1,
                          'seeding_mode': 'random'}
 
-        flowfield_spec = {'flowfield_size': (500, 1000),
+        flowfield_spec = {'size': (500, 1000),
                           'flowfield_type': 'random smooth',
                           'gaussian_filters': (30, 30),
                           'n_gaussian_filter_iter': 5,
@@ -284,7 +284,7 @@ class PIVEnv(gym.Env):
             self.__flowfield_spec = flowfield_spec
 
             # Size of the entire visible flow field:
-            self.__flowfield_size = self.__flowfield_spec.flowfield_size.
+            self.__flowfield_size = self.__flowfield_spec.size
 
             self.__flowfield_type = self.__flowfield_spec.flowfield_type
 

@@ -24,13 +24,23 @@ class MotionSpecs:
     """
 
     def __init__(self,
-                 n_images,
+                 n_images=1,
                  size=(512, 512),
-                 size_buffer=10):
+                 size_buffer=10,
+                 random_seed=None,
+                 n_steps=10,
+                 time_separation=1,
+                 particle_loss=(0, 2),
+                 particle_gain=(0, 2)):
 
         self.n_images = n_images
         self.size = size
         self.size_buffer = size_buffer
+        self.random_seed = random_seed
+        self.n_steps = n_steps
+        self.time_separation = time_separation
+        self.particle_loss = particle_loss
+        self.particle_gain = particle_gain
 
 ################################################################################
 ################################################################################
