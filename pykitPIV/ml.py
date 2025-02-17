@@ -563,7 +563,7 @@ class PIVEnv(gym.Env):
         cues = self.cues_function(prediction_tensor)
 
         # Find out how many cues the RL agent will be looking at, this is useful information for later:
-        (_, self.__n_cues) = np.shape(cues)
+        (_, self.n_cues) = np.shape(cues)
 
         return camera_position, cues
 
@@ -653,7 +653,7 @@ class PIVEnv(gym.Env):
         cues = self.cues_function(prediction_tensor)
 
         if verbose:
-            print('Cues: ')
+            print('Cues:')
             print(cues)
 
         return camera_position, cues, reward
@@ -1027,7 +1027,7 @@ class CameraAgent:
         # Now we can start sampling batches from the memory:
         minibatch = self.memory.sample(self.batch_size)
 
-        batch_cues = np.zeros((self.batch_size, self.env.__n_cues))
+        batch_cues = np.zeros((self.batch_size, self.env.n_cues))
         batch_q_values = np.zeros((self.batch_size, self.n_actions))
 
         for i, batch_content in enumerate(minibatch):
