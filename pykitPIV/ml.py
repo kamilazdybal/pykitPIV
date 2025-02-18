@@ -116,6 +116,10 @@ class PIVEnv(gym.Env):
         :width: 700
         :align: center
 
+
+    We refer to :math:`H_{\\text{wt}}` as the height and :math:`W_{\\text{wt}}` as the width of the virtual wind tunnel,
+    and to :math:`H_{\\text{i}}` as the height and :math:`W_{\\text{i}}` as the width of the interrogation window.
+
     The RL agent interacting with this environment is free to locate an interrogation window within
     the larger flow field satisfying certain condition
     modeled by the reward function (see the parameter ``reward_function`` in the ``PIVEnv.step()`` method).
@@ -165,14 +169,27 @@ class PIVEnv(gym.Env):
                       'clip_intensities': True,
                       'normalize_intensities': False}
 
+        # Define a custom cues function that returns an array of three cues:
+        def cues_function(displacement_field_tensor):
+
+            mean_displacement = np.mean(displacement_field_tensor)
+            max_displacement = np.max(displacement_field_tensor)
+            min_displacement = np.min(displacement_field_tensor)
+
+            cues = np.array([[mean_displacement, max_displacement, min_displacement]])
+
+            return cues
+
         # Initialize the Gymnasium environment:
         env = PIVEnv(interrogation_window_size=(100,200),
                      interrogation_window_size_buffer=10,
+                     cues_function=cues_function,
                      particle_spec=particle_spec,
                      motion_spec=motion_spec,
                      image_spec=image_spec,
                      flowfield_spec=flowfield_spec,
                      user_flowfield=None,
+                     inference_model=None,
                      random_seed=100)
 
     :param interrogation_window_size:
@@ -186,9 +203,13 @@ class PIVEnv(gym.Env):
         in order to allow new particles to arrive into the image area
         and prevent spurious disappearance of particles near image boundaries.
     :param cues_function:
-        ``function`` specifying the computation of cues that the RL agent senses. The cues are the input parameters
-        to the Q-network. This function has to return a ``numpy`` array of shape ``(1, N)``
-        of :math:`N` cues computed from the predicted displacement field tensor.
+        ``function`` specifying the computation of cues that the RL agent senses based on the current
+        displacement field reconstructed from PIV image pairs. The cues are the input parameters
+        to the Q-network, hence the goal of the RL is to learn the mapping:
+        :math:`\\text{cues} \\rightarrow \\text{actions}`.
+        This function has to take as an input the predicted displacement field tensor
+        and return a ``numpy`` array of shape ``(1, N)`` of :math:`N` cues computed
+        from the predicted displacement field tensor.
     :param particle_spec:
         ``dict`` or ``particle.ParticleSpec`` object containing specifications for constructing
         an instance of ``Particle`` class.
@@ -203,16 +224,14 @@ class PIVEnv(gym.Env):
         an instance of ``FlowField`` class. If not specified, the user has to provide their own flow field
         through the ``user_flowfield`` parameter.
     :param user_flowfield: (optional)
-        ``numpy.ndarray`` specifying the velocity components for the entire virtual wind tunnel.
-        It should be of size :math:`(1, 2, H_{\\text{wt}}, W_{\\text{wt}})`,
-        where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
-        :math:`u` and :math:`v` respectively,
-        :math:`H_{\\text{wt}}` is the height and :math:`W_{\\text{wt}}` is the width of the virtual wind tunnel.
+        object of ``pykitPIV.flowfield.FlowField`` class specifying the user-uploaded flow field
+        for the entire virtual wind tunnel.
         If not specified, the user has to provide a flow field specification
         through the ``flowfield_spec`` parameter to create a synthetic **pykitPIV**-generated flow field.
         **Future functionality will include temporally-evolving flow fields.**
     :param inference_model: (optional)
-        ``class`` specifying the inference model for predicting flow targets from PIV image intensities.
+        object of a custom, user-defined class specifying the inference model for predicting flow targets from
+        PIV images.
         It can be a CNN-based or a WIDIM-based model.
         If set to ``None``, inference is not done, instead the true flow target within the interrogation window is
         returned.
@@ -239,6 +258,58 @@ class PIVEnv(gym.Env):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+        # Input parameter check:
+
+        check_two_element_tuple(interrogation_window_size, 'interrogation_window_size')
+
+        if not isinstance(interrogation_window_size_buffer, int):
+            raise ValueError("Parameter `interrogation_window_size_buffer` has to be of type 'int'.")
+
+        if interrogation_window_size_buffer < 0:
+            raise ValueError("Parameter `interrogation_window_size_buffer` has to non-negative.")
+
+        if not callable(cues_function):
+            raise ValueError("Parameter `cues_function` has to be a callable.")
+
+        if isinstance(particle_spec, dict):
+            particle_spec = ParticleSpecs(**particle_spec)
+        elif not isinstance(particle_spec, ParticleSpecs):
+            raise TypeError("Particle specifications have to be of type 'dict' or 'pykitPIV.particle.ParticleSpecs'.")
+
+        if isinstance(motion_spec, dict):
+            motion_spec = MotionSpecs(**motion_spec)
+        elif not isinstance(motion_spec, MotionSpecs):
+            raise TypeError("Motion specifications have to be of type 'dict' or 'pykitPIV.motion.MotionSpecs'.")
+
+        if isinstance(image_spec, dict):
+            image_spec = ImageSpecs(**image_spec)
+        elif not isinstance(image_spec, ImageSpecs):
+            raise TypeError("Image specifications have to be of type 'dict' or 'pykitPIV.image.ImageSpecs'.")
+
+        if (flowfield_spec is None) and (user_flowfield is None):
+            raise ValueError('At least one has to be specified: `user_flowfield` or `flowfield_spec`.')
+
+        if (flowfield_spec is not None) and (user_flowfield is not None):
+            raise ValueError('Only one has to be specified: `user_flowfield` or `flowfield_spec`.')
+
+        if flowfield_spec is not None:
+            if isinstance(flowfield_spec, dict):
+                flowfield_spec = FlowFieldSpecs(**flowfield_spec)
+            elif not isinstance(flowfield_spec, FlowFieldSpecs):
+                raise TypeError("Flow field specifications have to be of type 'dict' or 'pykitPIV.flowfield.FlowFieldSpecs'.")
+
+        if user_flowfield is not None:
+            if not isinstance(user_flowfield, FlowField):
+                raise ValueError("Parameter `user_flowfield` has to be of type 'pykitPIV.flowfield.FlowField'.")
+
+        if random_seed is not None:
+            if type(random_seed) != int:
+                raise ValueError("Parameter `random_seed` has to be of type 'int'.")
+            else:
+                np.random.seed(seed=random_seed)
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
         # Class init:
 
         # Size of the interrogation window:
@@ -247,30 +318,22 @@ class PIVEnv(gym.Env):
         # Size of the buffer for the interrogation window:
         self.__interrogation_window_size_buffer = interrogation_window_size_buffer
 
+        # Function that will compute cues for the RL agent based on the reconstructed displacement field:
         self.cues_function = cues_function
 
         # Specifications for Particle class:
-        if isinstance(particle_spec, dict):
-            particle_spec = ParticleSpecs(**particle_spec)
-        elif not isinstance(particle_spec, ParticleSpecs):
-            raise TypeError("Particle specifications have to be of type 'dict' or 'pykitPIV.particle.ParticleSpecs'.")
         self.__particle_spec = particle_spec
 
         # Specifications for Motion class:
-        if isinstance(motion_spec, dict):
-            motion_spec = MotionSpecs(**motion_spec)
-        elif not isinstance(motion_spec, MotionSpecs):
-            raise TypeError("Motion specifications have to be of type 'dict' or 'pykitPIV.motion.MotionSpecs'.")
         self.__motion_spec = motion_spec
 
         # Specifications for Image class:
-        if isinstance(image_spec, dict):
-            image_spec = ImageSpecs(**image_spec)
-        elif not isinstance(image_spec, ImageSpecs):
-            raise TypeError("Image specifications have to be of type 'dict' or 'pykitPIV.image.ImageSpecs'.")
         self.__image_spec = image_spec
 
+        # Inference model that is capable of predicting the displacement fields from the PIV images.
+        # This can be a CNN-based or WIDIM-based model.
         self.__inference_model = inference_model
+
         self.__random_seed = random_seed
 
         # Compute the total size of the interrogation window:
@@ -280,19 +343,13 @@ class PIVEnv(gym.Env):
         # If the user did not supply their own flow field, a pykitPIV-generated flow field is used:
         if user_flowfield is None:
 
-            if flowfield_spec is None:
-                raise ValueError('At least one has to be specified: `user_flowfield` or `flowfield_spec`.')
-
             # Specifications for Flowfield class:
-            if isinstance(flowfield_spec, dict):
-                flowfield_spec = FlowFieldSpecs(**flowfield_spec)
-            elif not isinstance(flowfield_spec, FlowFieldSpecs):
-                raise TypeError("Flow field specifications have to be of type 'dict' or 'pykitPIV.flowfield.FlowFieldSpecs'.")
             self.__flowfield_spec = flowfield_spec
 
-            # Size of the entire visible flow field:
+            # Size of the entire wind tunnel flow field:
             self.__flowfield_size = self.__flowfield_spec.size
 
+            # Type of the entire wind tunnel flow field:
             self.__flowfield_type = self.__flowfield_spec.flowfield_type
 
             # Generate the flow field that is fixed throughout training:
@@ -317,16 +374,18 @@ class PIVEnv(gym.Env):
                                                            n_iterations=self.__flowfield_spec.n_iterations,
                                                            verbose=False)
 
-            self.flowfield = flowfield
+            # This is an object of the pykitPIV.flowfield.FlowField class:
+            self.__flowfield = flowfield
 
         # Otherwise, use the flow field provided by the user:
         else:
 
-            self.flowfield = user_flowfield
+            # This too is an object of the pykitPIV.flowfield.FlowField class:
+            self.__flowfield = user_flowfield
 
             self.__flowfield_type = 'user'
 
-            self.__flowfield_size = user.flowfield.shape[2::]
+            self.__flowfield_size = user_flowfield.velocity_field_magnitude.shape[2::]
 
         # Observation space for the RL agent: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -366,6 +425,21 @@ class PIVEnv(gym.Env):
         self.__n_actions = 5
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    @property
+    def flowfield(self):
+        return self.__flowfield
+
+    @property
+    def flowfield_type(self):
+        return self.__flowfield_type
+
+    @property
+    def flowfield_size(self):
+        return self.__flowfield_size
+
+    # ^ For now, the flow field in the wind tunnel cannot be overwritten during RL training.
+    # This may be modified in the future.
 
     @property
     def action_to_direction(self):
@@ -472,12 +546,26 @@ class PIVEnv(gym.Env):
         """
         Makes inference of the displacement field under the interrogation window based on the recorded PIV images.
 
+        **Example:**
+
+        .. code:: python
+
+            # Once the environment has been initialized:
+            env = PIVEnv(...)
+
+            # And once the PIV images have been recorded:
+            camera_position = env.observation_space.sample()
+            image_obj = env.record_particles(camera_position)
+
+            # We can now make inference and predict the displacement field:
+            targets_tensor, prediction_tensor = env.make_inference(image_obj)
+
         :param image_obj:
             ``pykitPIV.Image`` object specifying the generated PIV image pairs.
 
         :return:
-            - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of predicted flow targets.
             - **targets_tensor** - ``numpy.ndarray`` specifying the tensor of true flow targets.
+            - **prediction_tensor** - ``numpy.ndarray`` specifying the tensor of predicted flow targets.
         """
 
         images_I1 = image_obj.remove_buffers(image_obj.images_I1)
@@ -493,7 +581,7 @@ class PIVEnv(gym.Env):
             # Return the true displacement field under this interrogation window:
             prediction_tensor = targets_tensor
 
-        return prediction_tensor, targets_tensor
+        return targets_tensor, prediction_tensor
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -511,10 +599,10 @@ class PIVEnv(gym.Env):
             env = PIVEnv(...)
 
             # We reset the environment to create its random initial state:
-            initial_camera_position, _, _ = env.reset()
+            initial_camera_position, cues = env.reset()
 
             # Optionally, we can impose an initial state:
-            initial_camera_position, _, _ = env.reset(imposed_camera_position=np.array([10,50]))
+            initial_camera_position, cues = env.reset(imposed_camera_position=np.array([10,50]))
 
         :param imposed_camera_position: (optional)
             ``numpy.ndarray`` of two elements specifying the initial camera position in pixels :math:`[\\text{px}]`.
@@ -526,8 +614,7 @@ class PIVEnv(gym.Env):
         :return:
             - **camera_position** - ``numpy.ndarray`` of two elements specifying the initial camera position in
               pixels :math:`[\\text{px}]`.
-            - **cues** - ``numpy.ndarray`` specifying the cues that the RL agent will later be sensing.
-              The cues are computed based on ``prediction_tensor``.
+            - **cues** - ``numpy.ndarray`` specifying the initial cues that the RL agent will later be sensing.
         """
 
         # Check whether the user-specified camera position is possible given the admissible observation space
@@ -553,7 +640,7 @@ class PIVEnv(gym.Env):
         self.__image_obj = image_obj
 
         # Make inference of displacement field based on the recorded PIV images:
-        prediction_tensor, targets_tensor = self.make_inference(image_obj)
+        targets_tensor, prediction_tensor = self.make_inference(image_obj)
 
         # Save the prediction tensor and the targets tensor as globally-available variables:
         self.__prediction_tensor = prediction_tensor
@@ -602,10 +689,10 @@ class PIVEnv(gym.Env):
                 return Q
 
             # Now we can take a step in the environment by selecting one of the five actions:
-            new_camera_position, reward = env.step(action=4,
-                                                   reward_function=reward_function,
-                                                   reward_transformation=reward_transformation,
-                                                   verbose=True)
+            new_camera_position, cues, reward = env.step(action=4,
+                                                         reward_function=reward_function,
+                                                         reward_transformation=reward_transformation,
+                                                         verbose=True)
 
         :param action:
             ``tuple`` specifying the action to be taken at the current step in the environment.
@@ -617,6 +704,12 @@ class PIVEnv(gym.Env):
             and an arbitrary compression of the reward function to a single value.
         :param verbose: (optional)
             ``bool`` specifying if the verbose print statements should be displayed.
+
+        :return:
+            - **camera_position** - ``numpy.ndarray`` of two elements specifying the new camera position
+              in pixels :math:`[\\text{px}]` after taking this step.
+            - **cues** - ``numpy.ndarray`` specifying the cues that the RL agent senses after taking this step.
+            - **reward** - ``float`` specifying the reward received after taking this step.
         """
 
         # Map the action (element of {0,1,2,3,4}) to the new camera position:
@@ -640,7 +733,7 @@ class PIVEnv(gym.Env):
         self.__image_obj = image_obj
 
         # Make inference of displacement field based on the recorded PIV images:
-        prediction_tensor, targets_tensor = self.make_inference(image_obj)
+        targets_tensor, prediction_tensor = self.make_inference(image_obj)
 
         # Save the prediction tensor and the targets tensor as globally-available variables:
         self.__prediction_tensor = prediction_tensor
@@ -823,8 +916,16 @@ class PIVEnv(gym.Env):
 
 class CameraAgent:
     """
-    Creates a reinforcement learning agent that operates a virtual camera in a PIV experimental setting
+    Creates a reinforcement learning (RL) agent that operates a virtual camera in a PIV experimental setting
     and provides a training loop for Q-learning. Q-learning uses a deep neural network (DNN) model.
+
+    The goal of the RL agent is to learn the mapping, :math:`f`, from :math:`\\text{cues} \\rightarrow \\text{actions}`:
+
+    .. math::
+
+        \\text{action} = f(\\text{cues} )
+
+    where :math:`f` is the trained DNN model.
 
     **Example:**
 
@@ -990,12 +1091,12 @@ class CameraAgent:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def remember(self, camera_position, action, reward, next_camera_position):
+    def remember(self, cues, action, reward, next_cues):
         """
         Adds a step in the environment to the memory bank.
         """
 
-        self.memory.add((camera_position, action, reward, next_camera_position))
+        self.memory.add((cues, action, reward, next_cues))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
