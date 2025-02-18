@@ -694,7 +694,8 @@ class PIVEnv(gym.Env):
             rewards = Rewards(verbose=True)
             reward_function = rewards.q_criterion
 
-            # We also define a function that will transform and reduce the Q-criterion to provide the reward value:
+            # We also define a function that will transform and reduce the Q-criterion
+            # to provide one reward value:
             def reward_transformation(Q):
                 Q = np.max(Q.clip(min=0))
                 return Q
@@ -1029,16 +1030,22 @@ class CameraAgent:
 
                 super(QNetwork, self).__init__()
 
-                self.dense1 = tf.keras.layers.Dense(10, activation='linear', kernel_initializer=tf.keras.initializers.Ones)
-                self.dense2 = tf.keras.layers.Dense(10, activation='linear', kernel_initializer=tf.keras.initializers.Ones)
-                self.output_layer = tf.keras.layers.Dense(n_actions, activation='linear', kernel_initializer=tf.keras.initializers.Ones)
+                self.dense1 = tf.keras.layers.Dense(10,
+                                                    activation='linear',
+                                                    kernel_initializer=tf.keras.initializers.Ones)
+                self.dense2 = tf.keras.layers.Dense(10,
+                                                    activation='linear',
+                                                    kernel_initializer=tf.keras.initializers.Ones)
+                self.output = tf.keras.layers.Dense(n_actions,
+                                                    activation='linear',
+                                                    kernel_initializer=tf.keras.initializers.Ones)
 
             def call(self, state):
 
                 x = self.dense1(state)
                 x = self.dense2(x)
 
-                return self.output_layer(x)
+                return self.output(x)
 
         # Initialize the camera agent:
         ca = CameraAgent(env=env,
@@ -1500,9 +1507,8 @@ class Rewards:
 
             # Design a custom transformation that looks for regions of high divergence (either positive or negative)
             # and computes the maximum absolute value of divergence in that region:
-            def transformation(Q):
-                Q = np.max(np.abs(Q))
-                return Q
+            def reward_transformation(div):
+                return np.max(np.abs(div))
 
             # Compute the reward based on the divergence for the present velocity field:
             reward = rewards.divergence(velocity_field=velocity_field,
@@ -1544,8 +1550,8 @@ class Rewards:
 class Cues:
     """
     Provides custom cues functions that are applicable to various tasks related to navigating a virtual wind tunnel
-    and a virtual PIV experiment. All cues vectors, :math:`\\mathbf{c}`,
-    are computed only based on the reconstructed displacement field, :math:`\\vec{d\\mathbf{s}}`,
+    and a virtual PIV experiment. The cue vector, :math:`\\mathbf{c}`,
+    is computed only based on the reconstructed displacement field, :math:`\\vec{d\\mathbf{s}}`,
     in the interrogation window.
 
     Each function returns a vector of cues, :math:`\\mathbf{c}`, that is a ``numpy.ndarray`` of :math:`N` cues and
@@ -1600,42 +1606,34 @@ class Cues:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def min_max(self,
-                displacement_field_tensor):
+    def sampled_vectors(self,
+                        displacement_field):
         """
-        Computes the cues vector that contains
-        the minimum and the maximum of the displacement field, :math:`\\vec{d\\mathbf{s}}`:
+        Computes the cues vector that contains :math:`n` displacement vectors sampled on a uniform grid from
+        the displacement field, :math:`\\vec{d\\mathbf{s}}`:
 
         .. math::
 
-            \\mathbf{c} = [\\text{min}(\\vec{d\\mathbf{s}}), \\text{max}(\\vec{d\\mathbf{s}})]
+            \\mathbf{c} = [\\vec{d\\mathbf{s}}_1, \\vec{d\\mathbf{s}}_2, \\dots, \\vec{d\\mathbf{s}}_n]
 
         **Example:**
 
         .. code:: python
 
-            from pykitPIV.ml import Rewards
+            from pykitPIV.ml import Cues
             import numpy as np
 
-            # Once we have the velocity field specified:
-            velocity_field = ...
+            # Once we have the displacement field specified:
+            displacement_field = ...
 
-            # Instantiate an object of the Rewards class:
-            rewards = Rewards(verbose=True,
-                              random_seed=None)
+            # Instantiate an object of the Cues class:
+            cues_obj = Cues(verbose=True,
+                        random_seed=None)
 
-            # Design a custom transformation that looks for vorticity-dominated regions
-            # (as opposed to shear-dominated regions)
-            # and computes the maximum value of the Q-criterion in that region:
-            def transformation(Q):
-                Q = np.max(Q.clip(min=0))
-                return Q
+            # Compute the cues vector:
+            cues = cues_obj.sampled_vectors(displacement_field=displacement_field)
 
-            # Compute the reward based on the Q-criterion for the present velocity field:
-            reward = rewards.q_criterion(velocity_field=velocity_field,
-                                         transformation=transformation)
-
-        :param velocity_field:
+        :param displacement_field:
             ``numpy.ndarray`` specifying the velocity components under the interrogation window.
             It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
             where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
@@ -1647,13 +1645,20 @@ class Cues:
             and an arbitrary compression of the Q-criterion field to a single value.
 
         :return:
-            - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,2)`.
+            - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,n)`.
         """
 
-        max_displacement = np.max(displacement_field_tensor)
-        min_displacement = np.min(displacement_field_tensor)
+        # Sample on a uniform grid:
+        (_, _, H, W) = displacement_field.shape
+        idx_H = [i for i in range(0, H) if i % 20 == 0]
+        idx_W = [i for i in range(0, W) if i % 20 == 0]
 
-        cues = np.array([[mean_displacement, max_displacement, min_displacement]])
+        idx_W, idx_H = np.meshgrid(idx_W, idx_H)
+
+        dx_sample = displacement_field[0, 0, idx_H, idx_W]
+        dy_sample = displacement_field[0, 1, idx_H, idx_W]
+
+        cues = np.array([np.vstack((dx_sample, dy_sample)).ravel()])
 
         return cues
 

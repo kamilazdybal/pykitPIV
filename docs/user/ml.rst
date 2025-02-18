@@ -70,5 +70,5 @@ Custom reinforcement learning cues
 
 .. autoclass:: pykitPIV.ml.Cues
 
-.. autofunction:: pykitPIV.ml.Cues.min_max
+.. autofunction:: pykitPIV.ml.Cues.sampled_vectors
 
