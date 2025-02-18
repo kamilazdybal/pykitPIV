@@ -112,10 +112,9 @@ class PIVEnv(gym.Env):
     static velocity field and provides synthetic PIV recordings under a (usually smaller) interrogation window.
     The overall mechanics of this class is visualized below:
 
-    .. image:: ../images/PIVEnv.png
+    .. image:: ../images/PIVEnv.svg
         :width: 700
         :align: center
-
 
     We refer to :math:`H_{\\text{wt}}` as the height and :math:`W_{\\text{wt}}` as the width of the virtual wind tunnel,
     and to :math:`H_{\\text{i}}` as the height and :math:`W_{\\text{i}}` as the width of the interrogation window.
@@ -677,7 +676,7 @@ class PIVEnv(gym.Env):
             env = PIVEnv(...)
 
             # We reset the environment to create its initial state:
-            initial_camera_position, _, _ = env.reset()
+            initial_camera_position, initial_cues = env.reset()
 
             # We create a reward function by polling from one of the pykitPIV.Rewards methods.
             # Here, we use the reward based on the Q-criterion:
@@ -690,10 +689,10 @@ class PIVEnv(gym.Env):
                 return Q
 
             # Now we can take a step in the environment by selecting one of the five actions:
-            new_camera_position, cues, reward = env.step(action=4,
-                                                         reward_function=reward_function,
-                                                         reward_transformation=reward_transformation,
-                                                         verbose=True)
+            camera_position, cues, reward = env.step(action=4,
+                                                     reward_function=reward_function,
+                                                     reward_transformation=reward_transformation,
+                                                     verbose=True)
 
         :param action:
             ``int`` specifying the action to be taken at the current step in the environment.

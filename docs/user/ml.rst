@@ -27,15 +27,15 @@ structure for any RL environment.
 
 .. autoclass:: pykitPIV.ml.PIVEnv
 
-.. autofunction:: pykitPIV.ml.PIVEnv.record_particles
-
-.. autofunction:: pykitPIV.ml.PIVEnv.make_inference
-
 .. autofunction:: pykitPIV.ml.PIVEnv.reset
 
 .. autofunction:: pykitPIV.ml.PIVEnv.step
 
 .. autofunction:: pykitPIV.ml.PIVEnv.render
+
+.. autofunction:: pykitPIV.ml.PIVEnv.record_particles
+
+.. autofunction:: pykitPIV.ml.PIVEnv.make_inference
 
 .. autoclass:: pykitPIV.ml.CameraAgent
 
