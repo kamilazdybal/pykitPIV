@@ -479,7 +479,7 @@ class PIVEnv(gym.Env):
             along the height dimension and :math:`50 \\text{px}` along the width dimension.
 
         :return:
-            - **image** - ``pykitPIV.Image`` object specifying the generated PIV image pairs.
+            - **image** - ``pykitPIV.image.Image`` object specifying the generated PIV image pairs.
         """
 
         # Extract the velocity field under the current interrogation window:
@@ -561,7 +561,7 @@ class PIVEnv(gym.Env):
             targets_tensor, prediction_tensor = env.make_inference(image_obj)
 
         :param image_obj:
-            ``pykitPIV.Image`` object specifying the generated PIV image pairs.
+            object of ``pykitPIV.image.Image`` class specifying the generated PIV image pairs.
 
         :return:
             - **targets_tensor** - ``numpy.ndarray`` specifying the tensor of true flow targets.
@@ -606,10 +606,11 @@ class PIVEnv(gym.Env):
 
         :param imposed_camera_position: (optional)
             ``numpy.ndarray`` of two elements specifying the initial camera position in pixels :math:`[\\text{px}]`.
-            This defines the bottom-left corner of the interrogation window. Example can be ``numpy.array([10,50])`` which
-            positions camera at the location :math:`10 \\text{px}` along the height dimension and :math:`50 \\text{px}`
-            along the width dimension. If not specified, random camera position is selected through
-            ``env.observation_space.sample()``.
+            This defines the bottom-left corner of the interrogation window.
+            Example can be ``numpy.array([10,50])``
+            which positions the camera at the location :math:`10 \\text{px}` along the height dimension
+            and :math:`50 \\text{px}` along the width dimension.
+            If not specified, a random camera position is selected through ``env.observation_space.sample()``.
 
         :return:
             - **camera_position** - ``numpy.ndarray`` of two elements specifying the initial camera position in
@@ -695,7 +696,7 @@ class PIVEnv(gym.Env):
                                                          verbose=True)
 
         :param action:
-            ``tuple`` specifying the action to be taken at the current step in the environment.
+            ``int`` specifying the action to be taken at the current step in the environment.
         :param reward_function:
             ``function`` specifying the dynamics of the reward construction as a function of predicted and/or true
             flow targets. It can be one of the rewards functions from the ``pykitPIV.Rewards`` class.
@@ -758,13 +759,18 @@ class PIVEnv(gym.Env):
                c='white',
                s=10,
                lw=2,
-               figsize=None,
-               normalize_cbars=False,
+               xlabel=None,
+               ylabel=None,
+               xticks=True,
+               yticks=True,
                cmap='viridis',
+               normalize_cbars=False,
                add_streamplot=False,
                streamplot_density=1,
                streamplot_color='k',
                streamplot_linewidth=1,
+               figsize=(10,5),
+               dpi=300,
                filename=None):
         """
         Renders the virtual wind tunnel with the current interrogation window.
@@ -784,22 +790,73 @@ class PIVEnv(gym.Env):
                        c='white',
                        s=20,
                        lw=1,
-                       figsize=(12,6))
+                       xlabel=None,
+                       ylabel=None,
+                       xticks=True,
+                       yticks=True,
+                       cmap='viridis',
+                       normalize_cbars=False,
+                       add_streamplot=False,
+                       streamplot_density=1,
+                       streamplot_color='k',
+                       streamplot_linewidth=1,
+                       figsize=(10,5),
+                       dpi=300,
+                       filename=None)
 
         One example rendering of the virtual wind tunnel can look like this:
 
         .. image:: ../images/ml_PIVEnv_render.png
             :width: 800
+
+        :param camera_position:
+            ``numpy.ndarray`` specifying the camera position in pixels :math:`[\\text{px}]`.
+            This defines the bottom-left corner of the interrogation window.
+            Example can be ``numpy.array([10,50])`` which positions camera at the location :math:`10 \\text{px}`
+            along the height dimension and :math:`50 \\text{px}` along the width dimension.
+        :param c: (optional)
+            ``str`` specifying the color for the interrogation window outline.
+        :param s: (optional)
+            ``int`` or ``float`` specifying the size of the dot that represents the camera position.
+        :param lw: (optional)
+            ``int``  or ``float`` specifying the line width for the interrogation window outline.
+        :param xlabel: (optional)
+            ``str`` specifying :math:`x`-label.
+        :param ylabel: (optional)
+            ``str`` specifying :math:`y`-label.
+        :param xticks: (optional)
+            ``bool`` specifying if ticks along the :math:`x`-axis should be plotted.
+        :param yticks: (optional)
+            ``bool`` specifying if ticks along the :math:`y`-axis should be plotted.
+        :param cmap: (optional)
+            ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param normalize_cbars: (optional)
+            ``bool`` specifying if the colorbar for the interrogation window should be normalized to the colorbar for
+            the entire wind tunnel.
+        :param add_streamplot: (optional)
+            ``bool`` specifying if streamlines should be plotted on top of the scalar magnitude field.
+        :param streamplot_density: (optional)
+            ``float`` or ``int`` specifying the streamplot density.
+        :param streamplot_color: (optional)
+            ``str`` specifying the streamlines color.
+        :param streamplot_linewidth: (optional)
+            ``int`` or ``float`` specifying the line width for the streamplot.
+        :param figsize: (optional)
+            ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
+        :param dpi: (optional)
+            ``int`` specifying the dpi for the image.
+        :param filename: (optional)
+            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+
+        :return:
+            - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
         __visualize = ['displacement', 'velocity']
 
         fontsize = 14
 
-        if figsize is not None:
-            figure = plt.figure(figsize=figsize)
-        else:
-            figure = plt.figure(figsize=(25, 10))
+        figure = plt.figure(figsize=figsize)
 
         spec = figure.add_gridspec(ncols=9, nrows=3, width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1, 0.2, 1], height_ratios=[2, 0.2, 1])
 
@@ -828,6 +885,18 @@ class PIVEnv(gym.Env):
         else:
             vmin = None
             vmax = None
+
+        if xlabel is not None:
+            plt.xlabel(xlabel)
+
+        if ylabel is not None:
+            plt.ylabel(ylabel)
+
+        if not xticks:
+            plt.xticks([])
+
+        if not yticks:
+            plt.yticks([])
 
         # Visualize a rectangle that defines the current interrogation window:
         rect = patches.Rectangle((camera_position[1]-0.5, camera_position[0]-0.5),
@@ -902,7 +971,7 @@ class PIVEnv(gym.Env):
         plt.title('Error %: ' + str(round(np.mean(error_map), 1)), fontsize=fontsize)
 
         if filename is not None:
-            plt.savefig(filename, dpi=300, bbox_inches='tight')
+            plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
         return plt
 

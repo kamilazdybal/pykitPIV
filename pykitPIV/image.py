@@ -2074,7 +2074,6 @@ class Image:
                                    vector_to_plot[idx, 1, self.__flowfield.size_buffer:-self.__flowfield.size_buffer, self.__flowfield.size_buffer:-self.__flowfield.size_buffer], density=streamplot_density, color=streamplot_color)
 
         if filename is not None:
-
             plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
         return plt
