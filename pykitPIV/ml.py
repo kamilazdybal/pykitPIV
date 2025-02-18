@@ -106,7 +106,8 @@ class PIVDataset(Dataset):
 
 class PIVEnv(gym.Env):
     """
-    Provides a `Gymnasium <https://gymnasium.farama.org/>`_-based virtual PIV environment for a reinforcement learning (RL) agent.
+    Provides a `Gymnasium <https://gymnasium.farama.org/>`_-based virtual PIV environment
+    for a reinforcement learning (RL) agent.
 
     The environment simulates a 2D section in a wind tunnel of a user-specified size, with synthetic or user-specified
     static velocity field and provides synthetic PIV recordings under a (usually smaller) interrogation window.
@@ -452,6 +453,14 @@ class PIVEnv(gym.Env):
     def n_actions(self):
         return self.__n_actions
 
+    @property
+    def prediction_tensor(self):
+        return self.__prediction_tensor
+
+    @property
+    def targets_tensor(self):
+        return self.__targets_tensor
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def record_particles(self, camera_position):
@@ -488,7 +497,9 @@ class PIVEnv(gym.Env):
         w_start = camera_position[1]
         w_stop = w_start + self.__interrogation_window_size_with_buffer[1]
 
-        velocity_field_magnitude_at_interrogation_window = self.flowfield.velocity_field_magnitude[:, :, h_start:h_stop, w_start:w_stop]
+        # velocity_field_magnitude_at_interrogation_window = self.flowfield.velocity_field_magnitude[:, :, h_start:h_stop, w_start:w_stop]
+        # Magnitude is not need for the moment but might be used in the future.
+
         velocity_field_at_interrogation_window = self.flowfield.velocity_field[:, :, h_start:h_stop, w_start:w_stop]
 
         # Construct virtual PIV measurements: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -985,9 +996,14 @@ class PIVEnv(gym.Env):
 class CameraAgent:
     """
     Creates a reinforcement learning (RL) agent that operates a virtual camera in a PIV experimental setting
-    and provides a training loop for Q-learning. Q-learning uses a deep neural network (DNN) model with memory replay.
+    and provides a training loop for Q-learning. We use double Q-learning
+    (see `Hasselt et al. <https://arxiv.org/abs/1509.06461>`_ for more info) and use
+    two deep neural network (DNN) models with memory replay.
+    Having two Q-networks separates the process of finding which action has the maximum Q-value from
+    the process of learning precisely what that maximum Q-value should be.
 
-    The goal of the RL agent is to learn the mapping, :math:`f`, from :math:`\\text{cues} \\rightarrow \\text{actions}`:
+    The goal of the RL agent is to learn the mapping function, :math:`f`,
+    from :math:`\\text{cues} \\rightarrow \\text{actions}`:
 
     .. math::
 
@@ -1078,13 +1094,15 @@ class CameraAgent:
 
         print('The uploaded environment has ' + str(self.n_actions) + ' actions.')
 
-        # We have two Q-networks, the target Q-network:
+        # We have two Q-networks, the target Q-network, which is the "stable" network:
         self.target_q_network = target_q_network
 
         # But the target network will be synchronized with the selected Q-network only once every few episodes:
         self.selected_q_network = selected_q_network
 
-        # This prevents the Q-network from competing against itself.
+        # ^ This prevents overshoots in learning the Q-value as shown by Hasselt et al. (2015)
+        # These two Q-networks will separate the process of finding which action has the maximum Q-value from
+        # the process of learning precisely what that maximum Q-value should be.
 
         # Parameters of training the DNN:
         self.batch_size = batch_size
@@ -1121,11 +1139,11 @@ class CameraAgent:
                       cues,
                       epsilon):
         """
-        Defines an :math:`\epsilon`-greedy choice of the next best action to select.
+        Defines an :math:`\\varepsilon`-greedy choice of the next best action to select.
 
-        If the probability is less than :math:`\epsilon`, action is selected at random.
+        If the probability is less than :math:`\\varepsilon`, action is selected at random.
 
-        If the probability is higher than or equal to :math:`\epsilon`, action is selected based on the cues that
+        If the probability is higher than or equal to :math:`\\varepsilon`, action is selected based on the cues that
         are the characteristic of the flow field inside the current interrogation window at location defined by
         the camera position (``camera_position``).
 
@@ -1147,7 +1165,7 @@ class CameraAgent:
             ``numpy.ndarray`` specifying :math:`N` cues that the RL agent senses. The cues are the input parameters
             to the Q-network. It has to have size ``(1, N)``.
         :param epsilon:
-            ``float`` specifying the exploration probability, :math:`\epsilon`. It has to be between 0 and 1.
+            ``float`` specifying the exploration probability, :math:`\\varepsilon`. It has to be between 0 and 1.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1299,10 +1317,10 @@ class CameraAgent:
 
     def update_target_network(self):
         """
-        Synchronizes the target Q-network with the selected Q-network.
+        Synchronizes the target Q-network with the selected Q-network in double Q-learning
+        (see `Hasselt et al. <https://arxiv.org/abs/1509.06461>`_ for more information).
         This function can be called once every a couple of steps in the environment,
         or even once every a couple of episodes.
-        Too frequent synchronizations can make the target Q-network compete with itself and can slow down learning.
 
         **Example:**
 
@@ -1352,6 +1370,8 @@ class Rewards:
     and a virtual PIV experiment.
 
     Each function returns the reward, :math:`R`.
+
+    Functions of this class can be directly used as the ``rewards_function`` parameter in ``pykitPIV.ml.PIVEnv.step()``.
 
     **Example:**
 
@@ -1450,8 +1470,191 @@ class Rewards:
 
         reward = transformation(compute_q_criterion(velocity_field))
 
+        print(velocity_field.shape)
+
         if self.__verbose: print(reward)
 
         return reward
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def divergence(self,
+                   velocity_field,
+                   transformation):
+        """
+        Computes the reward based on the divergence of the flow field.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV.ml import Rewards
+            import numpy as np
+
+            # Once we have the velocity field specified:
+            velocity_field = ...
+
+            # Instantiate an object of the Rewards class:
+            rewards = Rewards(verbose=True,
+                              random_seed=None)
+
+            # Design a custom transformation that looks for regions of high divergence (either positive or negative)
+            # and computes the maximum absolute value of divergence in that region:
+            def transformation(Q):
+                Q = np.max(np.abs(Q))
+                return Q
+
+            # Compute the reward based on the divergence for the present velocity field:
+            reward = rewards.divergence(velocity_field=velocity_field,
+                                        transformation=transformation)
+
+        :param velocity_field:
+            ``numpy.ndarray`` specifying the velocity components under the interrogation window.
+            It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
+            where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
+            :math:`u` and :math:`v` respectively,
+            :math:`H_{\\text{i}}+2b` is the height and
+            :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
+        :param transformation:
+            ``function`` specifying an arbitrary transformation of the Q-criterion
+            and an arbitrary compression of the Q-criterion field to a single value.
+
+        :return:
+            - **reward** - ``float`` specifying the reward, :math:`R`.
+        """
+
+        from pykitPIV.flowfield import compute_divergence
+
+        reward = transformation(compute_divergence(velocity_field))
+
+        if self.__verbose: print(reward)
+
+        return reward
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+########################################################################################################################
+########################################################################################################################
+####
+####    Class: Cues
+####
+########################################################################################################################
+########################################################################################################################
+
+class Cues:
+    """
+    Provides custom cues functions that are applicable to various tasks related to navigating a virtual wind tunnel
+    and a virtual PIV experiment. All cues vectors, :math:`\\mathbf{c}`,
+    are computed only based on the reconstructed displacement field, :math:`\\vec{d\\mathbf{s}}`,
+    in the interrogation window.
+
+    Each function returns a vector of cues, :math:`\\mathbf{c}`, that is a ``numpy.ndarray`` of :math:`N` cues and
+    of size :math:`(1,N)`.
+
+    Functions of this class can be directly used as the ``cues_function`` parameter in ``pykitPIV.ml.PIVEnv``.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV.ml import Cues
+
+        # Instantiate an object of the Cues class:
+        cues_obj = Cues()
+
+    :param verbose: (optional)
+        ``bool`` specifying if the verbose print statements should be displayed.
+    :param random_seed: (optional)
+        ``int`` specifying the random seed for random number generation in ``numpy``.
+        If specified, all image generation is reproducible.
+    """
+
+    def __init__(self,
+                 verbose=False,
+                 random_seed=None):
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+        if not isinstance(verbose, bool):
+            raise ValueError("Parameter `verbose` has to be of type 'bool'.")
+
+        if random_seed is not None:
+            if type(random_seed) != int:
+                raise ValueError("Parameter `random_seed` has to be of type 'int'.")
+            else:
+                np.random.seed(seed=random_seed)
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Class init:
+        self.__verbose = verbose
+        self.__random_seed = random_seed
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    # Properties coming from user inputs:
+    @property
+    def random_seed(self):
+        return self.__random_seed
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def min_max(self,
+                displacement_field_tensor):
+        """
+        Computes the cues vector that contains
+        the minimum and the maximum of the displacement field, :math:`\\vec{d\\mathbf{s}}`:
+
+        .. math::
+
+            \\mathbf{c} = [\\text{min}(\\vec{d\\mathbf{s}}), \\text{max}(\\vec{d\\mathbf{s}})]
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV.ml import Rewards
+            import numpy as np
+
+            # Once we have the velocity field specified:
+            velocity_field = ...
+
+            # Instantiate an object of the Rewards class:
+            rewards = Rewards(verbose=True,
+                              random_seed=None)
+
+            # Design a custom transformation that looks for vorticity-dominated regions
+            # (as opposed to shear-dominated regions)
+            # and computes the maximum value of the Q-criterion in that region:
+            def transformation(Q):
+                Q = np.max(Q.clip(min=0))
+                return Q
+
+            # Compute the reward based on the Q-criterion for the present velocity field:
+            reward = rewards.q_criterion(velocity_field=velocity_field,
+                                         transformation=transformation)
+
+        :param velocity_field:
+            ``numpy.ndarray`` specifying the velocity components under the interrogation window.
+            It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
+            where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
+            :math:`u` and :math:`v` respectively,
+            :math:`H_{\\text{i}}+2b` is the height and
+            :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
+        :param transformation:
+            ``function`` specifying an arbitrary transformation of the Q-criterion
+            and an arbitrary compression of the Q-criterion field to a single value.
+
+        :return:
+            - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,2)`.
+        """
+
+        max_displacement = np.max(displacement_field_tensor)
+        min_displacement = np.min(displacement_field_tensor)
+
+        cues = np.array([[mean_displacement, max_displacement, min_displacement]])
+
+        return cues
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

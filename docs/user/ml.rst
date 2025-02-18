@@ -64,3 +64,11 @@ Custom reinforcement learning rewards
 .. autofunction:: pykitPIV.ml.Rewards.q_criterion
 
 
+*********************************************
+Custom reinforcement learning cues
+*********************************************
+
+.. autoclass:: pykitPIV.ml.Cues
+
+.. autofunction:: pykitPIV.ml.Cues.min_max
+
