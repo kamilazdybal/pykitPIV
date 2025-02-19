@@ -231,11 +231,10 @@ class PIVEnv(gym.Env):
         **Future functionality will include temporally-evolving flow fields.**
     :param inference_model: (optional)
         object of a custom, user-defined class specifying the inference model for predicting flow targets from
-        PIV images.
-        It can be a CNN-based or a WIDIM-based model.
-        If set to ``None``, inference is not done, instead the true flow target within the interrogation window is
-        returned.
-        The inference model has to have a method ``inference_model.inference()``
+        PIV images. It can be a CNN-based or a WIDIM-based model.
+        If set to ``None``, PIV images are not recorded and inference from them is not done,
+        instead the true flow target within the interrogation window is
+        returned. The inference model has to have a method ``inference_model.inference()``
         that returns the predicted flow targets tensor of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`.
         The ``inference_model.inference()`` method must be able to take as an input the raw PIV images and
         pre-process them as needed.
@@ -497,9 +496,6 @@ class PIVEnv(gym.Env):
         w_start = camera_position[1]
         w_stop = w_start + self.__interrogation_window_size_with_buffer[1]
 
-        # velocity_field_magnitude_at_interrogation_window = self.flowfield.velocity_field_magnitude[:, :, h_start:h_stop, w_start:w_stop]
-        # Magnitude is not need for the moment but might be used in the future.
-
         velocity_field_at_interrogation_window = self.flowfield.velocity_field[:, :, h_start:h_stop, w_start:w_stop]
 
         # Construct virtual PIV measurements: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -646,12 +642,30 @@ class PIVEnv(gym.Env):
             camera_position = imposed_camera_position
             self.__camera_position = camera_position
 
-        # Record PIV images at that camera position:
-        image_obj = self.record_particles(camera_position)
-        self.__image_obj = image_obj
+        # Record PIV images at that camera position, but only if the inference model is given:
+        if self.__inference_model is not None:
 
-        # Make inference of displacement field based on the recorded PIV images:
-        targets_tensor, prediction_tensor = self.make_inference(image_obj)
+            image_obj = self.record_particles(camera_position)
+            self.__image_obj = image_obj
+
+            # Make inference of displacement field based on the recorded PIV images:
+            targets_tensor, prediction_tensor = self.make_inference(image_obj)
+
+        # If the inference model is not specified, just return the ground truth velocity field:
+        else:
+
+            # Extract the velocity field under the current interrogation window:
+            h_start = self.__camera_position[0]
+            h_stop = h_start + self.__interrogation_window_size[0]
+
+            w_start = self.__camera_position[1]
+            w_stop = w_start + self.__interrogation_window_size[1]
+
+            # ^ Note that we extract the interrogation window size without buffer because PIV images are not being
+            # recorded.
+
+            targets_tensor = self.flowfield.velocity_field[:, :, h_start:h_stop, w_start:w_stop]
+            prediction_tensor = self.flowfield.velocity_field[:, :, h_start:h_stop, w_start:w_stop]
 
         # Save the prediction tensor and the targets tensor as globally-available variables:
         self.__prediction_tensor = prediction_tensor
@@ -738,19 +752,36 @@ class PIVEnv(gym.Env):
         # Reset the camera position:
         self.__camera_position = camera_position
 
-        # Reward construction: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        # Record PIV images at that camera position, but only if the inference model is given:
+        if self.__inference_model is not None:
 
-        # Record PIV images at that camera position:
-        image_obj = self.record_particles(camera_position)
-        self.__image_obj = image_obj
+            image_obj = self.record_particles(camera_position)
+            self.__image_obj = image_obj
 
-        # Make inference of displacement field based on the recorded PIV images:
-        targets_tensor, prediction_tensor = self.make_inference(image_obj)
+            # Make inference of displacement field based on the recorded PIV images:
+            targets_tensor, prediction_tensor = self.make_inference(image_obj)
+
+        # If the inference model is not specified, just return the ground truth velocity field:
+        else:
+
+            # Extract the velocity field under the current interrogation window:
+            h_start = self.__camera_position[0]
+            h_stop = h_start + self.__interrogation_window_size[0]
+
+            w_start = self.__camera_position[1]
+            w_stop = w_start + self.__interrogation_window_size[1]
+
+            # ^ Note that we extract the interrogation window size without buffer because PIV images are not being
+            # recorded.
+
+            targets_tensor = self.flowfield.velocity_field[:, :, h_start:h_stop, w_start:w_stop]
+            prediction_tensor = self.flowfield.velocity_field[:, :, h_start:h_stop, w_start:w_stop]
 
         # Save the prediction tensor and the targets tensor as globally-available variables:
         self.__prediction_tensor = prediction_tensor
         self.__targets_tensor = targets_tensor
 
+        # Reward construction:
         reward = reward_function(velocity_field=prediction_tensor,
                                  transformation=reward_transformation)
 
@@ -938,19 +969,21 @@ class PIVEnv(gym.Env):
 
         plt.title('Target', fontsize=fontsize)
 
-        # Visualize I1:
-        figure.add_subplot(spec[2, 2])
-        images_I1 = self.__image_obj.remove_buffers(self.__image_obj.images_I1)
-        ims = plt.imshow(images_I1[0,0,:,:], origin='lower', cmap='Greys_r')
-        plt.colorbar(ims)
-        plt.title(r'$I_1$', fontsize=fontsize)
+        if self.__inference_model is not None:
 
-        # Visualize I2:
-        figure.add_subplot(spec[2, 4])
-        images_I2 = self.__image_obj.remove_buffers(self.__image_obj.images_I2)
-        ims = plt.imshow(images_I2[0,0,:,:], origin='lower', cmap='Greys_r')
-        plt.colorbar(ims)
-        plt.title(r'$I_2$', fontsize=fontsize)
+            # Visualize I1:
+            figure.add_subplot(spec[2, 2])
+            images_I1 = self.__image_obj.remove_buffers(self.__image_obj.images_I1)
+            ims = plt.imshow(images_I1[0,0,:,:], origin='lower', cmap='Greys_r')
+            plt.colorbar(ims)
+            plt.title(r'$I_1$', fontsize=fontsize)
+
+            # Visualize I2:
+            figure.add_subplot(spec[2, 4])
+            images_I2 = self.__image_obj.remove_buffers(self.__image_obj.images_I2)
+            ims = plt.imshow(images_I2[0,0,:,:], origin='lower', cmap='Greys_r')
+            plt.colorbar(ims)
+            plt.title(r'$I_2$', fontsize=fontsize)
 
         # Visualize inference under the interrogation window:
         figure.add_subplot(spec[2, 6])
@@ -1054,7 +1087,7 @@ class CameraAgent:
                          memory_size=10000,
                          batch_size=256,
                          n_epochs=100,
-                         learning_rate=0.001,
+                         learning_rate=0.0001,
                          optimizer='RMSprop',
                          discount_factor=0.95)
 
@@ -1087,7 +1120,7 @@ class CameraAgent:
                  memory_size=10000,
                  batch_size=256,
                  n_epochs=100,
-                 learning_rate=0.001,
+                 learning_rate=0.0001,
                  optimizer='RMSprop',
                  discount_factor=0.95):
 
