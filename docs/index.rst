@@ -3,9 +3,9 @@
     :align: center
 
 **pykitPIV** is a Python package that provides rich and reproducible synthetic data and virtual environments
-for training machine learning algorithms in velocimetry.
+for training machine learning (ML) algorithms in velocimetry.
 
-**pykitPIV** gives the user, or the machine-learning agent, a lot of flexibility in selecting
+**pykitPIV** gives the user, or the ML agent, a lot of flexibility in selecting
 various parameters that would normally be available in an experimental setting, such as seeding density,
 properties of the laser plane, camera exposure, particle loss, or experimental noise.
 We also provide an atlas of challenging synthetic velocity fields from analytic formulations.
@@ -13,7 +13,7 @@ The effects of particle drift and diffusion in stationary isotropic turbulence c
 velocity fields using the simplified Langevin model (SLM). In addition, a variational approach can
 connect with the real wind tunnel experimentation and use a generative model to sample new training data
 that belongs to the distribution of the specific experimental setting.
-This can help in re-training machine-learning agents whenever there is a need to extend their range of operation
+This can help in re-training ML agents whenever there is a need to extend their range of operation
 to new experimental scenarios.
 
 **pykitPIV** can operate in particle image velocimetry (PIV) and background-oriented Schlieren (BOS) modes.
@@ -22,7 +22,7 @@ kinematic relationship between two consecutive images is sufficient to determine
 
 The graph below shows the overview of functionalities and possible workflows constructed
 from the five main classes that mimic an experimental setup and act as a *virtual wind tunnel*.
-The machine learning module (``pykitPIV.ml``) connects with each of the five main classes and provides integrations
+The ML module (``pykitPIV.ml``) connects with each of the five main classes and provides integrations
 with algorithms such as **convolutional neural networks**, **reinforcement learning**,
 **variational and generative approaches**, and **active learning**.
 Machine-learning agents have freedom in interacting with the virtual experiment,
