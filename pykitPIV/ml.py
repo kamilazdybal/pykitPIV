@@ -423,11 +423,18 @@ class PIVEnv(gym.Env):
 
         self.__n_actions = 5
 
+        # Initial camera position is undetermined. The user will have to call reset() to initialize camera position:
+        self.__camera_position = None
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     @property
     def admissible_observation_space(self):
         return self.__admissible_observation_space
+
+    @property
+    def camera_position(self):
+        return self.__camera_position
 
     @property
     def flowfield(self):
@@ -1877,7 +1884,11 @@ class Cues:
         dx_sample = displacement_field[0, 0, idx_H, idx_W]
         dy_sample = displacement_field[0, 1, idx_H, idx_W]
 
-        cues = np.array([np.vstack((dx_sample, dy_sample)).ravel()])
+        # Stacking all x coordinates first, then y coordinates:
+        cues = np.vstack((dx_sample,dy_sample)).reshape((-1,))
+
+        # Stacking all points (interleaving x and y coordinates):
+        cues = np.vstack((dx_sample,dy_sample)).reshape((-1,), order='F')
 
         return cues
 
