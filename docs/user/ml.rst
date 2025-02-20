@@ -49,6 +49,8 @@ structure for any RL environment.
 
 .. autofunction:: pykitPIV.ml.CameraAgent.view_weights
 
+.. autofunction:: pykitPIV.ml.plot_trajectory
+
 **TF-Agents**-based
 ====================================
 

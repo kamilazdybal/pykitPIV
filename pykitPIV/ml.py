@@ -426,6 +426,10 @@ class PIVEnv(gym.Env):
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     @property
+    def admissible_observation_space(self):
+        return self.__admissible_observation_space
+
+    @property
     def flowfield(self):
         return self.__flowfield
 
@@ -1395,6 +1399,186 @@ class CameraAgent:
         """
 
         return self.target_q_network.get_weights()
+
+########################################################################################################################
+########################################################################################################################
+####
+####    Plot agent's trajectory over an environment
+####
+########################################################################################################################
+########################################################################################################################
+
+def plot_trajectory(displacement_field,
+                    trajectory,
+                    interrogation_window_size=None,
+                    c_path='white',
+                    c_init='white',
+                    c_final='black',
+                    s=10,
+                    lw=2,
+                    xlabel=None,
+                    ylabel=None,
+                    xticks=True,
+                    yticks=True,
+                    cmap='viridis',
+                    add_streamplot=False,
+                    streamplot_density=1,
+                    streamplot_color='k',
+                    streamplot_linewidth=1,
+                    figsize=(10, 5),
+                    dpi=300,
+                    filename=None):
+    """
+    Plots the trajectory taken by the trained RL agent in a new environment.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import plot_trajectory
+
+        # Assuming that we have access to the new displacement field:
+        displacement_field = ...
+
+        # And we have computed the trajectory matrix:
+        trajectory = ...
+
+        # We can visualize the trajectory in the virtual environment:
+        plot_trajectory(displacement_field,
+                        trajectory,
+                        interrogation_window_size=None,
+                        c_path='white',
+                        c_init='white',
+                        c_final='black',
+                        s=10,
+                        lw=2,
+                        xlabel=None,
+                        ylabel=None,
+                        xticks=True,
+                        yticks=True,
+                        cmap='viridis',
+                        add_streamplot=False,
+                        streamplot_density=1,
+                        streamplot_color='k',
+                        streamplot_linewidth=1,
+                        figsize=(10, 5),
+                        dpi=300,
+                        filename=None)
+
+    One example of plotted trajectory after training the agent is:
+
+    .. image:: ../images/ml_plot_trajectory.png
+        :width: 800
+
+    :param camera_position:
+        ``numpy.ndarray`` specifying
+    :param trajectory:
+        ``numpy.ndarray`` specifying
+    :param interrogation_window_size: (optional)
+        ``tuple`` specifying
+    :param c: (optional)
+        ``str`` specifying the color for the interrogation window outline.
+    :param s: (optional)
+        ``int`` or ``float`` specifying the size of the dot that represents the camera position.
+    :param lw: (optional)
+        ``int``  or ``float`` specifying the line width for the interrogation window outline.
+    :param xlabel: (optional)
+        ``str`` specifying :math:`x`-label.
+    :param ylabel: (optional)
+        ``str`` specifying :math:`y`-label.
+    :param xticks: (optional)
+        ``bool`` specifying if ticks along the :math:`x`-axis should be plotted.
+    :param yticks: (optional)
+        ``bool`` specifying if ticks along the :math:`y`-axis should be plotted.
+    :param cmap: (optional)
+        ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+    :param normalize_cbars: (optional)
+        ``bool`` specifying if the colorbar for the interrogation window should be normalized to the colorbar for
+        the entire wind tunnel.
+    :param add_streamplot: (optional)
+        ``bool`` specifying if streamlines should be plotted on top of the scalar magnitude field.
+    :param streamplot_density: (optional)
+        ``float`` or ``int`` specifying the streamplot density.
+    :param streamplot_color: (optional)
+        ``str`` specifying the streamlines color.
+    :param streamplot_linewidth: (optional)
+        ``int`` or ``float`` specifying the line width for the streamplot.
+    :param figsize: (optional)
+        ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
+    :param dpi: (optional)
+        ``int`` specifying the dpi for the image.
+    :param filename: (optional)
+        ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
+
+    :return:
+        - **plt** - ``matplotlib.pyplot`` image handle.
+    """
+
+    fontsize = 14
+
+    displacement_field_magnitude = np.sqrt(displacement_field[0, 0, :, :] ** 2 + displacement_field[0, 1, :, :] ** 2)
+
+    plt.figure(figsize=figsize)
+
+    ims = plt.imshow(displacement_field_magnitude, cmap=cmap, origin='lower', zorder=0)
+    plt.colorbar(ims)
+
+    if add_streamplot:
+        X = np.arange(0, displacement_field.shape[3], 1)
+        Y = np.arange(0, displacement_field.shape[2], 1)
+
+        plt.streamplot(X, Y,
+                       displacement_field[0, 0, :, :],
+                       displacement_field[0, 1, :, :],
+                       density=streamplot_density,
+                       color=streamplot_color,
+                       linewidth=streamplot_linewidth,
+                       zorder=1)
+
+    plt.plot(trajectory[:, 1] - 0.5, trajectory[:, 0] - 0.5, c=c_path, lw=lw, zorder=2)
+
+    # Visualize a rectangle that defines the initial interrogation window:
+    plt.scatter(trajectory[0, 1] - 0.5, trajectory[0, 0] - 0.5, c=c_init, s=s, zorder=2)
+
+    if interrogation_window_size is not None:
+
+        rect = patches.Rectangle((trajectory[0, 1] - 0.5, trajectory[0, 0] - 0.5),
+                                 interrogation_window_size[1],
+                                 interrogation_window_size[0],
+                                 linewidth=lw, edgecolor=c_init, facecolor='none', zorder=2)
+        ax = plt.gca()
+        ax.add_patch(rect)
+
+    # Visualize a rectangle that defines the final interrogation window:
+    plt.scatter(trajectory[-1, 1] - 0.5, trajectory[-1, 0] - 0.5, c=c_final, s=s, zorder=2)
+
+    if interrogation_window_size is not None:
+
+        rect = patches.Rectangle((trajectory[-1, 1] - 0.5, trajectory[-1, 0] - 0.5),
+                                 interrogation_window_size[1],
+                                 interrogation_window_size[0],
+                                 linewidth=lw, edgecolor=c_final, facecolor='none', zorder=2)
+        ax = plt.gca()
+        ax.add_patch(rect)
+
+    if xlabel is not None:
+        plt.xlabel(xlabel)
+
+    if ylabel is not None:
+        plt.ylabel(ylabel)
+
+    if not xticks:
+        plt.xticks([])
+
+    if not yticks:
+        plt.yticks([])
+
+    plt.title('Virtual wind tunnel', fontsize=fontsize)
+
+    if filename is not None:
+        plt.savefig(filename, dpi=dpi, bbox_inches='tight')
+
+    return plt
 
 ########################################################################################################################
 ########################################################################################################################
