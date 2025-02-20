@@ -1794,7 +1794,8 @@ class Cues:
 
     def __init__(self,
                  verbose=False,
-                 random_seed=None):
+                 random_seed=None,
+                 sample_every_n=10):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1813,6 +1814,7 @@ class Cues:
         # Class init:
         self.__verbose = verbose
         self.__random_seed = random_seed
+        self.__sample_every_n = sample_every_n
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1867,8 +1869,8 @@ class Cues:
 
         # Sample on a uniform grid:
         (_, _, H, W) = displacement_field.shape
-        idx_H = [i for i in range(0, H) if i % 20 == 0]
-        idx_W = [i for i in range(0, W) if i % 20 == 0]
+        idx_H = [i for i in range(0, H) if i % self.__sample_every_n == 0]
+        idx_W = [i for i in range(0, W) if i % self.__sample_every_n == 0]
 
         idx_W, idx_H = np.meshgrid(idx_W, idx_H)
 
