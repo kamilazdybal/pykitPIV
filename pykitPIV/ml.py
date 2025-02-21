@@ -685,8 +685,6 @@ class PIVEnv(gym.Env):
         # Compute the cues based on the current prediction tensor:
         cues = self.cues_function(prediction_tensor)
 
-        print(cues.shape)
-
         # Find out how many cues the RL agent will be looking at, this is useful information for later:
         (_, self.n_cues) = np.shape(cues)
 

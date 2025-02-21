@@ -1,0 +1,21 @@
+#!/bin/sh
+#SBATCH --account=sutherland-np
+#SBATCH --partition=sutherland-shared-np
+#SBATCH --export=NONE
+#SBATCH --cpus-per-task=16
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --time=24:00:00
+#SBATCH --mail-type=END
+#SBATCH --mail-user=kamilazdybal@gmail.com
+#SBATCH --job-name=train-RL
+#SBATCH --output=train-RL.txt
+
+# Set environment:
+source $HOME/.bashrc
+module use $HOME/MyModules
+module load anaconda3/2019.03
+conda activate pykitPIV
+
+# Run Python script:
+python train-RL.py
