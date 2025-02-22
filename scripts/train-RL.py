@@ -233,6 +233,9 @@ plt.figure(figsize=(20,4))
 plt.plot(total_rewards, 'ko--')
 plt.savefig('rewards.png', bbox_inches='tight', dpi=300)
 
+# Save the trained Q-network:
+ca.target_q_network.save("QNetwork.keras")
+
 # Visualize the learned policy in the training environment:
 (_, _, H, W) = ca.env.flowfield.velocity_field_magnitude.shape
 (H_adm, W_adm) = ca.env.admissible_observation_space
@@ -240,7 +243,7 @@ idx_H = [i for i in range(0, H_adm) if i % 6 == 0]
 idx_W = [i for i in range(0, W_adm) if i % 6 == 0]
 print(len(idx_H) * len(idx_W))
 
-learned_policy = np.ones((H,W)) * np.NaN
+learned_policy = np.ones((H,W)) * np.nan
 
 for h in idx_H:
     for w in idx_W:
@@ -265,6 +268,3 @@ cbar.set_ticklabels(list(ca.env.action_to_verbose_direction.values()))
 plt.xticks([])
 plt.yticks([])
 plt.savefig('learned-policy.png', bbox_inches='tight', dpi=300)
-
-# Save the trained Q-network:
-ca.target_q_network.save("QNetwork.keras")
