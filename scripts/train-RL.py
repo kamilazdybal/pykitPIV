@@ -165,7 +165,7 @@ total_rewards = []
 
 for episode in range(0,n_episodes):
 
-    camera_position, cues = ca.env.reset()
+    camera_position, cues = ca.env.reset(regenerate_flowfield=True)
     total_reward = 0
 
     # Before we start training the Q-network, only exploration is allowed:
