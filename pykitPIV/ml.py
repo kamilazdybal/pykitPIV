@@ -329,6 +329,9 @@ class PIVEnv(gym.Env):
         # Specifications for Image class:
         self.__image_spec = image_spec
 
+        # User flowfield:
+        self.__user_flowfield = user_flowfield
+
         # Inference model that is capable of predicting the displacement fields from the PIV images.
         # This can be a CNN-based or WIDIM-based model.
         self.__inference_model = inference_model
@@ -643,7 +646,7 @@ class PIVEnv(gym.Env):
         # Re-generate the flow field if needed:
         if regenerate_flowfield:
 
-            if user_flowfield is None:
+            if self.__user_flowfield is None:
 
                 flowfield = FlowField(n_images=1,
                                       size=self.__flowfield_size,
