@@ -602,9 +602,12 @@ class PIVEnv(gym.Env):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def reset(self, imposed_camera_position=None):
+    def reset(self,
+              imposed_camera_position=None,
+              regenerate_flowfield=False):
         """
-        Resets the environment to a random or user-imposed initial state.
+        Resets the environment to a random or user-imposed initial state and, optionally, also
+        re-generates the flow field.
 
         **Example:**
 
@@ -628,12 +631,44 @@ class PIVEnv(gym.Env):
             which positions the camera at the location :math:`10 \\text{px}` along the height dimension
             and :math:`50 \\text{px}` along the width dimension.
             If not specified, a random camera position is selected through ``env.observation_space.sample()``.
+        :param regenerate_flowfield: (optional)
+            ``bool`` specifying whether the larger flow field should be regenerated at reset.
 
         :return:
             - **camera_position** - ``numpy.ndarray`` of two elements specifying the initial camera position in
               pixels :math:`[\\text{px}]`.
             - **cues** - ``numpy.ndarray`` specifying the initial cues that the RL agent will later be sensing.
         """
+
+        # Re-generate the flow field if needed:
+        if regenerate_flowfield:
+
+            if user_flowfield is None:
+
+                flowfield = FlowField(n_images=1,
+                                      size=self.__flowfield_size,
+                                      size_buffer=0,
+                                      random_seed=self.__random_seed)
+
+                if self.__flowfield_type == 'random smooth':
+                    flowfield.generate_random_velocity_field(gaussian_filters=self.__flowfield_spec.gaussian_filters,
+                                                             n_gaussian_filter_iter=self.__flowfield_spec.n_gaussian_filter_iter,
+                                                             displacement=self.__flowfield_spec.displacement)
+
+                if self.__flowfield_spec.apply_SLM:
+                    # Solve the simplified Langevin model (SLM) for the mean velocity fields:
+                    flowfield.generate_langevin_velocity_field(mean_field=flowfield.velocity_field,
+                                                               integral_time_scale=self.__flowfield_spec.integral_time_scale,
+                                                               sigma=self.__flowfield_spec.sigma,
+                                                               n_stochastic_particles=self.__flowfield_spec.n_stochastic_particles,
+                                                               n_iterations=self.__flowfield_spec.n_iterations,
+                                                               verbose=False)
+
+                # This is an object of the pykitPIV.flowfield.FlowField class:
+                self.__flowfield = flowfield
+
+            else:
+                raise TypeError("Cannot re-generate flow field from user-specified field!")
 
         # Check whether the user-specified camera position is possible given the admissible observation space
         # and the size of the interrogation window:
