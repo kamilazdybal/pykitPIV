@@ -1,3 +1,7 @@
+# ######################################################################################################################
+# Train the RL agent to detect sources and sinks in a virtual wind tunnel environment
+# ######################################################################################################################
+
 from pykitPIV.ml import PIVEnv, CameraAgent, Rewards, Cues, plot_trajectory
 from pykitPIV.flowfield import compute_q_criterion, compute_divergence
 from pykitPIV import ParticleSpecs, FlowFieldSpecs, MotionSpecs, ImageSpecs
@@ -13,25 +17,32 @@ import sys, os
 import time
 import h5py
 
-# Argparse - - - - - - - - - - - - - - - - - - - - - - - - - 
+# ######################################################################################################################
+# Argparse
+# ######################################################################################################################
 
-n_episodes = 100
-n_iterations = 200
+n_episodes = 4
+n_iterations = 40
 
 epsilon_start = 0.8
-discount_factor=0.99
+n_decay_steps_epsilon = n_episodes
+discount_factor=0.95
 
-batch_size = 512
-n_epochs = 100
+batch_size = 128
+n_epochs = 1
 
-memory_size = n_episodes * n_iterations
+memory_size = 1000
 
 initial_learning_rate = 0.001
-alpha_lr = 0.0001
+current_lr = 0.001
+alpha_lr = 0.001
+n_decay_steps_learning_rate = n_episodes
 
 interrogation_window_size = (40,40)
 
-# Specifications for PIV - - - - - - - - - - - - - - - - - -
+# ######################################################################################################################
+# Specifications for the virtual PIV setup
+# ######################################################################################################################
 
 particle_spec = ParticleSpecs(diameters=(1, 1),
                               distances=(2, 2),
@@ -67,11 +78,11 @@ image_spec = ImageSpecs(exposures=(0.98, 0.98),
 
 print(image_spec)
 
-# Specify cues:
+# Specify cues: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 cues_obj = Cues(sample_every_n=10)
 cues_function = cues_obj.sampled_vectors
 
-# Specify rewards:
+# Specify rewards: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 rewards = Rewards(verbose=False)
 reward_function = rewards.divergence
 
@@ -88,40 +99,94 @@ env = PIVEnv(interrogation_window_size=interrogation_window_size,
              inference_model=None,
              random_seed=None)
 
-# Train the RL agent - - - - - - - - - - - - - - - - - - - - 
+_, cues = env.reset()
+
+print('\nWe have this many cues within one interrogation window:')
+print(env.n_cues)
+print()
+
+# ######################################################################################################################
+# Train the RL agent
+# ######################################################################################################################
 
 kernel_initializer = tf.keras.initializers.RandomUniform
-n_decay_steps = int(n_episodes/1.5)
 
-def epsilon_exp_decay(epsilon_start, iter_count, n=1000):
+# Exploration probability decay: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+def epsilon_exp_decay(epsilon_start, iter_count, n=n_decay_steps_epsilon):
     return epsilon_start/np.exp(iter_count/(n))
 
-def decayed_learning_rate(step, initial_learning_rate, alpha, decay_steps):
-    
-    step = np.min([step, decay_steps])
-    cosine_decay = 0.5 * (1 + np.cos(np.pi * step / decay_steps))
+exploration_probabilities = []
+
+for i in range(0,n_episodes):
+
+    exploration_probabilities.append(epsilon_exp_decay(epsilon_start,
+                                                       i,
+                                                       n=n_decay_steps_epsilon))
+
+plt.figure(figsize=(5,2))
+plt.plot(exploration_probabilities, c='k', lw=3)
+plt.xlabel('Episode number')
+plt.savefig('epsilon-decay.png', bbox_inches='tight', dpi=300)
+
+print('Exploration probabilities that will be used:')
+print(exploration_probabilities)
+print()
+
+# Learning rate decay - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+def decayed_learning_rate(step, initial_learning_rate, alpha, n=n_decay_steps_learning_rate):
+
+    step = np.min([step, n])
+    cosine_decay = 0.5 * (1 + np.cos(np.pi * step / n))
     decayed = (1 - alpha) * cosine_decay + alpha
-    
+
     return initial_learning_rate * decayed
 
+decayed_learning_rates = []
+
+for i in range(0,n_episodes):
+
+    decayed_learning_rates.append(decayed_learning_rate(i,
+                                                        initial_learning_rate=initial_learning_rate,
+                                                        alpha=alpha_lr,
+                                                        n=n_decay_steps_learning_rate))
+
+plt.figure(figsize=(5,2))
+plt.semilogy(decayed_learning_rates, c='k', lw=3)
+plt.xlabel('Episode number')
+plt.savefig('learning-rate-decay.png', bbox_inches='tight', dpi=300)
+
+print('Learning rates that will be used:')
+print(decayed_learning_rates)
+print()
+
+# Model for the Q-networks - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 class QNetwork(tf.keras.Model):
-    
+
     def __init__(self, n_actions, kernel_initializer):
-        
+
         super(QNetwork, self).__init__()
-        
-        self.dense1 = tf.keras.layers.Dense(30, activation='linear', kernel_initializer=kernel_initializer)
-        self.dense2 = tf.keras.layers.Dense(20, activation='tanh', kernel_initializer=kernel_initializer)
-        self.dense3 = tf.keras.layers.Dense(10, activation='tanh', kernel_initializer=kernel_initializer)
+
+        self.dense1 = tf.keras.layers.Dense(env.n_cues, activation='linear', kernel_initializer=kernel_initializer)
+        self.dense2 = tf.keras.layers.Dense(int(env.n_cues/2), activation='tanh', kernel_initializer=kernel_initializer)
+        self.dense3 = tf.keras.layers.Dense(int(env.n_cues/3), activation='tanh', kernel_initializer=kernel_initializer)
         self.output_layer = tf.keras.layers.Dense(n_actions, activation='linear', kernel_initializer=kernel_initializer)
 
     def call(self, state):
-        
+
         x = self.dense1(state)
         x = self.dense2(x)
         x = self.dense3(x)
-        
+
         return self.output_layer(x)
+
+print('Q-network architecture is:')
+print(str(env.n_cues) + '-' + str(int(env.n_cues/2)) + '-' + str(int(env.n_cues/3))+ '-' + str(env.n_actions))
+print()
+
+# Define the RL agent - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 ca = CameraAgent(env=env,
                  target_q_network=QNetwork(env.n_actions, kernel_initializer),
@@ -133,33 +198,50 @@ ca = CameraAgent(env=env,
                  optimizer='RMSprop',
                  discount_factor=discount_factor)
 
-saved_camera_trajectories_H = np.zeros((n_iterations, n_episodes))
-saved_camera_trajectories_W = np.zeros((n_iterations, n_episodes))
-
 total_tic = time.perf_counter()
 
+print()
 print('- '*50)
+print('Starting training the RL agent...\n')
 
 tic = time.perf_counter()
 
 iter_count = 0
 total_rewards = []
 
-for episode in range(0,n_episodes):
+log_every = 1
+
+for episode in range(0, n_episodes):
 
     camera_position, cues = ca.env.reset(regenerate_flowfield=True)
     total_reward = 0
 
     # Before we start training the Q-network, only exploration is allowed:
     if len(ca.memory.buffer) >= batch_size:
+
         # Exploration probability decreases with training time:
-        epsilon = epsilon_exp_decay(epsilon_start, iter_count, n=1000)
-        iter_count += 1
+        epsilon = epsilon_exp_decay(epsilon_start,
+                                    iter_count,
+                                    n=n_decay_steps_epsilon)
+
+        # Decay the learning rate:
+        current_lr = decayed_learning_rate(iter_count,
+                                           initial_learning_rate,
+                                           alpha_lr,
+                                           n=n_decay_steps_learning_rate)
+
+        iter_count += 1  # Only counts episodes that had Q-network trainings in them
+
     else:
+
         epsilon = 1.0
-    
-    if (episode+1) % 10 == 0: print(f'Epsilon: {epsilon:0.3f}')
-    
+
+    if (episode) % log_every == 0:
+
+        print(f'Episode: {episode + 1}')
+        print(f'Epsilon: {epsilon:0.3f}')
+        print('Learning rate: ' + str(current_lr))
+
     for i in range(0,n_iterations):
 
         action = ca.choose_action(cues,
@@ -178,25 +260,23 @@ for episode in range(0,n_episodes):
         cues = next_cues
         total_reward += reward
 
-        saved_camera_trajectories_H[i, episode] = next_camera_position[0]
-        saved_camera_trajectories_W[i, episode] = next_camera_position[1]
+        # Train the Q-network after each step, (but hold off with training until batch_size of samples is collected):
+        if len(ca.memory.buffer) >= batch_size:
 
-    # Train the Q-network, (but hold off with training until batch_size of samples is collected):
-    if len(ca.memory.buffer) >= batch_size:
-    
-        current_lr = decayed_learning_rate(iter_count, initial_learning_rate, alpha_lr, n_decay_steps)
-        ca.train(initial_learning_rate)
-    
-        if (episode+1) % 1 == 0 :
-            ca.update_target_network()
+            ca.train(current_lr)
 
-    else:
-        print('Not training the Q-network yet...')
+    # Synchronize the Q-networks only at the end of each episode:
+    ca.update_target_network()
 
-    if (episode+1) % 10 == 0:
+    if (episode) % log_every == 0:
+
         toc = time.perf_counter()
-        print(f"Episode: {episode + 1}, Total Reward: {total_reward:0.1f}")
-        print(f'\tThese episodes took: {(toc - tic):0.1f} sec.')
+
+        print(f"Total Reward: {total_reward:0.1f}")
+        print(f'This episode took: {(toc - tic):0.1f} sec.')
+        print('- '*15)
+        print()
+
         tic = time.perf_counter()
 
     total_rewards.append(total_reward)
@@ -215,11 +295,16 @@ plt.figure(figsize=(20,4))
 plt.plot(total_rewards, 'ko--')
 plt.savefig('rewards.png', bbox_inches='tight', dpi=300)
 
-# Save quantities at the end of training - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-# Save the trained Q-network:
+# Save the trained Q-network: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ca.target_q_network.save("QNetwork.keras")
 
+print('- '*50)
+
+# ######################################################################################################################
+# Save quantities at the end of training
+# ######################################################################################################################
+
+# Render the final environment: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 plt = env.render(camera_position,
                  c='white',
                  s=20,
@@ -236,12 +321,15 @@ plt = env.render(camera_position,
 np.savetxt('final-velocity-field-u.csv', (env.flowfield.velocity_field[0,0,:,:]), delimiter=',', fmt='%.16e')
 np.savetxt('final-velocity-field-v.csv', (env.flowfield.velocity_field[0,1,:,:]), delimiter=',', fmt='%.16e')
 
-# Visualize the learned policy in the training environment:
+# Visualize the learned policy on the final environment: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 (_, _, H, W) = ca.env.flowfield.velocity_field_magnitude.shape
 (H_adm, W_adm) = ca.env.admissible_observation_space
 idx_H = [i for i in range(0, H_adm) if i % 6 == 0]
 idx_W = [i for i in range(0, W_adm) if i % 6 == 0]
+
+print('Interpolating the learned policy over this many points:')
 print(len(idx_H) * len(idx_W))
+print()
 
 learned_policy = np.ones((H,W)) * np.nan
 
@@ -268,3 +356,9 @@ cbar.set_ticklabels(list(ca.env.action_to_verbose_direction.values()))
 plt.xticks([])
 plt.yticks([])
 plt.savefig('learned-policy.png', bbox_inches='tight', dpi=300)
+
+print('Script done!')
+
+# ######################################################################################################################
+# End
+# ######################################################################################################################
