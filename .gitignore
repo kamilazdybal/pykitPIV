@@ -18,6 +18,9 @@ CHPC/
 pypiv.egg-info/
 docs/builddir/
 docs/_build/
+scripts/*.png
+scripts/*.keras
+scripts/*.csv
 pykitPIV.egg-info/
 jupyter-notebooks/*.png
 jupyter-notebooks/*.gif
