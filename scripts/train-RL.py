@@ -16,13 +16,14 @@ import torch
 import sys, os
 import time
 import h5py
+import copy as cp
 
 # ######################################################################################################################
 # Argparse
 # ######################################################################################################################
 
-n_episodes = 4
-n_iterations = 40
+n_episodes = 100
+n_iterations = 100
 
 epsilon_start = 0.8
 n_decay_steps_epsilon = n_episodes
@@ -34,7 +35,6 @@ n_epochs = 1
 memory_size = 1000
 
 initial_learning_rate = 0.001
-current_lr = 0.001
 alpha_lr = 0.001
 n_decay_steps_learning_rate = n_episodes
 
@@ -86,7 +86,7 @@ cues_function = cues_obj.sampled_vectors
 rewards = Rewards(verbose=False)
 reward_function = rewards.divergence
 
-def reward_transformation(div):  
+def reward_transformation(div):
     return np.max(np.abs(div))*100
 
 env = PIVEnv(interrogation_window_size=interrogation_window_size,
@@ -208,6 +208,7 @@ tic = time.perf_counter()
 
 iter_count = 0
 total_rewards = []
+current_lr = cp.deepcopy(initial_learning_rate)
 
 log_every = 1
 
