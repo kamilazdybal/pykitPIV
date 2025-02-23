@@ -1378,15 +1378,19 @@ class CameraAgent:
 
             cues, action, reward, next_cues = batch_content
 
-            # Compute the Q-value we want to have for this (cues, action) pair:
-            next_q_values = self.target_q_network.predict(next_cues, verbose=0)
-            target_q_value = reward + self.discount_factor * np.max(next_q_values, axis=-1)
+            # Compute the next Q-values using the selected network to choose the best action:
+            next_q_values_selected = self.selected_q_network.predict(next_cues, verbose=0)
+            best_next_action = np.argmax(next_q_values_selected, axis=-1)
 
-            # Compute the Q-value we actually have for this (cues, action) pair:
+            # Compute the next Q-values using the target network to have the target Q-value:
+            next_q_values_target = self.target_q_network.predict(next_cues, verbose=0)
+            target_q_value = reward + self.discount_factor * next_q_values_target[0][best_next_action[0]]
+
+            # Get current Q-values from the selected network:
             q_values = self.selected_q_network.predict(cues, verbose=0)
 
-            # Swap the Q-value we actually have for the target Q-value for this action:
-            q_values[0][action] = target_q_value[0]
+            # Swap the Q-value we want to have for the target Q-value for this action:
+            q_values[0][action] = target_q_value
 
             # Create a batch:
             batch_cues[i, :] = cues
