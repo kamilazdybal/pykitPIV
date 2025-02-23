@@ -15,19 +15,19 @@ import h5py
 
 # Argparse - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-n_episodes = 1000
-n_iterations = 20
+n_episodes = 100
+n_iterations = 200
 
 epsilon_start = 0.8
-discount_factor=0.95
+discount_factor=0.99
 
-batch_size = 256
-n_epochs = 1
+batch_size = 512
+n_epochs = 100
 
 memory_size = n_episodes * n_iterations
 
 initial_learning_rate = 0.001
-alpha_lr = 0.001
+alpha_lr = 0.0001
 
 interrogation_window_size = (40,40)
 
@@ -88,26 +88,6 @@ env = PIVEnv(interrogation_window_size=interrogation_window_size,
              inference_model=None,
              random_seed=None)
 
-camera_position, cues = env.reset()
-
-print(cues.shape)
-
-plt = env.render(camera_position,
-                 c='white',
-                 s=20,
-                 lw=1,
-                 normalize_cbars=True,
-                 cmap=cmc.roma,
-                 add_streamplot=True,
-                 streamplot_density=3,
-                 streamplot_color='k',
-                 streamplot_linewidth=0.3,
-                 figsize=(10,6), 
-                 filename='initial-environment.png')
-
-np.savetxt('velocity-field-u.csv', (env.flowfield.velocity_field[0,0,:,:]), delimiter=',', fmt='%.16e')
-np.savetxt('velocity-field-v.csv', (env.flowfield.velocity_field[0,1,:,:]), delimiter=',', fmt='%.16e')
-
 # Train the RL agent - - - - - - - - - - - - - - - - - - - - 
 
 kernel_initializer = tf.keras.initializers.RandomUniform
@@ -130,14 +110,16 @@ class QNetwork(tf.keras.Model):
         
         super(QNetwork, self).__init__()
         
-        self.dense1 = tf.keras.layers.Dense(10, activation='linear', kernel_initializer=kernel_initializer)
-        self.dense2 = tf.keras.layers.Dense(8, activation='tanh', kernel_initializer=kernel_initializer)
+        self.dense1 = tf.keras.layers.Dense(30, activation='linear', kernel_initializer=kernel_initializer)
+        self.dense2 = tf.keras.layers.Dense(20, activation='tanh', kernel_initializer=kernel_initializer)
+        self.dense3 = tf.keras.layers.Dense(10, activation='tanh', kernel_initializer=kernel_initializer)
         self.output_layer = tf.keras.layers.Dense(n_actions, activation='linear', kernel_initializer=kernel_initializer)
 
     def call(self, state):
         
         x = self.dense1(state)
         x = self.dense2(x)
+        x = self.dense3(x)
         
         return self.output_layer(x)
 
@@ -233,8 +215,26 @@ plt.figure(figsize=(20,4))
 plt.plot(total_rewards, 'ko--')
 plt.savefig('rewards.png', bbox_inches='tight', dpi=300)
 
+# Save quantities at the end of training - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 # Save the trained Q-network:
 ca.target_q_network.save("QNetwork.keras")
+
+plt = env.render(camera_position,
+                 c='white',
+                 s=20,
+                 lw=1,
+                 normalize_cbars=True,
+                 cmap=cmc.roma,
+                 add_streamplot=True,
+                 streamplot_density=3,
+                 streamplot_color='k',
+                 streamplot_linewidth=0.3,
+                 figsize=(10,6),
+                 filename='final-environment.png')
+
+np.savetxt('final-velocity-field-u.csv', (env.flowfield.velocity_field[0,0,:,:]), delimiter=',', fmt='%.16e')
+np.savetxt('final-velocity-field-v.csv', (env.flowfield.velocity_field[0,1,:,:]), delimiter=',', fmt='%.16e')
 
 # Visualize the learned policy in the training environment:
 (_, _, H, W) = ca.env.flowfield.velocity_field_magnitude.shape
