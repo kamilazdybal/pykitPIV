@@ -325,8 +325,8 @@ np.savetxt('final-velocity-field-v.csv', (env.flowfield.velocity_field[0,1,:,:])
 # Visualize the learned policy on the final environment: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 (_, _, H, W) = ca.env.flowfield.velocity_field_magnitude.shape
 (H_adm, W_adm) = ca.env.admissible_observation_space
-idx_H = [i for i in range(0, H_adm) if i % 6 == 0]
-idx_W = [i for i in range(0, W_adm) if i % 6 == 0]
+idx_H = [i for i in range(0, H_adm) if i % 3 == 0]
+idx_W = [i for i in range(0, W_adm) if i % 3 == 0]
 
 print('Interpolating the learned policy over this many points:')
 print(len(idx_H) * len(idx_W))
@@ -339,7 +339,7 @@ for h in idx_H:
 
         camera_position = np.array([h, w])
         _, cues = ca.env.reset(imposed_camera_position=camera_position)
-        q_values = ca.target_q_network.predict(cues, verbose=0)
+        q_values = ca.target_q_network(cues)
         action = np.argmax(q_values)
         learned_policy[h, w] = action
 
