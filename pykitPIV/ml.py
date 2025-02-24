@@ -1276,7 +1276,9 @@ class CameraAgent:
         # Select the currently best action with probability (1 - epsilon):
         else:
 
-            q_values = self.target_q_network.predict(cues, verbose=0)
+            # Not sure for the moment, which one should I be using?
+            # q_values = self.target_q_network(cues)
+            q_values = self.online_q_network(cues)
 
             return np.argmax(q_values)
 
