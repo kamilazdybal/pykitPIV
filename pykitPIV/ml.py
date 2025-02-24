@@ -1132,7 +1132,7 @@ class CameraAgent:
         # Initialize the camera agent:
         ca = CameraAgent(env=env,
                          target_q_network=QNetwork(env.n_actions),
-                         selected_q_network=QNetwork(env.n_actions),
+                         online_q_network=QNetwork(env.n_actions),
                          memory_size=10000,
                          batch_size=256,
                          n_epochs=100,
@@ -1144,9 +1144,9 @@ class CameraAgent:
         object of a custom environment class that is a subclass of ``gym.Env`` specifying the virtual environment.
         This can for instance be an object of the ``pykitPIV.ml.PIVEnv`` class.
     :param target_q_network:
-        ``tf.keras.Model`` specifying the deep neural network that will be the target network for Q-learning.
-    :param selected_q_network:
-        ``tf.keras.Model`` specifying the deep neural network that will be the temporary network for Q-learning.
+        ``tf.keras.Model`` specifying the deep neural network that will be the target (stable) network for Q-learning.
+    :param online_q_network:
+        ``tf.keras.Model`` specifying the deep neural network that will be the online (temporary) network for Q-learning.
     :param memory_size:  (optional)
         ``int`` specifying the size of the memory bank.
     :param batch_size:  (optional)
@@ -1165,7 +1165,7 @@ class CameraAgent:
     def __init__(self,
                  env,
                  target_q_network,
-                 selected_q_network,
+                 online_q_network,
                  memory_size=10000,
                  batch_size=256,
                  n_epochs=100,
@@ -1186,8 +1186,8 @@ class CameraAgent:
         # We have two Q-networks, the target Q-network, which is the "stable" network:
         self.target_q_network = target_q_network
 
-        # But the target network will be synchronized with the selected Q-network only once every few episodes:
-        self.selected_q_network = selected_q_network
+        # But the target network will be synchronized with the online Q-network only once every few episodes:
+        self.online_q_network = online_q_network
 
         # ^ This prevents overshoots in learning the Q-value as shown by Hasselt et al. (2015)
         # These two Q-networks will separate the process of finding which action has the maximum Q-value from
@@ -1201,7 +1201,7 @@ class CameraAgent:
             self.optimizer = tf.keras.optimizers.RMSprop(learning_rate=self.learning_rate)
 
         self.target_q_network.compile(self.optimizer, loss=tf.keras.losses.MeanSquaredError())
-        self.selected_q_network.compile(self.optimizer, loss=tf.keras.losses.MeanSquaredError())
+        self.online_q_network.compile(self.optimizer, loss=tf.keras.losses.MeanSquaredError())
         self.MSE_losses = []
 
         # Reinforcement learning parameters:
@@ -1346,7 +1346,7 @@ class CameraAgent:
     def train(self,
               new_learning_rate=0.001):
         """
-        Trains the temporary Q-network (``selected_q_network``) with the outcome of a single step in the environment.
+        Trains the temporary Q-network (``online_q_network``) with the outcome of a single step in the environment.
 
         **Example:**
 
@@ -1378,16 +1378,16 @@ class CameraAgent:
 
             cues, action, reward, next_cues = batch_content
 
-            # Compute the next Q-values using the selected network to choose the best action:
-            next_q_values_selected = self.selected_q_network(next_cues).numpy()
+            # Compute the next Q-values using the online network to choose the best action:
+            next_q_values_selected = self.online_q_network(next_cues).numpy()
             best_next_action = np.argmax(next_q_values_selected, axis=-1)
 
             # Compute the next Q-values using the target network to have the target Q-value:
             next_q_values_target = self.target_q_network(next_cues).numpy()
             target_q_value = reward + self.discount_factor * next_q_values_target[0][best_next_action[0]]
 
-            # Get current Q-values from the selected network:
-            q_values = self.selected_q_network(cues).numpy()
+            # Get current Q-values from the online network:
+            q_values = self.online_q_network(cues).numpy()
 
             # Swap the Q-value we want to have for the target Q-value for this action:
             q_values[0][action] = target_q_value
@@ -1400,7 +1400,7 @@ class CameraAgent:
         self.optimizer.learning_rate.assign(new_learning_rate)
 
         # Teach the Q-network to predict the target Q-values over the current batch:
-        history = self.selected_q_network.fit(batch_cues,
+        history = self.online_q_network.fit(batch_cues,
                                               batch_q_values,
                                               epochs=self.n_epochs,
                                               verbose=0)
@@ -1410,7 +1410,7 @@ class CameraAgent:
 
     def update_target_network(self):
         """
-        Synchronizes the target Q-network with the selected Q-network in double Q-learning
+        Synchronizes the target Q-network with the online Q-network in double Q-learning
         (see `Hasselt et al. <https://arxiv.org/abs/1509.06461>`_ for more information).
         This function can be called once every a couple of steps in the environment,
         or even once every a couple of episodes.
@@ -1430,7 +1430,7 @@ class CameraAgent:
                     ca.update_target_network()
         """
 
-        self.target_q_network.set_weights(self.selected_q_network.get_weights())
+        self.target_q_network.set_weights(self.online_q_network.get_weights())
 
     def view_weights(self):
         """
