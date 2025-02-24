@@ -22,7 +22,7 @@ import copy as cp
 # Argparse
 # ######################################################################################################################
 
-n_episodes = 100
+n_episodes = 200
 n_iterations = 100
 
 epsilon_start = 0.8
@@ -190,7 +190,7 @@ print()
 
 ca = CameraAgent(env=env,
                  target_q_network=QNetwork(env.n_actions, kernel_initializer),
-                 selected_q_network=QNetwork(env.n_actions, kernel_initializer),
+                 online_q_network=QNetwork(env.n_actions, kernel_initializer),
                  memory_size=memory_size,
                  batch_size=batch_size,
                  n_epochs=n_epochs,
