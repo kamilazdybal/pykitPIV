@@ -322,11 +322,14 @@ for episode in range(0, n_episodes):
         # Train the Q-network after each step, (but hold off with training until batch_size of samples is collected):
         if len(ca.memory.buffer) >= batch_size:
 
-            batch_q_values = ca.train(current_lr)
-            batch_q_values_collected = np.vstack((batch_q_values_collected, batch_q_values))
+            ca.train(current_lr)
+
+    batch_q_values = ca.online_q_network(cues).numpy()
+    batch_q_values_collected = np.vstack((batch_q_values_collected, batch_q_values))
 
     # Synchronize the Q-networks only at the end of each episode:
-    ca.update_target_network()
+    if len(ca.memory.buffer) >= batch_size:
+        ca.update_target_network()
     
     if (episode) % log_every == 0:
 
