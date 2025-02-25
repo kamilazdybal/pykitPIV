@@ -17,28 +17,81 @@ import sys, os
 import time
 import h5py
 import copy as cp
+import argparse
 
 # ######################################################################################################################
 # Argparse
 # ######################################################################################################################
 
-n_episodes = 1000
-n_iterations = 20
+parser = argparse.ArgumentParser()
 
-epsilon_start = 0.8
+parser.add_argument('--case_name', type=str,
+                    default='virtual-PIV', metavar='CASENAME',
+                    help='Case name that will be added to filenames')
+parser.add_argument('--n_episodes', type=int,
+                    default=1000, metavar='NEPISODES',
+                    help='Number of episodes')
+parser.add_argument('--n_iterations', type=int,
+                    default=20, metavar='NITER',
+                    help='Number of iterations per episode')
+parser.add_argument('--epsilon_start', type=float,
+                    default=0.8, metavar='EPSILONSTART',
+                    help='Initial exploration probability')
+parser.add_argument('--discount_factor', type=float,
+                    default=0.8, metavar='GAMMA',
+                    help='Discount factor')
+parser.add_argument('--batch_size', type=int,
+                    default=128, metavar='BATCHSIZE',
+                    help='Batch size')
+parser.add_argument('--n_epochs', type=int,
+                    default=1, metavar='NEPOCHS',
+                    help='Number of epochs for training the Q-network on each batch')
+parser.add_argument('--memory_size', type=int,
+                    default=1, metavar='MEMSIZE',
+                    help='Size of the memory bank')
+parser.add_argument('--initial_learning_rate', type=float,
+                    default=0.001, metavar='LRINIT',
+                    help='Initial learning rate')
+parser.add_argument('--alpha_lr', type=float,
+                    default=0.001, metavar='LRALPHA',
+                    help='Alpha for the final learning rate')
+parser.add_argument('--sample_every_n', type=int,
+                    default=10, metavar='CUESSAMPLE',
+                    help='Sample every n points to compute the cues vectors')
+parser.add_argument('--normalize_displacement_vectors', type=bool,
+                    default=False,
+                    action=argparse.BooleanOptionalAction, metavar='NORMALIZEDSINCUES',
+                    help='Normalize cues vectors from displacement fields')
+parser.add_argument('--interrogation_window_size_buffer', type=int,
+                    default=5, metavar='BUFFER',
+                    help='Interrogation window buffer size')
+parser.add_argument('--interrogation_window_size', type=int,
+                    default=[60,60], nargs="+", metavar='SEEDS',
+                    help='Interrogation window size')
+
+args = parser.parse_args()
+
+print(args)
+
+# Populate values:
+case_name = vars(args).get('case_name')
+n_episodes = vars(args).get('n_episodes')
+n_iterations = vars(args).get('n_iterations')
+epsilon_start = vars(args).get('epsilon_start')
+discount_factor = vars(args).get('discount_factor')
+batch_size = vars(args).get('batch_size')
+n_epochs = vars(args).get('n_epochs')
+memory_size = vars(args).get('memory_size')
+initial_learning_rate = vars(args).get('initial_learning_rate')
+alpha_lr = vars(args).get('alpha_lr')
+sample_every_n = vars(args).get('sample_every_n')
+normalize_displacement_vectors = vars(args).get('normalize_displacement_vectors')
+interrogation_window_size_buffer = vars(args).get('interrogation_window_size_buffer')
+H_interrogation_window, W_interrogation_window = tuple(vars(args).get('interrogation_window_size'))
+
+interrogation_window_size = (H_interrogation_window, W_interrogation_window)
 n_decay_steps_epsilon = n_episodes
-discount_factor=0.95
-
-batch_size = 256
-n_epochs = 1
-
-memory_size = 1000
-
-initial_learning_rate = 0.001
-alpha_lr = 0.001
 n_decay_steps_learning_rate = n_episodes
-
-interrogation_window_size = (40,40)
 
 # ######################################################################################################################
 # Specifications for the virtual PIV setup
@@ -79,7 +132,8 @@ image_spec = ImageSpecs(exposures=(0.98, 0.98),
 print(image_spec)
 
 # Specify cues: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-cues_obj = Cues(sample_every_n=10)
+cues_obj = Cues(sample_every_n=sample_every_n,
+                normalize_displacement_vectors=normalize_displacement_vectors)
 cues_function = cues_obj.sampled_vectors
 
 # Specify rewards: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -92,7 +146,7 @@ def reward_transformation(div):
 # Construct the PIV environment: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 env = PIVEnv(interrogation_window_size=interrogation_window_size,
-             interrogation_window_size_buffer=5,
+             interrogation_window_size_buffer=interrogation_window_size_buffer,
              cues_function=cues_function,
              particle_spec=particle_spec,
              motion_spec=motion_spec,
@@ -129,7 +183,7 @@ for i in range(0,n_episodes):
 plt.figure(figsize=(5,2))
 plt.plot(exploration_probabilities, c='k', lw=3)
 plt.xlabel('Episode number')
-plt.savefig('epsilon-decay.png', bbox_inches='tight', dpi=300)
+plt.savefig(case_name + '-epsilon-decay.png', bbox_inches='tight', dpi=300)
 
 print('Exploration probabilities that will be used:')
 print(exploration_probabilities)
@@ -157,7 +211,7 @@ for i in range(0,n_episodes):
 plt.figure(figsize=(5,2))
 plt.semilogy(decayed_learning_rates, c='k', lw=3)
 plt.xlabel('Episode number')
-plt.savefig('learning-rate-decay.png', bbox_inches='tight', dpi=300)
+plt.savefig(case_name + '-learning-rate-decay.png', bbox_inches='tight', dpi=300)
 
 print('Learning rates that will be used:')
 print(decayed_learning_rates)
@@ -288,7 +342,7 @@ for episode in range(0, n_episodes):
     total_rewards.append(total_reward)
 
 batch_q_values_collected = batch_q_values_collected[1::,:]
-np.savetxt('batches-of-q-values.csv', (batch_q_values_collected), delimiter=',', fmt='%.16e')
+np.savetxt(case_name + '-batches-of-q-values.csv', (batch_q_values_collected), delimiter=',', fmt='%.16e')
 
 total_toc = time.perf_counter()
 print(f'\n\nTotal time: {(total_toc - total_tic)/60/60:0.2f} h.\n')
@@ -298,11 +352,11 @@ plt.figure(figsize=(20,4))
 plt.semilogy(MSE_losses_collected)
 plt.xlabel('Epoch #', fontsize=20)
 plt.ylabel('MSE loss', fontsize=20)
-plt.savefig('MSE-losses.png', bbox_inches='tight', dpi=300)
+plt.savefig(case_name + '-MSE-losses.png', bbox_inches='tight', dpi=300)
 
 plt.figure(figsize=(20,4))
 plt.plot(total_rewards, 'ko--')
-plt.savefig('rewards.png', bbox_inches='tight', dpi=300)
+plt.savefig(case_name + '-rewards.png', bbox_inches='tight', dpi=300)
 
 for i in range(0,5):
     plt.figure(figsize=(20,4))
@@ -310,10 +364,10 @@ for i in range(0,5):
     plt.xlabel('Step #', fontsize=20)
     plt.ylabel('Q-value', fontsize=20)
     plt.legend(frameon=False)
-    plt.savefig('Q-values-action-' + str(i+1) + '.png', bbox_inches='tight', dpi=300)
+    plt.savefig(case_name + '-Q-values-action-' + str(i+1) + '.png', bbox_inches='tight', dpi=300)
 
 # Save the trained Q-network: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-ca.target_q_network.save("QNetwork.keras")
+ca.target_q_network.save(case_name + '-QNetwork.keras')
 
 print('- '*50)
 
@@ -335,8 +389,8 @@ plt = env.render(camera_position,
                  figsize=(10,6),
                  filename='final-environment.png')
 
-np.savetxt('final-velocity-field-u.csv', (env.flowfield.velocity_field[0,0,:,:]), delimiter=',', fmt='%.16e')
-np.savetxt('final-velocity-field-v.csv', (env.flowfield.velocity_field[0,1,:,:]), delimiter=',', fmt='%.16e')
+np.savetxt(case_name + '-final-velocity-field-u.csv', (env.flowfield.velocity_field[0,0,:,:]), delimiter=',', fmt='%.16e')
+np.savetxt(case_name + '-final-velocity-field-v.csv', (env.flowfield.velocity_field[0,1,:,:]), delimiter=',', fmt='%.16e')
 
 # Visualize the learned policy on the final environment: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 (_, _, H, W) = ca.env.flowfield.velocity_field_magnitude.shape
@@ -372,7 +426,7 @@ cbar.set_ticks([4/5*(i+0.5) for i in range(0,5)])
 cbar.set_ticklabels(list(ca.env.action_to_verbose_direction.values()))
 plt.xticks([])
 plt.yticks([])
-plt.savefig('learned-policy.png', bbox_inches='tight', dpi=300)
+plt.savefig(case_name + '-learned-policy.png', bbox_inches='tight', dpi=300)
 
 print('Script done!')
 
