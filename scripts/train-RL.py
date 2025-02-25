@@ -38,7 +38,7 @@ parser.add_argument('--epsilon_start', type=float,
                     default=0.8, metavar='EPSILONSTART',
                     help='Initial exploration probability')
 parser.add_argument('--discount_factor', type=float,
-                    default=0.8, metavar='GAMMA',
+                    default=0.95, metavar='GAMMA',
                     help='Discount factor')
 parser.add_argument('--batch_size', type=int,
                     default=128, metavar='BATCHSIZE',
@@ -47,7 +47,7 @@ parser.add_argument('--n_epochs', type=int,
                     default=1, metavar='NEPOCHS',
                     help='Number of epochs for training the Q-network on each batch')
 parser.add_argument('--memory_size', type=int,
-                    default=1, metavar='MEMSIZE',
+                    default=200, metavar='MEMSIZE',
                     help='Size of the memory bank')
 parser.add_argument('--initial_learning_rate', type=float,
                     default=0.001, metavar='LRINIT',
@@ -59,14 +59,14 @@ parser.add_argument('--sample_every_n', type=int,
                     default=10, metavar='CUESSAMPLE',
                     help='Sample every n points to compute the cues vectors')
 parser.add_argument('--normalize_displacement_vectors', type=bool,
-                    default=False,
+                    default=True,
                     action=argparse.BooleanOptionalAction, metavar='NORMALIZEDSINCUES',
                     help='Normalize cues vectors from displacement fields')
 parser.add_argument('--interrogation_window_size_buffer', type=int,
                     default=5, metavar='BUFFER',
                     help='Interrogation window buffer size')
 parser.add_argument('--interrogation_window_size', type=int,
-                    default=[60,60], nargs="+", metavar='SEEDS',
+                    default=[40,40], nargs="+", metavar='SEEDS',
                     help='Interrogation window size')
 
 args = parser.parse_args()
@@ -361,13 +361,13 @@ plt.figure(figsize=(20,4))
 plt.plot(total_rewards, 'ko--')
 plt.savefig(case_name + '-rewards.png', bbox_inches='tight', dpi=300)
 
+plt.figure(figsize=(20,4))
 for i in range(0,5):
-    plt.figure(figsize=(20,4))
     plt.plot(batch_q_values_collected[:,i], label='Action ' + str(i+1), c='k')
-    plt.xlabel('Step #', fontsize=20)
-    plt.ylabel('Q-value', fontsize=20)
-    plt.legend(frameon=False)
-    plt.savefig(case_name + '-Q-values-action-' + str(i+1) + '.png', bbox_inches='tight', dpi=300)
+plt.xlabel('Step #', fontsize=20)
+plt.ylabel('Q-value', fontsize=20)
+plt.legend(frameon=False)
+plt.savefig(case_name + '-Q-values-action-' + str(i+1) + '.png', bbox_inches='tight', dpi=300)
 
 # Save the trained Q-network: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ca.target_q_network.save(case_name + '-QNetwork.keras')
