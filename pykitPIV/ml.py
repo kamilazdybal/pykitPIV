@@ -1410,8 +1410,6 @@ class CameraAgent:
         # Append the losses:
         self.MSE_losses.append(history.history['loss'])
 
-        return batch_q_values
-
     def update_target_network(self):
         """
         Synchronizes the target Q-network with the online Q-network in double Q-learning
@@ -1843,6 +1841,10 @@ class Cues:
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
         If specified, all image generation is reproducible.
+    :param sample_every_n: (optional)
+        ``int`` specifying the step in sampling the displacement vectors over a uniform grid.
+    :param normalize_displacement_vectors: (optional)
+        ``bool`` specifying whether the sampled displacement vectors should be normalized to unit length.
     """
 
     def __init__(self,
