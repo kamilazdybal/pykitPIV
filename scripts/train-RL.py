@@ -22,14 +22,14 @@ import copy as cp
 # Argparse
 # ######################################################################################################################
 
-n_episodes = 200
-n_iterations = 100
+n_episodes = 1000
+n_iterations = 20
 
 epsilon_start = 0.8
 n_decay_steps_epsilon = n_episodes
 discount_factor=0.95
 
-batch_size = 128
+batch_size = 256
 n_epochs = 1
 
 memory_size = 1000
@@ -87,7 +87,9 @@ rewards = Rewards(verbose=False)
 reward_function = rewards.divergence
 
 def reward_transformation(div):
-    return np.max(np.abs(div))*100
+    return np.max(np.abs(div))*10
+
+# Construct the PIV environment: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 env = PIVEnv(interrogation_window_size=interrogation_window_size,
              interrogation_window_size_buffer=5,
@@ -210,6 +212,8 @@ iter_count = 0
 total_rewards = []
 current_lr = cp.deepcopy(initial_learning_rate)
 
+batch_q_values_collected = np.zeros((1, env.n_actions))
+
 log_every = 1
 
 for episode in range(0, n_episodes):
@@ -264,11 +268,12 @@ for episode in range(0, n_episodes):
         # Train the Q-network after each step, (but hold off with training until batch_size of samples is collected):
         if len(ca.memory.buffer) >= batch_size:
 
-            ca.train(current_lr)
+            batch_q_values = ca.train(current_lr)
+            batch_q_values_collected = np.vstack((batch_q_values_collected, batch_q_values))
 
     # Synchronize the Q-networks only at the end of each episode:
     ca.update_target_network()
-
+    
     if (episode) % log_every == 0:
 
         toc = time.perf_counter()
@@ -281,6 +286,9 @@ for episode in range(0, n_episodes):
         tic = time.perf_counter()
 
     total_rewards.append(total_reward)
+
+batch_q_values_collected = batch_q_values_collected[1::,:]
+np.savetxt('batches-of-q-values.csv', (batch_q_values_collected), delimiter=',', fmt='%.16e')
 
 total_toc = time.perf_counter()
 print(f'\n\nTotal time: {(total_toc - total_tic)/60/60:0.2f} h.\n')
@@ -295,6 +303,14 @@ plt.savefig('MSE-losses.png', bbox_inches='tight', dpi=300)
 plt.figure(figsize=(20,4))
 plt.plot(total_rewards, 'ko--')
 plt.savefig('rewards.png', bbox_inches='tight', dpi=300)
+
+for i in range(0,5):
+    plt.figure(figsize=(20,4))
+    plt.plot(batch_q_values_collected[:,i], label='Action ' + str(i+1), c='k')
+    plt.xlabel('Step #', fontsize=20)
+    plt.ylabel('Q-value', fontsize=20)
+    plt.legend(frameon=False)
+    plt.savefig('Q-values-action-' + str(i+1) + '.png', bbox_inches='tight', dpi=300)
 
 # Save the trained Q-network: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ca.target_q_network.save("QNetwork.keras")
