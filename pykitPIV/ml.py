@@ -1848,7 +1848,8 @@ class Cues:
     def __init__(self,
                  verbose=False,
                  random_seed=None,
-                 sample_every_n=10):
+                 sample_every_n=10,
+                 normalize_displacement_vectors=False):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1868,6 +1869,7 @@ class Cues:
         self.__verbose = verbose
         self.__random_seed = random_seed
         self.__sample_every_n = sample_every_n
+        self.__normalize_displacement_vectors = normalize_displacement_vectors
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1930,12 +1932,18 @@ class Cues:
         dx_sample = displacement_field[0, 0, idx_H, idx_W]
         dy_sample = displacement_field[0, 1, idx_H, idx_W]
 
-        # Stacking all x coordinates first, then y coordinates:
-        cues = np.vstack((dx_sample,dy_sample)).reshape((-1,))
+        if self.__normalize_displacement_vectors:
 
-        # Stacking all points (interleaving x and y coordinates):
-        cues = np.vstack((dx_sample,dy_sample)).reshape((-1,), order='F')
+            magnitude = np.sqrt(dx_sample ** 2 + dy_sample ** 2)
 
-        return cues[None,:]
+            normalized_dx = dx_sample / magnitude
+            normalized_dy = dy_sample / magnitude
+
+            cues = np.hstack((normalized_dx.ravel()[None,:], normalized_dy.ravel()[None,:]))
+
+        else:
+            cues = np.hstack((dx_sample.ravel()[None, :], dy_sample.ravel()[None, :]))
+
+        return cues
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
