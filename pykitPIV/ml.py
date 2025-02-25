@@ -1391,7 +1391,7 @@ class CameraAgent:
             # Get current Q-values from the online network:
             q_values = self.online_q_network(cues).numpy()
 
-            # Swap the Q-value we want to have for the target Q-value for this action:
+            # Swap the Q-value we have for the target Q-value that we want to have for this action:
             q_values[0][action] = target_q_value
 
             # Create a batch:
@@ -1403,12 +1403,14 @@ class CameraAgent:
 
         # Teach the Q-network to predict the target Q-values over the current batch:
         history = self.online_q_network.fit(batch_cues,
-                                              batch_q_values,
-                                              epochs=self.n_epochs,
-                                              verbose=0)
+                                            batch_q_values,
+                                            epochs=self.n_epochs,
+                                            verbose=0)
 
         # Append the losses:
         self.MSE_losses.append(history.history['loss'])
+
+        return batch_q_values
 
     def update_target_network(self):
         """
