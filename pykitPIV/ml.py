@@ -734,6 +734,7 @@ class PIVEnv(gym.Env):
              action,
              reward_function,
              reward_transformation,
+             magnify_step=1,
              verbose=False):
         """
         Makes one step in the environment which moves the camera to a new position, and computes the associated reward
@@ -777,6 +778,8 @@ class PIVEnv(gym.Env):
         :param reward_transformation:
             ``function`` specifying an arbitrary transformation of the reward function
             and an arbitrary compression of the reward function to a single value.
+        :param magnify_step: (optional)
+            ``int`` specifying the factor that multiplies each unit step in the environment.
         :param verbose: (optional)
             ``bool`` specifying if the verbose print statements should be displayed.
 
@@ -795,8 +798,8 @@ class PIVEnv(gym.Env):
 
         # Take the step in the environment:
         # (We clip the camera position to make sure that we don't leave the grid bounds)
-        camera_position = np.array([np.clip(self.__camera_position[0] + direction[0], 0, self.__admissible_observation_space[0]),
-                                    np.clip(self.__camera_position[1] + direction[1], 0, self.__admissible_observation_space[1])])
+        camera_position = np.array([np.clip(self.__camera_position[0] + magnify_step * direction[0], 0, self.__admissible_observation_space[0]),
+                                    np.clip(self.__camera_position[1] + magnify_step * direction[1], 0, self.__admissible_observation_space[1])])
 
         # Reset the camera position:
         self.__camera_position = camera_position
