@@ -161,6 +161,9 @@ print('\nWe have this many cues within one interrogation window:')
 print(env.n_cues)
 print()
 
+action_colors = cmc.batlow(np.linspace(0, 1, env.n_actions))
+cmap_actions = ListedColormap(action_colors)
+
 # ######################################################################################################################
 # Train the RL agent
 # ######################################################################################################################
@@ -363,7 +366,7 @@ plt.savefig(case_name + '-rewards.png', bbox_inches='tight', dpi=300)
 
 plt.figure(figsize=(20,4))
 for i in range(0,5):
-    plt.plot(batch_q_values_collected[:,i], label='Action ' + str(i+1), c='k')
+    plt.plot(batch_q_values_collected[:,i], '--', label='Action ' + str(i+1), c=action_colors[i], lw=2)
 plt.xlabel('Step #', fontsize=20)
 plt.ylabel('Q-value', fontsize=20)
 plt.legend(frameon=False)
@@ -423,7 +426,7 @@ cluster_colors = cmc.batlow(np.linspace(0, 1, 5))
 cmap = ListedColormap(cluster_colors)
 
 plt.figure(figsize=(20,5))
-plt.imshow(learned_policy, origin='lower', cmap=cmap, vmin=0, vmax=4)
+plt.imshow(learned_policy, origin='lower', cmap=cmap_actions, vmin=0, vmax=4)
 cbar = plt.colorbar()
 cbar.set_ticks([4/5*(i+0.5) for i in range(0,5)])
 cbar.set_ticklabels(list(ca.env.action_to_verbose_direction.values()))
