@@ -370,7 +370,7 @@ for i in range(0,5):
 plt.xlabel('Step #', fontsize=20)
 plt.ylabel('Q-value', fontsize=20)
 plt.legend(frameon=False)
-plt.savefig(case_name + '-Q-values-action-' + str(i+1) + '.png', bbox_inches='tight', dpi=300)
+plt.savefig(case_name + '-Q-values.png', bbox_inches='tight', dpi=300)
 
 # Save the trained Q-network: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 ca.target_q_network.save(case_name + '-QNetwork.keras')
@@ -393,7 +393,7 @@ plt = env.render(camera_position,
                  streamplot_color='k',
                  streamplot_linewidth=0.3,
                  figsize=(10,6),
-                 filename='final-environment.png')
+                 filename=case_name + '-final-environment.png')
 
 np.savetxt(case_name + '-final-velocity-field-u.csv', (env.flowfield.velocity_field[0,0,:,:]), delimiter=',', fmt='%.16e')
 np.savetxt(case_name + '-final-velocity-field-v.csv', (env.flowfield.velocity_field[0,1,:,:]), delimiter=',', fmt='%.16e')
