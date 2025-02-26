@@ -50,11 +50,14 @@ parser.add_argument('--memory_size', type=int,
                     default=200, metavar='MEMSIZE',
                     help='Size of the memory bank')
 parser.add_argument('--initial_learning_rate', type=float,
-                    default=0.001, metavar='LRINIT',
+                    default=0.0000001, metavar='LRINIT',
                     help='Initial learning rate')
 parser.add_argument('--alpha_lr', type=float,
-                    default=0.001, metavar='LRALPHA',
+                    default=0.01, metavar='LRALPHA',
                     help='Alpha for the final learning rate')
+parser.add_argument('--magnify_step', type=int,
+                    default=1, metavar='MAG',
+                    help='Magnification factor for the step size in the environment')
 parser.add_argument('--sample_every_n', type=int,
                     default=10, metavar='CUESSAMPLE',
                     help='Sample every n points to compute the cues vectors')
@@ -84,6 +87,7 @@ n_epochs = vars(args).get('n_epochs')
 memory_size = vars(args).get('memory_size')
 initial_learning_rate = vars(args).get('initial_learning_rate')
 alpha_lr = vars(args).get('alpha_lr')
+magnify_step = vars(args).get('magnify_step')
 sample_every_n = vars(args).get('sample_every_n')
 normalize_displacement_vectors = vars(args).get('normalize_displacement_vectors')
 interrogation_window_size_buffer = vars(args).get('interrogation_window_size_buffer')
@@ -312,6 +316,7 @@ for episode in range(0, n_episodes):
         next_camera_position, next_cues, reward = ca.env.step(action,
                                                               reward_function=reward_function,
                                                               reward_transformation=reward_transformation,
+                                                              magnify_step=magnify_step,
                                                               verbose=False)
 
         ca.remember(cues,
@@ -399,10 +404,12 @@ np.savetxt(case_name + '-final-velocity-field-u.csv', (env.flowfield.velocity_fi
 np.savetxt(case_name + '-final-velocity-field-v.csv', (env.flowfield.velocity_field[0,1,:,:]), delimiter=',', fmt='%.16e')
 
 # Visualize the learned policy on the final environment: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+tic = time.perf_counter()
+
 (_, _, H, W) = ca.env.flowfield.velocity_field_magnitude.shape
 (H_adm, W_adm) = ca.env.admissible_observation_space
-idx_H = [i for i in range(0, H_adm) if i % 3 == 0]
-idx_W = [i for i in range(0, W_adm) if i % 3 == 0]
+idx_H = [i for i in range(0, H_adm) if i % 1 == 0]
+idx_W = [i for i in range(0, W_adm) if i % 1 == 0]
 
 print('Interpolating the learned policy over this many points:')
 print(len(idx_H) * len(idx_W))
@@ -427,9 +434,12 @@ plt.imshow(learned_policy, origin='lower', cmap=cmap_actions, vmin=0, vmax=4)
 cbar = plt.colorbar()
 cbar.set_ticks([4/5*(i+0.5) for i in range(0,5)])
 cbar.set_ticklabels(list(ca.env.action_to_verbose_direction.values()))
-plt.xticks([i for i in range(0,len(idx_W))], idx_W, rotation=90)
-plt.yticks([i for i in range(0,len(idx_H))], idx_H)
+# plt.xticks([i for i in range(0,len(idx_W))], idx_W, rotation=90)
+# plt.yticks([i for i in range(0,len(idx_H))], idx_H)
 plt.savefig(case_name + '-learned-policy.png', bbox_inches='tight', dpi=300)
+
+toc = time.perf_counter()
+print(f'Plotting the policy took: {(toc - tic):0.1f} sec.')
 
 print('Script done!')
 
