@@ -373,7 +373,7 @@ plt.legend(frameon=False)
 plt.savefig(case_name + '-Q-values.png', bbox_inches='tight', dpi=300)
 
 # Save the trained Q-network: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-ca.target_q_network.save(case_name + '-QNetwork.keras')
+ca.online_q_network.save(case_name + '-QNetwork.keras')
 
 print('- '*50)
 
@@ -415,15 +415,12 @@ for h in idx_H:
 
         camera_position = np.array([h, w])
         _, cues = ca.env.reset(imposed_camera_position=camera_position)
-        q_values = ca.target_q_network(cues)
+        q_values = ca.online_q_network(cues)
         action = np.argmax(q_values)
         learned_policy[h, w] = action
 
 learned_policy = learned_policy[~np.isnan(learned_policy)]
 learned_policy = learned_policy.reshape(len(idx_H), len(idx_W))
-
-cluster_colors = cmc.batlow(np.linspace(0, 1, 5))
-cmap = ListedColormap(cluster_colors)
 
 plt.figure(figsize=(20,5))
 plt.imshow(learned_policy, origin='lower', cmap=cmap_actions, vmin=0, vmax=4)
