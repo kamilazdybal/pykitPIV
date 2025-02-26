@@ -141,7 +141,7 @@ rewards = Rewards(verbose=False)
 reward_function = rewards.divergence
 
 def reward_transformation(div):
-    return np.max(np.abs(div))*10
+    return np.max(np.abs(div))
 
 # Construct the PIV environment: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -338,7 +338,7 @@ for episode in range(0, n_episodes):
 
         toc = time.perf_counter()
 
-        print(f"Total Reward: {total_reward:0.1f}")
+        print(f"Total Reward: {total_reward:0.3f}")
         print(f'This episode took: {(toc - tic):0.1f} sec.')
         print('- '*15)
         print()
@@ -422,13 +422,13 @@ for h in idx_H:
 learned_policy = learned_policy[~np.isnan(learned_policy)]
 learned_policy = learned_policy.reshape(len(idx_H), len(idx_W))
 
-plt.figure(figsize=(20,5))
+plt.figure(figsize=(20,10))
 plt.imshow(learned_policy, origin='lower', cmap=cmap_actions, vmin=0, vmax=4)
 cbar = plt.colorbar()
 cbar.set_ticks([4/5*(i+0.5) for i in range(0,5)])
 cbar.set_ticklabels(list(ca.env.action_to_verbose_direction.values()))
-plt.xticks([])
-plt.yticks([])
+plt.xticks([i for i in range(0,len(idx_W))], idx_W, rotation=90)
+plt.yticks([i for i in range(0,len(idx_H))], idx_H)
 plt.savefig(case_name + '-learned-policy.png', bbox_inches='tight', dpi=300)
 
 print('Script done!')
