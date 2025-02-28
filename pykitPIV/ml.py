@@ -503,7 +503,7 @@ class PIVEnv(gym.Env):
             - **image** - ``pykitPIV.image.Image`` object specifying the generated PIV image pairs.
         """
 
-        # Extract the velocity field under the current interrogation window:
+        # Extract the velocity field under the current interrogation window (with the buffer!):
         h_start = camera_position[0]
         h_stop = h_start + self.__interrogation_window_size_with_buffer[0]
 
