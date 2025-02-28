@@ -704,10 +704,10 @@ class PIVEnv(gym.Env):
         else:
 
             # Extract the velocity field under the current interrogation window:
-            h_start = self.__camera_position[0]
+            h_start = self.__camera_position[0] + self.__interrogation_window_size_buffer
             h_stop = h_start + self.__interrogation_window_size[0]
 
-            w_start = self.__camera_position[1]
+            w_start = self.__camera_position[1] + self.__interrogation_window_size_buffer
             w_stop = w_start + self.__interrogation_window_size[1]
 
             # ^ Note that we extract the interrogation window size without buffer because PIV images are not being
@@ -817,10 +817,10 @@ class PIVEnv(gym.Env):
         else:
 
             # Extract the velocity field under the current interrogation window:
-            h_start = self.__camera_position[0]
+            h_start = self.__camera_position[0] + self.__interrogation_window_size_buffer
             h_stop = h_start + self.__interrogation_window_size[0]
 
-            w_start = self.__camera_position[1]
+            w_start = self.__camera_position[1] + self.__interrogation_window_size_buffer
             w_stop = w_start + self.__interrogation_window_size[1]
 
             # ^ Note that we extract the interrogation window size without buffer because PIV images are not being
@@ -999,6 +999,15 @@ class PIVEnv(gym.Env):
                                  linewidth=lw, edgecolor=c, facecolor='none', zorder=2)
         ax = plt.gca()
         ax.add_patch(rect)
+
+        # Visualize a rectangle that defines the current interrogation window without buffer:
+        rect = patches.Rectangle((camera_position[1]-0.5+self.__interrogation_window_size_buffer, camera_position[0]-0.5+self.__interrogation_window_size_buffer),
+                                 self.__interrogation_window_size[1],
+                                 self.__interrogation_window_size[0],
+                                 linewidth=lw/2, edgecolor=c, facecolor='none', zorder=2)
+        ax = plt.gca()
+        ax.add_patch(rect)
+
         plt.title('Virtual wind tunnel', fontsize=fontsize)
 
         # Visualize the target under the interrogation window:
