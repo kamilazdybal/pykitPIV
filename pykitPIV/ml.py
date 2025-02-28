@@ -849,7 +849,7 @@ class PIVEnv(gym.Env):
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def render(self,
-               camera_position,
+               camera_position=None,
                c='white',
                s=10,
                lw=2,
@@ -903,11 +903,12 @@ class PIVEnv(gym.Env):
         .. image:: ../images/ml_PIVEnv_render.png
             :width: 800
 
-        :param camera_position:
+        :param camera_position: (optional)
             ``numpy.ndarray`` specifying the camera position in pixels :math:`[\\text{px}]`.
             This defines the bottom-left corner of the interrogation window.
             Example can be ``numpy.array([10,50])`` which positions camera at the location :math:`10 \\text{px}`
             along the height dimension and :math:`50 \\text{px}` along the width dimension.
+            If set to ``None``, only the wind tunnel is plotted.
         :param c: (optional)
             ``str`` specifying the color for the interrogation window outline.
         :param s: (optional)
@@ -952,14 +953,23 @@ class PIVEnv(gym.Env):
 
         figure = plt.figure(figsize=figsize)
 
-        spec = figure.add_gridspec(ncols=9, nrows=3, width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1, 0.2, 1], height_ratios=[2, 0.2, 1])
+        if camera_position is not None:
+            spec = figure.add_gridspec(ncols=9, nrows=3, width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1, 0.2, 1],
+                                       height_ratios=[2, 0.2, 1])
+        else:
+            spec = figure.add_gridspec(ncols=1, nrows=1, width_ratios=[1],
+                                       height_ratios=[1])
 
         # Visualize a rectangle that defines the virtual wind tunnel:
-        figure.add_subplot(spec[0, 0:9])
+        if camera_position is not None:
+            figure.add_subplot(spec[0, 0:9])
+        else:
+            figure.add_subplot(spec[0, 0])
         ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], cmap=cmap, origin='lower', zorder=0)
         plt.colorbar(ims)
 
         if add_streamplot:
+
             X = np.arange(0, self.flowfield.size[1], 1)
             Y = np.arange(0, self.flowfield.size[0], 1)
 
@@ -971,14 +981,7 @@ class PIVEnv(gym.Env):
                            linewidth=streamplot_linewidth,
                            zorder=1)
 
-        plt.scatter(camera_position[1]-0.5, camera_position[0]-0.5, c=c, s=s, zorder=2)
-
-        if normalize_cbars:
-            vmin = np.min(self.flowfield.velocity_field_magnitude[0,0,:,:])
-            vmax = np.max(self.flowfield.velocity_field_magnitude[0,0,:,:])
-        else:
-            vmin = None
-            vmax = None
+        plt.title('Virtual wind tunnel', fontsize=fontsize)
 
         if xlabel is not None:
             plt.xlabel(xlabel)
@@ -992,88 +995,99 @@ class PIVEnv(gym.Env):
         if not yticks:
             plt.yticks([])
 
-        # Visualize a rectangle that defines the current interrogation window:
-        rect = patches.Rectangle((camera_position[1]-0.5, camera_position[0]-0.5),
-                                 self.__interrogation_window_size_with_buffer[1],
-                                 self.__interrogation_window_size_with_buffer[0],
-                                 linewidth=lw, edgecolor=c, facecolor='none', zorder=2)
-        ax = plt.gca()
-        ax.add_patch(rect)
+        if camera_position is not None:
 
-        # Visualize a rectangle that defines the current interrogation window without buffer:
-        rect = patches.Rectangle((camera_position[1]-0.5+self.__interrogation_window_size_buffer, camera_position[0]-0.5+self.__interrogation_window_size_buffer),
-                                 self.__interrogation_window_size[1],
-                                 self.__interrogation_window_size[0],
-                                 linewidth=lw/2, edgecolor=c, facecolor='none', zorder=2)
-        ax = plt.gca()
-        ax.add_patch(rect)
+            plt.scatter(camera_position[1]-0.5, camera_position[0]-0.5, c=c, s=s, zorder=2)
 
-        plt.title('Virtual wind tunnel', fontsize=fontsize)
+            if normalize_cbars:
+                vmin = np.min(self.flowfield.velocity_field_magnitude[0,0,:,:])
+                vmax = np.max(self.flowfield.velocity_field_magnitude[0,0,:,:])
+            else:
+                vmin = None
+                vmax = None
 
-        # Visualize the target under the interrogation window:
-        figure.add_subplot(spec[2, 0])
-        targets_magnitude = np.sqrt(self.__targets_tensor[0,0,:,:]**2 + self.__targets_tensor[0,1,:,:]**2)
-        ims = plt.imshow(targets_magnitude, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, zorder=0)
-        plt.colorbar(ims)
+            # Visualize a rectangle that defines the current interrogation window:
+            rect = patches.Rectangle((camera_position[1]-0.5, camera_position[0]-0.5),
+                                     self.__interrogation_window_size_with_buffer[1],
+                                     self.__interrogation_window_size_with_buffer[0],
+                                     linewidth=lw, edgecolor=c, facecolor='none', zorder=2)
+            ax = plt.gca()
+            ax.add_patch(rect)
 
-        if add_streamplot:
-            X = np.arange(0, self.__interrogation_window_size[1], 1)
-            Y = np.arange(0, self.__interrogation_window_size[0], 1)
+            # Visualize a rectangle that defines the current interrogation window without buffer:
+            rect = patches.Rectangle((camera_position[1]-0.5+self.__interrogation_window_size_buffer, camera_position[0]-0.5+self.__interrogation_window_size_buffer),
+                                     self.__interrogation_window_size[1],
+                                     self.__interrogation_window_size[0],
+                                     linewidth=lw/2, edgecolor=c, facecolor='none', zorder=2)
+            ax = plt.gca()
+            ax.add_patch(rect)
 
-            plt.streamplot(X, Y,
-                           self.__targets_tensor[0,0,:,:],
-                           self.__targets_tensor[0,1,:,:],
-                           density=streamplot_density/5,
-                           color=streamplot_color,
-                           linewidth=streamplot_linewidth,
-                           zorder=1)
-
-        plt.title('Target', fontsize=fontsize)
-
-        if self.__inference_model is not None:
-
-            # Visualize I1:
-            figure.add_subplot(spec[2, 2])
-            images_I1 = self.__image_obj.remove_buffers(self.__image_obj.images_I1)
-            ims = plt.imshow(images_I1[0,0,:,:], origin='lower', cmap='Greys_r')
+            # Visualize the target under the interrogation window:
+            figure.add_subplot(spec[2, 0])
+            targets_magnitude = np.sqrt(self.__targets_tensor[0,0,:,:]**2 + self.__targets_tensor[0,1,:,:]**2)
+            ims = plt.imshow(targets_magnitude, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax, zorder=0)
             plt.colorbar(ims)
-            plt.title(r'$I_1$', fontsize=fontsize)
 
-            # Visualize I2:
-            figure.add_subplot(spec[2, 4])
-            images_I2 = self.__image_obj.remove_buffers(self.__image_obj.images_I2)
-            ims = plt.imshow(images_I2[0,0,:,:], origin='lower', cmap='Greys_r')
+            if add_streamplot:
+
+                X = np.arange(0, self.__interrogation_window_size[1], 1)
+                Y = np.arange(0, self.__interrogation_window_size[0], 1)
+
+                plt.streamplot(X, Y,
+                               self.__targets_tensor[0,0,:,:],
+                               self.__targets_tensor[0,1,:,:],
+                               density=streamplot_density/5,
+                               color=streamplot_color,
+                               linewidth=streamplot_linewidth,
+                               zorder=1)
+
+            plt.title('Target', fontsize=fontsize)
+
+            if self.__inference_model is not None:
+
+                # Visualize I1:
+                figure.add_subplot(spec[2, 2])
+                images_I1 = self.__image_obj.remove_buffers(self.__image_obj.images_I1)
+                ims = plt.imshow(images_I1[0,0,:,:], origin='lower', cmap='Greys_r')
+                plt.colorbar(ims)
+                plt.title(r'$I_1$', fontsize=fontsize)
+
+                # Visualize I2:
+                figure.add_subplot(spec[2, 4])
+                images_I2 = self.__image_obj.remove_buffers(self.__image_obj.images_I2)
+                ims = plt.imshow(images_I2[0,0,:,:], origin='lower', cmap='Greys_r')
+                plt.colorbar(ims)
+                plt.title(r'$I_2$', fontsize=fontsize)
+
+            # Visualize inference under the interrogation window:
+            figure.add_subplot(spec[2, 6])
+            prediction_magnitude = np.sqrt(self.__prediction_tensor[0, 0, :, :] ** 2 + self.__prediction_tensor[0, 1, :, :] ** 2)
+            ims = plt.imshow(prediction_magnitude, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
             plt.colorbar(ims)
-            plt.title(r'$I_2$', fontsize=fontsize)
 
-        # Visualize inference under the interrogation window:
-        figure.add_subplot(spec[2, 6])
-        prediction_magnitude = np.sqrt(self.__prediction_tensor[0, 0, :, :] ** 2 + self.__prediction_tensor[0, 1, :, :] ** 2)
-        ims = plt.imshow(prediction_magnitude, origin='lower', cmap=cmap, vmin=vmin, vmax=vmax)
-        plt.colorbar(ims)
+            if add_streamplot:
 
-        if add_streamplot:
-            X = np.arange(0, self.__interrogation_window_size[1], 1)
-            Y = np.arange(0, self.__interrogation_window_size[0], 1)
+                X = np.arange(0, self.__interrogation_window_size[1], 1)
+                Y = np.arange(0, self.__interrogation_window_size[0], 1)
 
-            plt.streamplot(X, Y,
-                           self.__prediction_tensor[0,0,:,:],
-                           self.__prediction_tensor[0,1,:,:],
-                           density=streamplot_density/5,
-                           color=streamplot_color,
-                           linewidth=streamplot_linewidth,
-                           zorder=1)
+                plt.streamplot(X, Y,
+                               self.__prediction_tensor[0,0,:,:],
+                               self.__prediction_tensor[0,1,:,:],
+                               density=streamplot_density/5,
+                               color=streamplot_color,
+                               linewidth=streamplot_linewidth,
+                               zorder=1)
 
-        plt.title('Inference', fontsize=fontsize)
+            plt.title('Inference', fontsize=fontsize)
 
-        # Visualize the error map between the target and the inference:
-        figure.add_subplot(spec[2, 8])
-        prediction_error = np.abs(targets_magnitude - prediction_magnitude)
-        normalizer = np.max(targets_magnitude) - np.min(targets_magnitude)
-        error_map = prediction_error/normalizer*100
-        ims = plt.imshow(error_map, origin='lower', cmap='Greys')
-        plt.colorbar(ims)
-        plt.title('Error %: ' + str(round(np.mean(error_map), 1)), fontsize=fontsize)
+            # Visualize the error map between the target and the inference:
+            figure.add_subplot(spec[2, 8])
+            prediction_error = np.abs(targets_magnitude - prediction_magnitude)
+            normalizer = np.max(targets_magnitude) - np.min(targets_magnitude)
+            error_map = prediction_error/normalizer*100
+            ims = plt.imshow(error_map, origin='lower', cmap='Greys')
+            plt.colorbar(ims)
+            plt.title('Error %: ' + str(round(np.mean(error_map), 1)), fontsize=fontsize)
 
         if filename is not None:
             plt.savefig(filename, dpi=dpi, bbox_inches='tight')
