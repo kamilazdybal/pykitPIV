@@ -598,7 +598,7 @@ class Image:
         where:
 
         - :math:`\\mathbf{C}` is the covariance matrix that is positive semi-definite and :math:`\\mathbf{C}^{-1}` is its inverse.
-        - :math:`\\mathbf{r}` is the position vector, :math:`\\mathbf{r} = [h_p, w_p]`.
+        - :math:`\\mathbf{r}` is the position vector, :math:`\\mathbf{r} = [w_p, h_p]`.
 
         :param peak_intensity:
             ``float`` specifying the peak intensity, :math:`i_{\\text{peak}}`, to apply at the particle centroid.
