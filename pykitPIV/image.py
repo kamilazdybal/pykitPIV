@@ -564,12 +564,17 @@ class Image:
                                          particle_diameter,
                                          coordinate_height,
                                          coordinate_width,
-                                         alpha=1/8):
+                                         alpha=1/8,
+                                         covariance_matrix=None):
         """
         Computes the intensity of light reflected from a particle at a requested pixel at position relative
         to the particle centroid.
 
-        The reflected light follows a Gaussian distribution, i.e., the light intensity value, :math:`i_p`, at the
+        The reflected light follows a Gaussian distribution which can be either univariate
+        (in which case particles are spherical Gaussians)
+        or covariate (in which case particles have an elongated shape).
+
+        For a univariate distrubution, the light intensity value, :math:`i_p`, at the
         requested pixel, :math:`p`, is computed as:
 
         .. math::
@@ -583,6 +588,17 @@ class Image:
         - :math:`w_p` is the pixel coordinate in the image width direction relative to the particle centroid.
         - :math:`\\alpha` is a custom multiplier, :math:`\\alpha`. The default value is :math:`\\alpha = 1/8`.
         - :math:`d_p` is the particle diameter.
+
+        For a covariate distrubution, the light intensity value, :math:`i_p`, at the requested pixel, :math:`p`, is computed as:
+
+        .. math::
+
+            i_p =  i_{\\text{peak}} \\cdot \\exp \Big(- \\frac{\mathbf{r} \cdot \\mathbf{C}^{-1} \cdot \\mathbf{r}^{\\top}}{\\alpha \\cdot d_p^2} \Big)
+
+        where:
+
+        - :math:`\\mathbf{C}` is the covariance matrix that is positive semi-definite and :math:`\\mathbf{C}^{-1}` is its inverse.
+        - :math:`\\mathbf{r}` is the position vector, :math:`\\mathbf{r} = [h_p, w_p]`.
 
         :param peak_intensity:
             ``float`` specifying the peak intensity, :math:`i_{\\text{peak}}`, to apply at the particle centroid.
@@ -598,6 +614,10 @@ class Image:
             `Raffel et al. (2018) <https://link.springer.com/book/10.1007/978-3-319-68852-7>`_,
             `Rabault et al. (2017) <https://iopscience.iop.org/article/10.1088/1361-6501/aa8b87/meta>`_
             and `Manickathan et al. (2022) <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae>`_.
+        :param covariance_matrix: (optional):
+            ``numpy.ndarray`` specifying the covariance matrix that has to be positive semi-definite.
+            If set to ``None``, the particle images will be generated from a univariate distrubtion
+            (as spherical Gaussians). It has to have size ``(2, 2)``.
 
         :return:
             - **pixel_value** - ``float`` specifying the light intensity value at the requested pixel.
@@ -622,9 +642,22 @@ class Image:
         if not (isinstance(alpha, float)):
             raise ValueError("Parameter `alpha` has to be of type `float`.")
 
+        if not (isinstance(covariance_matrix, np.ndarray)):
+            raise ValueError("Parameter `covariance_matrix` has to be of type `numpy.ndarray`.")
+
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        pixel_value = peak_intensity * np.exp(-(coordinate_height**2 + coordinate_width**2) / (alpha * particle_diameter**2))
+        if covariance_matrix is None:
+
+            pixel_value = peak_intensity * np.exp(-(coordinate_height**2 + coordinate_width**2) / (alpha * particle_diameter**2))
+
+        else:
+
+            covariance_matrix_inv = np.linalg.inv(covariance_matrix)
+
+            r = np.array([coordinate_width, coordinate_height])
+
+            pixel_value = peak_intensity * np.exp(-(r.dot(covariance_matrix_inv.dot(r))) / (alpha * particle_diameter ** 2))
 
         return pixel_value
 
@@ -637,6 +670,7 @@ class Image:
                             laser_over_exposure=1,
                             laser_beam_shape=0.85,
                             alpha=1/8,
+                            covariance_matrix=None,
                             clip_intensities=True,
                             normalize_intensities=False):
         """
@@ -644,6 +678,9 @@ class Image:
 
         The reflected light follows a Gaussian distribution and is computed using
         the ``Image.compute_light_intensity_at_pixel()`` method.
+
+        The particle shapes can be spherical Gaussians or can have a non-zero covariance. In the latter case,
+        the user has to provide a full covariance matrix that is positive semi-definite.
 
         **Example:**
 
@@ -698,6 +735,10 @@ class Image:
             `Raffel et al. (2018) <https://link.springer.com/book/10.1007/978-3-319-68852-7>`_,
             `Rabault et al. (2017) <https://iopscience.iop.org/article/10.1088/1361-6501/aa8b87/meta>`_
             and `Manickathan et al. (2022) <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae>`_.
+        :param covariance_matrix: (optional):
+            ``numpy.ndarray`` specifying the covariance matrix that has to be positive semi-definite.
+            If set to ``None``, the particle images will be generated from a univariate distrubtion
+            (as spherical Gaussians). It has to have size ``(2, 2)``.
         :param clip_intensities: (optional):
             ``bool`` specifying whether the image intensities should be clipped if any pixel exceeds
             the maximum light intensity. Only one of ``clip_intensities``, ``normalize_intensities`` can be ``True``.
@@ -727,6 +768,9 @@ class Image:
 
         if not(isinstance(alpha, float)):
             raise ValueError("Parameter `alpha` has to be of type `float`.")
+
+        if not (isinstance(covariance_matrix, np.ndarray)):
+            raise ValueError("Parameter `covariance_matrix` has to be of type `numpy.ndarray`.")
 
         if not(isinstance(clip_intensities, bool)):
             raise ValueError("Parameter `clip_intensities` has to be of type `bool`.")
@@ -795,7 +839,8 @@ class Image:
                                                                                                                                               particle_diameter_on_image,
                                                                                                                                               coordinate_height,
                                                                                                                                               coordinate_width,
-                                                                                                                                              alpha=alpha)
+                                                                                                                                              alpha=alpha,
+                                                                                                                                              covariance_matrix=covariance_matrix)
 
             return particles_with_gaussian_light
 
