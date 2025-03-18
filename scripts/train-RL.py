@@ -109,7 +109,7 @@ particle_spec = ParticleSpecs(diameters=(1, 1),
 
 print(particle_spec)
 
-flowfield_spec = FlowFieldSpecs(size=(200, 300),
+flowfield_spec = FlowFieldSpecs(size=(100, 100),
                                 flowfield_type='random smooth',
                                 gaussian_filters=(10, 10),
                                 n_gaussian_filter_iter=10,
@@ -392,7 +392,7 @@ plt = env.render(camera_position,
                  s=20,
                  lw=1,
                  normalize_cbars=True,
-                 cmap=cmc.roma,
+                 cmap=cmc.roma_r,
                  add_streamplot=True,
                  streamplot_density=3,
                  streamplot_color='k',
