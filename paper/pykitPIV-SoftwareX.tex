@@ -108,10 +108,14 @@ particle image velocimetry; flow estimation; convolutional neural networks; mach
 
 \section{Motivation and significance\label{sec:introduction}}
 
+
+
 Machine learning is permeating scientific and engineering disciplines, and experimental fluid dynamics is no exception. The last decade has seen advances in training convolutional neural networks (CNNs) for optical flow estimation, \textit{i.e.}, predicting motion information from recorded image frames separated by a short time interval. 
 To date, numerous network architectures have been developed that are highly specialized for this application. These include various implementations of FlowNets \citep{dosovitskiy2015flownet, ilg2017flownet, hui2018liteflownet}, the spatial pyramid network (SPyNet) \cite{ranjan2017optical}, the pyramid, warping, and cost-volume network (PWC-Net) \cite{sun2018pwc}, and, more recently, the recurrent all-pairs field transforms (RAFT) \cite{teed2020raft}. In addition, the introduction of iterative residual refinement (IRR) \cite{hur2019iterative} allowed for a significant reduction in the number of trainable parameters thanks to weight sharing at several levels of successively upscaled image resolution.
 
 Experimental fluid dynamics can especially profit from those architectures. Specifically, particle image velocimetry (PIV) and background-oriented Schlieren (BOS) are experimental techniques used to visualize flow patterns with high precision. Their main goal is to predict flow targets, such as displacement fields, velocity components, or vorticity, either from paired snapshots of illuminated tracer particles injected into the flow (PIV) or from recorded deformations of the dotted background image. Recently, RAFT-PIV \cite{lagemann2021deep} and lightweight image-matching architecture (LIMA) \citep{manickathan2023lightweight} were proposed as versions of CNNs that are further optimized for inference from velocimetry experiments. Thanks to their targeted architecture and parameters, both RAFT-PIV and LIMA achieve high accuracy and per-pixel spatial resolution. The successes of RAFT-PIV and LIMA have been demonstrated on a number of classic experimental fluid dynamics settings such as flow behind a cylinder, boundary layer flow, or convective flow of a hot air plume \cite{mucignat2023lightweight}.
+
+Another interesting application of CNNs is for learning location of particles, for particle tracking velocimetry \cite{godbersen2024peak}.
 
 % CNNs are the first "layer" of various other ML algorithms that can move us towards autonomous experimentation
 Currently, the main precedence that motivates the need for those networks is that they can be trained on GPUs within the matter of hours and then ported to laboratory hardware to make flow predictions in real-time, parallel to experimental measurements. In fact, our group already uses LIMA in real-time for 15Hz PIV, but further improvements to inference speed are needed for higher image acquisition frequencies. The advancements to these architectures are continually being made in the context of PIV \citep{shan2024lightweight, elrefaie2024site}. The appealing goal of the PIV community is that CNNs replace and outperform state-of-the-art PIV post-processing in the future. As a result, CNNs can become an image-processing workhorse behind many other machine learning (ML) algorithms such as variational approaches (VA), active learning (AL), or reinforcement learning (RL), allowing the experimental community to explore many new research avenues, such as autonomous experimentation and enhanced flow control.
@@ -148,6 +152,11 @@ Notably, our library can integrate with the post-processing Python software deve
 
 %\cite{mucignat2024respiratory}
 
+
+Synthetic image generation can only be a crude approximation of the real experimental flow conditions. For this reason, our goal in creating pykitPIV is capture various complexities of the real-world experimental settings.
+
+
+
 \section{Software description} \label{sec:software}
 
 %For example, we provide the user with four types of experimental noise including shot noise. 
@@ -158,6 +167,10 @@ Notably, our library can integrate with the post-processing Python software deve
 \subsection{Software architecture}
 
 All functionalities of \texttt{pykitPIV} are organized in five classes: \texttt{Particle}, \texttt{FlowField}, \texttt{Motion}, \texttt{Image}, and \texttt{Postprocess}, each achieving its own role in generating synthetic image pairs and the corresponding flow targets. Fig.~\ref{fig:pykitPIV-overview} illustrates the hierarchy of using \texttt{pykitPIV} classes and briefly describes what can be achieved with each class. The user selects the number of image pairs to generate (batch size) and their dimensions (height and width). At each stage of image generation, the user can fix random seeds to assure that data generation is reproducible. Image properties are Monte-Carlo-generated and individual images within a training batch can span a range of conditions. Beyond the five main classes, we provide a dedicated ML module, \texttt{pykitPIV.ml}, which contains wrappers and integrations to various ML algorithms.
+
+
+
+
 
 
 
