@@ -642,8 +642,9 @@ class Image:
         if not (isinstance(alpha, float)):
             raise ValueError("Parameter `alpha` has to be of type `float`.")
 
-        if not (isinstance(covariance_matrix, np.ndarray)):
-            raise ValueError("Parameter `covariance_matrix` has to be of type `numpy.ndarray`.")
+        if covariance_matrix is not None:
+            if not (isinstance(covariance_matrix, np.ndarray)):
+                raise ValueError("Parameter `covariance_matrix` has to be of type `numpy.ndarray`.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -706,6 +707,7 @@ class Image:
                                       laser_over_exposure=1,
                                       laser_beam_shape=0.95,
                                       alpha=1/8,
+                                      covariance_matrix=None,
                                       clip_intensities=True,
                                       normalize_intensities=False)
 
@@ -769,8 +771,9 @@ class Image:
         if not(isinstance(alpha, float)):
             raise ValueError("Parameter `alpha` has to be of type `float`.")
 
-        if not (isinstance(covariance_matrix, np.ndarray)):
-            raise ValueError("Parameter `covariance_matrix` has to be of type `numpy.ndarray`.")
+        if covariance_matrix is not None:
+            if not (isinstance(covariance_matrix, np.ndarray)):
+                raise ValueError("Parameter `covariance_matrix` has to be of type `numpy.ndarray`.")
 
         if not(isinstance(clip_intensities, bool)):
             raise ValueError("Parameter `clip_intensities` has to be of type `bool`.")
