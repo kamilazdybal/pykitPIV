@@ -194,7 +194,7 @@ exploration_probabilities = []
 
 for i in range(0,n_episodes):
 
-    exploration_probabilities.append(epsilon_decay(episode=i
+    exploration_probabilities.append(epsilon_decay(episode=i,
                                                    epsilon_start=epsilon_start,
                                                    epsilon_end=epsilon_end,
                                                    n=n_decay_steps_epsilon))
