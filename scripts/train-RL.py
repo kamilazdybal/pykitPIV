@@ -37,6 +37,9 @@ parser.add_argument('--n_iterations', type=int,
 parser.add_argument('--epsilon_start', type=float,
                     default=0.8, metavar='EPSILONSTART',
                     help='Initial exploration probability')
+parser.add_argument('--epsilon_end', type=float,
+                    default=0.01, metavar='EPSILONEND',
+                    help='Initial exploration probability')
 parser.add_argument('--discount_factor', type=float,
                     default=0.95, metavar='GAMMA',
                     help='Discount factor')
@@ -81,6 +84,7 @@ case_name = vars(args).get('case_name')
 n_episodes = vars(args).get('n_episodes')
 n_iterations = vars(args).get('n_iterations')
 epsilon_start = vars(args).get('epsilon_start')
+epsilon_end = vars(args).get('epsilon_end')
 discount_factor = vars(args).get('discount_factor')
 batch_size = vars(args).get('batch_size')
 n_epochs = vars(args).get('n_epochs')
@@ -94,7 +98,7 @@ interrogation_window_size_buffer = vars(args).get('interrogation_window_size_buf
 H_interrogation_window, W_interrogation_window = tuple(vars(args).get('interrogation_window_size'))
 
 interrogation_window_size = (H_interrogation_window, W_interrogation_window)
-n_decay_steps_epsilon = n_episodes
+n_decay_steps_epsilon = int(n_episodes*3/4)
 n_decay_steps_learning_rate = n_episodes
 
 # ######################################################################################################################
@@ -174,18 +178,26 @@ cmap_actions = ListedColormap(action_colors)
 
 kernel_initializer = tf.keras.initializers.RandomUniform
 
-# Exploration probability decay: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Linear exploration probability decay: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-def epsilon_exp_decay(epsilon_start, iter_count, n=n_decay_steps_epsilon):
-    return epsilon_start/np.exp(iter_count/(n))
+def epsilon_decay(episode, 
+                  epsilon_start,
+                  epsilon_end,
+                  n):
+
+    if episode < n:
+        return epsilon_start - (episode / n) * (epsilon_start - epsilon_end)
+    else:
+        return epsilon_end
 
 exploration_probabilities = []
 
 for i in range(0,n_episodes):
 
-    exploration_probabilities.append(epsilon_exp_decay(epsilon_start,
-                                                       i,
-                                                       n=n_decay_steps_epsilon))
+    exploration_probabilities.append(epsilon_decay(episode=i
+                                                   epsilon_start=epsilon_start,
+                                                   epsilon_end=epsilon_end,
+                                                   n=n_decay_steps_epsilon))
 
 plt.figure(figsize=(5,2))
 plt.plot(exploration_probabilities, c='k', lw=3)
@@ -196,7 +208,7 @@ print('Exploration probabilities that will be used:')
 print(exploration_probabilities)
 print()
 
-# Learning rate decay - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# Cosine learning rate decay - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 def decayed_learning_rate(step, initial_learning_rate, alpha, n=n_decay_steps_learning_rate):
 
@@ -286,9 +298,10 @@ for episode in range(0, n_episodes):
     if len(ca.memory.buffer) >= batch_size:
 
         # Exploration probability decreases with training time:
-        epsilon = epsilon_exp_decay(epsilon_start,
-                                    iter_count,
-                                    n=n_decay_steps_epsilon)
+        epsilon = epsilon_decay(episode=iter_count,
+                                epsilon_start=epsilon_start,
+                                epsilon_end=epsilon_end,
+                                n=n_decay_steps_epsilon)
 
         # Decay the learning rate:
         current_lr = decayed_learning_rate(iter_count,
