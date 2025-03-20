@@ -15,7 +15,7 @@ from pykitPIV.motion import Motion, MotionSpecs
 from pykitPIV.particle import Particle, ParticleSpecs
 from pykitPIV.image import Image, ImageSpecs
 from pykitPIV.postprocess import Postprocess
-from pykitPIV.flowfield import __available_velocity_fields
+from pykitPIV.flowfield import _available_velocity_fields
 
 ########################################################################################################################
 ########################################################################################################################
@@ -849,6 +849,7 @@ class PIVEnv(gym.Env):
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def render(self,
+               quantity=None,
                camera_position=None,
                c='white',
                s=10,
@@ -859,6 +860,9 @@ class PIVEnv(gym.Env):
                yticks=True,
                cmap='viridis',
                normalize_cbars=False,
+               add_quiver=False,
+               quiver_step=10,
+               quiver_color='k',
                add_streamplot=False,
                streamplot_density=1,
                streamplot_color='k',
@@ -880,7 +884,8 @@ class PIVEnv(gym.Env):
             camera_position = env.observation_space.sample()
 
             # And we can render the virtual wind tunnel with the current interrogation window:
-            env.render(camera_position,
+            env.render(quantity,
+                       camera_position,
                        c='white',
                        s=20,
                        lw=1,
@@ -890,6 +895,9 @@ class PIVEnv(gym.Env):
                        yticks=True,
                        cmap='viridis',
                        normalize_cbars=False,
+                       add_quiver=False,
+                       quiver_step=10,
+                       quiver_color='k',
                        add_streamplot=False,
                        streamplot_density=1,
                        streamplot_color='k',
@@ -903,6 +911,10 @@ class PIVEnv(gym.Env):
         .. image:: ../images/ml_PIVEnv_render.png
             :width: 800
 
+        :param quantity: (optional)
+            ``numpy.ndarray`` specifying the quantity to plot within the virtual wind tunnel section.
+            It should have size :math:`(H_{\\text{wt}}, W_{\\text{wt}})`.
+            If set to ``None``, displacement field magnitude is plotted.
         :param camera_position: (optional)
             ``numpy.ndarray`` specifying the camera position in pixels :math:`[\\text{px}]`.
             This defines the bottom-left corner of the interrogation window.
@@ -928,6 +940,12 @@ class PIVEnv(gym.Env):
         :param normalize_cbars: (optional)
             ``bool`` specifying if the colorbar for the interrogation window should be normalized to the colorbar for
             the entire wind tunnel.
+        :param add_quiver: (optional)
+            ``bool`` specifying if vector field should be plotted on top of the scalar magnitude field.
+        :param quiver_step: (optional)
+            ``int`` specifying the step on the pixel grid to attach a vector to. The higher this number is, the less dense the vector field is.
+        :param quiver_color: (optional)
+            ``str`` specifying the color of velocity vectors.
         :param add_streamplot: (optional)
             ``bool`` specifying if streamlines should be plotted on top of the scalar magnitude field.
         :param streamplot_density: (optional)
@@ -947,17 +965,19 @@ class PIVEnv(gym.Env):
             - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
-        __visualize = ['displacement', 'velocity']
-
         fontsize = 14
 
         figure = plt.figure(figsize=figsize)
 
         if camera_position is not None:
-            spec = figure.add_gridspec(ncols=9, nrows=3, width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1, 0.2, 1],
+            spec = figure.add_gridspec(ncols=9,
+                                       nrows=3,
+                                       width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1, 0.2, 1],
                                        height_ratios=[2, 0.2, 1])
         else:
-            spec = figure.add_gridspec(ncols=1, nrows=1, width_ratios=[1],
+            spec = figure.add_gridspec(ncols=1,
+                                       nrows=1,
+                                       width_ratios=[1],
                                        height_ratios=[1])
 
         # Visualize a rectangle that defines the virtual wind tunnel:
@@ -965,13 +985,20 @@ class PIVEnv(gym.Env):
             figure.add_subplot(spec[0, 0:9])
         else:
             figure.add_subplot(spec[0, 0])
-        ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], cmap=cmap, origin='lower', zorder=0)
+
+        if quantity is not None:
+            ims = plt.imshow(quantity, cmap=cmap, origin='lower', zorder=0)
+        else:
+            ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], cmap=cmap, origin='lower', zorder=0)
         plt.colorbar(ims)
 
         if add_streamplot:
 
             X = np.arange(0, self.flowfield.size[1], 1)
             Y = np.arange(0, self.flowfield.size[0], 1)
+
+            print(X.shape)
+            print(Y.shape)
 
             plt.streamplot(X, Y,
                            self.flowfield.velocity_field[0, 0, :, :],
@@ -980,6 +1007,19 @@ class PIVEnv(gym.Env):
                            color=streamplot_color,
                            linewidth=streamplot_linewidth,
                            zorder=1)
+
+        if add_quiver:
+
+            X = np.arange(0, self.flowfield.size[1], quiver_step)
+            Y = np.arange(0, self.flowfield.size[0], quiver_step)
+
+            print(X.shape)
+            print(Y.shape)
+
+            plt.quiver(X, Y,
+                       self.flowfield.velocity_field[0, 0, ::quiver_step, ::quiver_step],
+                       self.flowfield.velocity_field[0, 1, ::quiver_step, ::quiver_step],
+                       color=quiver_color)
 
         plt.title('Virtual wind tunnel', fontsize=fontsize)
 

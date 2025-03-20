@@ -11,7 +11,7 @@ from pykitPIV.particle import Particle
 from pykitPIV.checks import *
 
 # Specify the available velocity fields in this class:
-__available_velocity_fields = {'constant': 'generate_constant_velocity_field',
+_available_velocity_fields = {'constant': 'generate_constant_velocity_field',
                                'random smooth': 'generate_random_velocity_field',
                                'sinusoidal': 'generate_sinusoidal_velocity_field',
                                'checkered': 'generate_checkered_velocity_field',
@@ -310,7 +310,7 @@ class FlowField:
 
         print('Velocity fields available in pykitPIV:\n')
 
-        for key, value in __available_velocity_fields.items():
+        for key, value in _available_velocity_fields.items():
 
             print('- ' + key)
             print('\tUse function: ' + value)
