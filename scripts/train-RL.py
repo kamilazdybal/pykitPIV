@@ -74,6 +74,9 @@ parser.add_argument('--interrogation_window_size_buffer', type=int,
 parser.add_argument('--interrogation_window_size', type=int,
                     default=[40,40], nargs="+", metavar='SEEDS',
                     help='Interrogation window size')
+parser.add_argument('--wt_size', type=int,
+                    default=[200,500], nargs="+", metavar='WINDTUNNELSIZE',
+                    help='Size of the virtual wind tunnel section')
 
 args = parser.parse_args()
 
@@ -96,8 +99,10 @@ sample_every_n = vars(args).get('sample_every_n')
 normalize_displacement_vectors = vars(args).get('normalize_displacement_vectors')
 interrogation_window_size_buffer = vars(args).get('interrogation_window_size_buffer')
 H_interrogation_window, W_interrogation_window = tuple(vars(args).get('interrogation_window_size'))
+H_wt, W_wt = tuple(vars(args).get('wt_size'))
 
 interrogation_window_size = (H_interrogation_window, W_interrogation_window)
+wt_size = (H_wt, W_wt)
 n_decay_steps_epsilon = int(n_episodes*3/4)
 n_decay_steps_learning_rate = n_episodes
 
@@ -113,7 +118,7 @@ particle_spec = ParticleSpecs(diameters=(1, 1),
 
 print(particle_spec)
 
-flowfield_spec = FlowFieldSpecs(size=(100, 100),
+flowfield_spec = FlowFieldSpecs(size=wt_size,
                                 flowfield_type='random smooth',
                                 gaussian_filters=(10, 10),
                                 n_gaussian_filter_iter=10,
@@ -400,7 +405,8 @@ print('- '*50)
 # ######################################################################################################################
 
 # Render the final environment: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-plt = env.render(camera_position,
+plt = env.render(quantity=None,
+                 camera_position=camera_position,
                  c='white',
                  s=20,
                  lw=1,
@@ -412,6 +418,19 @@ plt = env.render(camera_position,
                  streamplot_linewidth=0.3,
                  figsize=(10,6),
                  filename=case_name + '-final-environment.png')
+
+plt = env.render(quantity=np.abs(compute_divergence(env.flowfield.velocity_field)[0,:,:]),
+                 camera_position=None,
+                 c='white',
+                 s=20,
+                 lw=1,
+                 normalize_cbars=True,
+                 cmap='coolwarm',
+                 add_quiver=True,
+                 quiver_step=10,
+                 quiver_color='k',
+                 figsize=(10,6),
+                 filename=case_name + '-final-environment-divergence.png')
 
 np.savetxt(case_name + '-final-velocity-field-u.csv', (env.flowfield.velocity_field[0,0,:,:]), delimiter=',', fmt='%.16e')
 np.savetxt(case_name + '-final-velocity-field-v.csv', (env.flowfield.velocity_field[0,1,:,:]), delimiter=',', fmt='%.16e')
@@ -439,17 +458,25 @@ for h in idx_H:
         action = np.argmax(q_values)
         learned_policy[h, w] = action
 
-learned_policy = learned_policy[~np.isnan(learned_policy)]
-learned_policy = learned_policy.reshape(len(idx_H), len(idx_W))
-
 plt.figure(figsize=(20,10))
 plt.imshow(learned_policy, origin='lower', cmap=cmap_actions, vmin=0, vmax=4)
 cbar = plt.colorbar()
 cbar.set_ticks([4/5*(i+0.5) for i in range(0,5)])
 cbar.set_ticklabels(list(ca.env.action_to_verbose_direction.values()))
-# plt.xticks([i for i in range(0,len(idx_W))], idx_W, rotation=90)
-# plt.yticks([i for i in range(0,len(idx_H))], idx_H)
 plt.savefig(case_name + '-learned-policy.png', bbox_inches='tight', dpi=300)
+
+plt = env.render(quantity=learned_policy,
+                 camera_position=None,
+                 c='white',
+                 s=20,
+                 lw=1,
+                 normalize_cbars=True,
+                 cmap=cmap_actions,
+                 add_quiver=True,
+                 quiver_step=10,
+                 quiver_color='k',
+                 figsize=(10,6),
+                 filename=case_name + '-final-environment-policy.png')
 
 toc = time.perf_counter()
 print(f'Plotting the policy took: {(toc - tic):0.1f} sec.')
