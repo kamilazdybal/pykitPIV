@@ -57,11 +57,17 @@ class FlowFieldSpecs:
                  gaussian_filters=(10, 10),
                  n_gaussian_filter_iter=10,
                  displacement=(2, 2),
+                 radial_source=True,
+                 radial_source_strength=1.0,
+                 radial_imposed_source_location=None,
+                 radial_sigma=20,
+                 radial_epsilon=1e-6,
                  apply_SLM=False,
                  integral_time_scale=1,
                  sigma=1,
                  n_stochastic_particles=1000000,
                  n_iterations=100):
+
 
         self.n_images = n_images
         self.size = size
@@ -71,6 +77,11 @@ class FlowFieldSpecs:
         self.gaussian_filters = gaussian_filters
         self.n_gaussian_filter_iter = n_gaussian_filter_iter
         self.displacement = displacement
+        self.radial_source = radial_source
+        self.radial_source_strength = radial_source_strength
+        self.radial_imposed_source_location = radial_imposed_source_location
+        self.radial_sigma = radial_sigma
+        self.radial_epsilon = radial_epsilon
         self.apply_SLM = apply_SLM
         self.integral_time_scale = integral_time_scale
         self.sigma = sigma
@@ -87,6 +98,11 @@ class FlowFieldSpecs:
                 f"gaussian_filters={self.gaussian_filters},\n"
                 f"n_gaussian_filter_iter={self.n_gaussian_filter_iter},\n"
                 f"displacement={self.displacement},\n"
+                f"radial_source={self.radial_source},\n"
+                f"radial_source_strength={self.radial_source_strength},\n"
+                f"radial_imposed_source_location={self.radial_imposed_source_location},\n"
+                f"radial_sigma={self.radial_sigma},\n"
+                f"radial_epsilon={self.radial_epsilon},\n"
                 f"apply_SLM={self.apply_SLM},\n"
                 f"integral_time_scale={self.integral_time_scale},\n"
                 f"sigma={self.sigma},\n"
@@ -940,7 +956,7 @@ class FlowField:
                                        displacement=(2,2),
                                        source_strength=1.0,
                                        imposed_source_location=None,
-                                       sigma=5.0,
+                                       sigma=20.0,
                                        epsilon=1e-6):
         """
         Generates a radial velocity field that has a single source or sink.

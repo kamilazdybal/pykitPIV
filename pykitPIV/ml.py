@@ -367,6 +367,15 @@ class PIVEnv(gym.Env):
                                                          n_gaussian_filter_iter=self.__flowfield_spec.n_gaussian_filter_iter,
                                                          displacement=self.__flowfield_spec.displacement)
 
+            elif self.__flowfield_type == 'radial':
+
+                flowfield.generate_radial_velocity_field(source=self.__flowfield_spec.radial_source,
+                                                         displacement=self.__flowfield_spec.displacement,
+                                                         source_strength=self.__flowfield_spec.radial_source_strength,
+                                                         imposed_source_location=self.__flowfield_spec.radial_imposed_source_location,
+                                                         sigma=self.__flowfield_spec.radial_sigma,
+                                                         epsilon=self.__flowfield_spec.radial_epsilon)
+
             if self.__flowfield_spec.apply_SLM:
 
                 # Solve the simplified Langevin model (SLM) for the mean velocity fields:
@@ -658,6 +667,15 @@ class PIVEnv(gym.Env):
                     flowfield.generate_random_velocity_field(gaussian_filters=self.__flowfield_spec.gaussian_filters,
                                                              n_gaussian_filter_iter=self.__flowfield_spec.n_gaussian_filter_iter,
                                                              displacement=self.__flowfield_spec.displacement)
+
+                elif self.__flowfield_type == 'radial':
+
+                    flowfield.generate_radial_velocity_field(source=self.__flowfield_spec.radial_source,
+                                                             displacement=self.__flowfield_spec.displacement,
+                                                             source_strength=self.__flowfield_spec.radial_source_strength,
+                                                             imposed_source_location=self.__flowfield_spec.radial_imposed_source_location,
+                                                             sigma=self.__flowfield_spec.radial_sigma,
+                                                             epsilon=self.__flowfield_spec.radial_epsilon)
 
                 if self.__flowfield_spec.apply_SLM:
                     # Solve the simplified Langevin model (SLM) for the mean velocity fields:
