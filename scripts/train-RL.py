@@ -249,10 +249,12 @@ class QNetwork(tf.keras.Model):
 
         super(QNetwork, self).__init__()
 
-        self.dense1 = tf.keras.layers.Dense(env.n_cues, activation='linear', kernel_initializer=kernel_initializer)
-        self.dense2 = tf.keras.layers.Dense(int(env.n_cues/2), activation='tanh', kernel_initializer=kernel_initializer)
-        self.dense3 = tf.keras.layers.Dense(int(env.n_cues/3), activation='tanh', kernel_initializer=kernel_initializer)
-        self.output_layer = tf.keras.layers.Dense(n_actions, activation='linear', kernel_initializer=kernel_initializer)
+        self.dense1 = tf.keras.layers.Dense(env.n_cues, activation='relu', kernel_initializer=kernel_initializer)
+        # self.dense2 = tf.keras.layers.Dense(int(env.n_cues/2), activation='relu', kernel_initializer=kernel_initializer)
+        # self.dense3 = tf.keras.layers.Dense(int(env.n_cues/3), activation='relu', kernel_initializer=kernel_initializer)
+        self.dense2 = tf.keras.layers.Dense(64, activation='relu', kernel_initializer=kernel_initializer)
+        self.dense3 = tf.keras.layers.Dense(64, activation='relu', kernel_initializer=kernel_initializer)
+        self.output_layer = tf.keras.layers.Dense(n_actions, activation='relu', kernel_initializer=kernel_initializer)
 
     def call(self, state):
 
