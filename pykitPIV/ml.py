@@ -45,6 +45,7 @@ class PIVDataset(Dataset):
 
     :param dataset:
         ``str`` specifying the path to the saved dataset.
+        ``str`` specifying the path to the saved dataset.
         It can also be directly passed as a ``dict`` defining the **pykitPIV** dataset.
     :param transform: (optional)
         ``torchvision.transform`` specifying vision transformations to augment the training dataset.
@@ -997,9 +998,6 @@ class PIVEnv(gym.Env):
             X = np.arange(0, self.flowfield.size[1], 1)
             Y = np.arange(0, self.flowfield.size[0], 1)
 
-            print(X.shape)
-            print(Y.shape)
-
             plt.streamplot(X, Y,
                            self.flowfield.velocity_field[0, 0, :, :],
                            self.flowfield.velocity_field[0, 1, :, :],
@@ -1012,9 +1010,6 @@ class PIVEnv(gym.Env):
 
             X = np.arange(0, self.flowfield.size[1], quiver_step)
             Y = np.arange(0, self.flowfield.size[0], quiver_step)
-
-            print(X.shape)
-            print(Y.shape)
 
             plt.quiver(X, Y,
                        self.flowfield.velocity_field[0, 0, ::quiver_step, ::quiver_step],
