@@ -17,6 +17,7 @@ _available_velocity_fields = {'constant': 'generate_constant_velocity_field',
                                'checkered': 'generate_checkered_velocity_field',
                                'Chebyshev polynomials': 'generate_chebyshev_velocity_field',
                                'spherical harmonics': 'generate_spherical_harmonics_velocity_field',
+                               'radial': 'generate_radial_velocity_field',
                                'Langevin': 'generate_langevin_velocity_field'}
 
 ########################################################################################################################
@@ -932,6 +933,116 @@ class FlowField:
             self.__velocity_field[i, 0, :, :] = velocity_field_u
             self.__velocity_field[i, 1, :, :] = velocity_field_v
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def generate_radial_velocity_field(self,
+                                       source=True,
+                                       displacement=(2,2),
+                                       source_strength=1.0,
+                                       imposed_source_location=None,
+                                       sigma=5.0,
+                                       epsilon=1e-6):
+        """
+        Generates a radial velocity field that has a single source or sink.
+        Each velocity component is computed as:
+
+
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import FlowField
+
+            # We are going to generate 10 flow fields for 10 PIV image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (128,512)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images=n_images,
+                                  size=image_size,
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Generate raidal velocity field:
+            flowfield.generate_radial_velocity_field(source=True,
+                                                     displacement=(2,2),
+                                                     source_strength=1.0,
+                                                     imposed_source_location=None,
+                                                     sigma=5.0,
+                                                     epsilon=1e-6)
+
+            # Access the velocity components tensor:
+            flowfield.velocity_field
+
+            # Access the velocity field magnitude:
+            flowfield.velocity_field_magnitude
+
+        :param displacement: (optional)
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+            displacement.
+       """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+        check_two_element_tuple(displacement, 'displacement')
+        check_min_max_tuple(displacement, 'displacement')
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        self.__displacement = displacement
+
+        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+
+        self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
+        self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
+
+        h = np.linspace(0, self.size_with_buffer[0], self.size_with_buffer[0])
+        w = np.linspace(0, self.size_with_buffer[1], self.size_with_buffer[1])
+
+        (grid_w, grid_h) = np.meshgrid(w, h)
+
+        if imposed_source_location is not None:
+            source_h, source_w = imposed_source_location
+        else:
+            self.__source_h = np.random.rand(self.__n_images) * (self.size_with_buffer[0]-1)
+            self.__source_w = np.random.rand(self.__n_images) * (self.size_with_buffer[1]-1)
+
+        for i in range(0, self.n_images):
+
+            # Vector from source to each point:
+            if imposed_source_location is not None:
+                dx = grid_w - source_w
+                dy = grid_h - source_h
+            else:
+                dx = grid_w - self.__source_w[i]
+                dy = grid_h - self.__source_h[i]
+
+            # Radial distance:
+            r = np.sqrt(dx ** 2 + dy ** 2)
+
+            ramp = 1.0 - np.exp(- (r ** 2) / (2.0 * sigma ** 2))
+            outflow_magnitude = source_strength * ramp
+
+            velocity_field_u = outflow_magnitude * dx / (r + epsilon)
+            velocity_field_v = outflow_magnitude * dy / (r + epsilon)
+
+            velocity_magnitude = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            velocity_magnitude_scale = self.__displacement_per_image[i] / np.max(velocity_magnitude)
+
+            velocity_field_u = velocity_magnitude_scale * velocity_field_u
+            velocity_field_v = velocity_magnitude_scale * velocity_field_v
+
+            self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            if source:
+                self.__velocity_field[i, 0, :, :] = velocity_field_u
+                self.__velocity_field[i, 1, :, :] = velocity_field_v
+            else:
+                self.__velocity_field[i, 0, :, :] = -velocity_field_u
+                self.__velocity_field[i, 1, :, :] = -velocity_field_v
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
