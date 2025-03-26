@@ -211,13 +211,13 @@ class PIVEnv(gym.Env):
         This function has to take as an input the predicted displacement field tensor
         and return a ``numpy`` array of shape ``(1, N)`` of :math:`N` cues computed
         from the predicted displacement field tensor.
-    :param particle_spec:
+    :param particle_spec: (optional)
         ``dict`` or ``particle.ParticleSpec`` object containing specifications for constructing
         an instance of ``Particle`` class.
-    :param motion_spec:
+    :param motion_spec: (optional)
         ``dict`` or ``motion.MotionSpec`` object containing specifications for constructing
         an instance of ``Motion`` class.
-    :param image_spec:
+    :param image_spec: (optional)
         ``dict`` or ``image.ImageSpec`` object containing specifications for constructing
         an instance of ``Image`` class.
     :param flowfield_spec: (optional)
@@ -248,9 +248,9 @@ class PIVEnv(gym.Env):
                  interrogation_window_size,
                  interrogation_window_size_buffer,
                  cues_function,
-                 particle_spec,
-                 motion_spec,
-                 image_spec,
+                 particle_spec=None,
+                 motion_spec=None,
+                 image_spec=None,
                  flowfield_spec=None,
                  user_flowfield=None,
                  inference_model=None,
@@ -271,20 +271,23 @@ class PIVEnv(gym.Env):
         if not callable(cues_function):
             raise ValueError("Parameter `cues_function` has to be a callable.")
 
-        if isinstance(particle_spec, dict):
-            particle_spec = ParticleSpecs(**particle_spec)
-        elif not isinstance(particle_spec, ParticleSpecs):
-            raise TypeError("Particle specifications have to be of type 'dict' or 'pykitPIV.particle.ParticleSpecs'.")
+        if particle_spec is not None:
+            if isinstance(particle_spec, dict):
+                particle_spec = ParticleSpecs(**particle_spec)
+            elif not isinstance(particle_spec, ParticleSpecs):
+                raise TypeError("Particle specifications have to be of type 'dict' or 'pykitPIV.particle.ParticleSpecs'.")
 
-        if isinstance(motion_spec, dict):
-            motion_spec = MotionSpecs(**motion_spec)
-        elif not isinstance(motion_spec, MotionSpecs):
-            raise TypeError("Motion specifications have to be of type 'dict' or 'pykitPIV.motion.MotionSpecs'.")
+        if motion_spec is not None:
+            if isinstance(motion_spec, dict):
+                motion_spec = MotionSpecs(**motion_spec)
+            elif not isinstance(motion_spec, MotionSpecs):
+                raise TypeError("Motion specifications have to be of type 'dict' or 'pykitPIV.motion.MotionSpecs'.")
 
-        if isinstance(image_spec, dict):
-            image_spec = ImageSpecs(**image_spec)
-        elif not isinstance(image_spec, ImageSpecs):
-            raise TypeError("Image specifications have to be of type 'dict' or 'pykitPIV.image.ImageSpecs'.")
+        if image_spec is not None:
+            if isinstance(image_spec, dict):
+                image_spec = ImageSpecs(**image_spec)
+            elif not isinstance(image_spec, ImageSpecs):
+                raise TypeError("Image specifications have to be of type 'dict' or 'pykitPIV.image.ImageSpecs'.")
 
         if (flowfield_spec is None) and (user_flowfield is None):
             raise ValueError('At least one has to be specified: `user_flowfield` or `flowfield_spec`.')
@@ -700,8 +703,6 @@ class PIVEnv(gym.Env):
             if imposed_camera_position[1] < 0 or imposed_camera_position[1] > self.__admissible_observation_space[1]:
                 raise ValueError("The user-imposed camera position falls outside of the admissible virtual environment!")
 
-        # Future functionality: Can generate a new flow field, if the user didn't specify a fixed flow field to use.
-
         if imposed_camera_position is None:
             # Create an initial camera position:
             camera_position = self.observation_space.sample()
@@ -832,7 +833,7 @@ class PIVEnv(gym.Env):
             # Make inference of displacement field based on the recorded PIV images:
             targets_tensor, prediction_tensor = self.make_inference(image_obj)
 
-        # If the inference model is not specified, just return the ground truth velocity field:
+        # If the inference model is not specified, just return the ground truth velocity field, bypassing the PIV:
         else:
 
             # Extract the velocity field under the current interrogation window:
