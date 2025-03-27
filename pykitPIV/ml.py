@@ -1568,6 +1568,7 @@ def plot_trajectory(displacement_field,
                     add_quiver=False,
                     quiver_step=10,
                     quiver_color='k',
+                    quiver_linewidths=1,
                     add_streamplot=False,
                     streamplot_density=1,
                     streamplot_color='k',
@@ -1606,9 +1607,12 @@ def plot_trajectory(displacement_field,
                         xticks=True,
                         yticks=True,
                         cmap='viridis',
+                        vmin=None,
+                        vmax=None,
                         add_quiver=False,
                         quiver_step=10,
                         quiver_color='k',
+                        quiver_linewidths=1,
                         add_streamplot=False,
                         streamplot_density=1,
                         streamplot_color='k',
@@ -1648,6 +1652,10 @@ def plot_trajectory(displacement_field,
         ``bool`` specifying if ticks along the :math:`y`-axis should be plotted.
     :param cmap: (optional)
         ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+    :param vmin: (optional)
+        ``int`` or ``float`` specifying the minimum on the colorbar.
+    :param vmax: (optional)
+        ``int`` or ``float`` specifying the maximum on the colorbar.
     :param normalize_cbars: (optional)
         ``bool`` specifying if the colorbar for the interrogation window should be normalized to the colorbar for
         the entire wind tunnel.
@@ -1656,7 +1664,9 @@ def plot_trajectory(displacement_field,
     :param quiver_step: (optional)
         ``int`` specifying the step on the pixel grid to attach a vector to. The higher this number is, the less dense the vector field is.
     :param quiver_color: (optional)
-        ``str`` specifying the color of velocity vectors
+        ``str`` specifying the color of vectors.
+    :param quiver_linewidths: (optional)
+        ``int`` or ``float`` specifying the line widths of vectors.
     :param add_streamplot: (optional)
         ``bool`` specifying if streamlines should be plotted on top of the scalar magnitude field.
     :param streamplot_density: (optional)
@@ -1674,6 +1684,7 @@ def plot_trajectory(displacement_field,
 
     :return:
         - **plt** - ``matplotlib.pyplot`` image handle.
+        - **cbar** - ``matplotlib.pyplot`` colorbar handle.
     """
 
     fontsize = 14
@@ -1687,7 +1698,7 @@ def plot_trajectory(displacement_field,
     else:
         ims = plt.imshow(quantity, cmap=cmap, origin='lower', vmin=vmin, vmax=vmax, zorder=0)
 
-    plt.colorbar(ims)
+    cbar = plt.colorbar(ims)
 
     if add_streamplot:
 
@@ -1710,7 +1721,8 @@ def plot_trajectory(displacement_field,
         plt.quiver(X, Y,
                    displacement_field[0, 0, ::quiver_step, ::quiver_step],
                    displacement_field[0, 1, ::quiver_step, ::quiver_step],
-                   color=quiver_color)
+                   color=quiver_color,
+                   linewidths=quiver_linewidths)
 
     plt.plot(trajectory[:, 1] - 0.5, trajectory[:, 0] - 0.5, c=c_path, lw=lw, zorder=2)
 
@@ -1773,7 +1785,7 @@ def plot_trajectory(displacement_field,
     if filename is not None:
         plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
-    return plt
+    return plt, cbar
 
 ########################################################################################################################
 ########################################################################################################################
