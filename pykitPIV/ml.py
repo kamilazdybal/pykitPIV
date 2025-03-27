@@ -1550,7 +1550,9 @@ class CameraAgent:
 
 def plot_trajectory(displacement_field,
                     trajectory,
+                    quantity=None,
                     interrogation_window_size=None,
+                    interrogation_window_size_buffer=None,
                     c_path='white',
                     c_init='white',
                     c_final='black',
@@ -1561,6 +1563,11 @@ def plot_trajectory(displacement_field,
                     xticks=True,
                     yticks=True,
                     cmap='viridis',
+                    vmin=None,
+                    vmax=None,
+                    add_quiver=False,
+                    quiver_step=10,
+                    quiver_color='k',
                     add_streamplot=False,
                     streamplot_density=1,
                     streamplot_color='k',
@@ -1586,7 +1593,9 @@ def plot_trajectory(displacement_field,
         # We can visualize the trajectory in the virtual environment:
         plot_trajectory(displacement_field,
                         trajectory,
+                        quantity=None,
                         interrogation_window_size=None,
+                        interrogation_window_size_buffer=None,
                         c_path='white',
                         c_init='white',
                         c_final='black',
@@ -1597,6 +1606,9 @@ def plot_trajectory(displacement_field,
                         xticks=True,
                         yticks=True,
                         cmap='viridis',
+                        add_quiver=False,
+                        quiver_step=10,
+                        quiver_color='k',
                         add_streamplot=False,
                         streamplot_density=1,
                         streamplot_color='k',
@@ -1610,12 +1622,16 @@ def plot_trajectory(displacement_field,
     .. image:: ../images/ml_plot_trajectory.png
         :width: 800
 
-    :param camera_position:
+    :param displacement_field:
         ``numpy.ndarray`` specifying
+    :param quantity:
+        ``numpy.ndarray`` specifying the quantity to visualize in the background.
     :param trajectory:
         ``numpy.ndarray`` specifying
     :param interrogation_window_size: (optional)
         ``tuple`` specifying
+    :param interrogation_window_size_buffer: (optional)
+        ``int`` specifying
     :param c: (optional)
         ``str`` specifying the color for the interrogation window outline.
     :param s: (optional)
@@ -1635,6 +1651,12 @@ def plot_trajectory(displacement_field,
     :param normalize_cbars: (optional)
         ``bool`` specifying if the colorbar for the interrogation window should be normalized to the colorbar for
         the entire wind tunnel.
+    :param add_quiver: (optional)
+        ``bool`` specifying if vector field should be plotted on top of the scalar magnitude field.
+    :param quiver_step: (optional)
+        ``int`` specifying the step on the pixel grid to attach a vector to. The higher this number is, the less dense the vector field is.
+    :param quiver_color: (optional)
+        ``str`` specifying the color of velocity vectors
     :param add_streamplot: (optional)
         ``bool`` specifying if streamlines should be plotted on top of the scalar magnitude field.
     :param streamplot_density: (optional)
@@ -1660,10 +1682,15 @@ def plot_trajectory(displacement_field,
 
     plt.figure(figsize=figsize)
 
-    ims = plt.imshow(displacement_field_magnitude, cmap=cmap, origin='lower', zorder=0)
+    if quantity is None:
+        ims = plt.imshow(displacement_field_magnitude, cmap=cmap, origin='lower', vmin=vmin, vmax=vmax, zorder=0)
+    else:
+        ims = plt.imshow(quantity, cmap=cmap, origin='lower', vmin=vmin, vmax=vmax, zorder=0)
+
     plt.colorbar(ims)
 
     if add_streamplot:
+
         X = np.arange(0, displacement_field.shape[3], 1)
         Y = np.arange(0, displacement_field.shape[2], 1)
 
@@ -1675,6 +1702,16 @@ def plot_trajectory(displacement_field,
                        linewidth=streamplot_linewidth,
                        zorder=1)
 
+    if add_quiver:
+
+        X = np.arange(0, displacement_field.shape[3], quiver_step)
+        Y = np.arange(0, displacement_field.shape[2], quiver_step)
+
+        plt.quiver(X, Y,
+                   displacement_field[0, 0, ::quiver_step, ::quiver_step],
+                   displacement_field[0, 1, ::quiver_step, ::quiver_step],
+                   color=quiver_color)
+
     plt.plot(trajectory[:, 1] - 0.5, trajectory[:, 0] - 0.5, c=c_path, lw=lw, zorder=2)
 
     # Visualize a rectangle that defines the initial interrogation window:
@@ -1682,10 +1719,19 @@ def plot_trajectory(displacement_field,
 
     if interrogation_window_size is not None:
 
+        # Visualize a rectangle that defines the current interrogation window:
         rect = patches.Rectangle((trajectory[0, 1] - 0.5, trajectory[0, 0] - 0.5),
+                                 interrogation_window_size[1] + 2*interrogation_window_size_buffer,
+                                 interrogation_window_size[0] + 2*interrogation_window_size_buffer,
+                                 linewidth=lw, edgecolor=c_init, facecolor='none', zorder=2)
+        ax = plt.gca()
+        ax.add_patch(rect)
+
+        # Visualize a rectangle that defines the current interrogation window without buffer:
+        rect = patches.Rectangle((trajectory[0, 1] + interrogation_window_size_buffer - 0.5, trajectory[0, 0] + interrogation_window_size_buffer - 0.5),
                                  interrogation_window_size[1],
                                  interrogation_window_size[0],
-                                 linewidth=lw, edgecolor=c_init, facecolor='none', zorder=2)
+                                 linewidth=lw/2, edgecolor=c_init, facecolor='none', zorder=2)
         ax = plt.gca()
         ax.add_patch(rect)
 
@@ -1694,10 +1740,19 @@ def plot_trajectory(displacement_field,
 
     if interrogation_window_size is not None:
 
+        # Visualize a rectangle that defines the current interrogation window:
         rect = patches.Rectangle((trajectory[-1, 1] - 0.5, trajectory[-1, 0] - 0.5),
+                                 interrogation_window_size[1] + 2*interrogation_window_size_buffer,
+                                 interrogation_window_size[0] + 2*interrogation_window_size_buffer,
+                                 linewidth=lw, edgecolor=c_final, facecolor='none', zorder=2)
+        ax = plt.gca()
+        ax.add_patch(rect)
+
+        # Visualize a rectangle that defines the current interrogation window without buffer:
+        rect = patches.Rectangle((trajectory[-1, 1] + interrogation_window_size_buffer - 0.5, trajectory[-1, 0] + interrogation_window_size_buffer - 0.5),
                                  interrogation_window_size[1],
                                  interrogation_window_size[0],
-                                 linewidth=lw, edgecolor=c_final, facecolor='none', zorder=2)
+                                 linewidth=lw/2, edgecolor=c_final, facecolor='none', zorder=2)
         ax = plt.gca()
         ax.add_patch(rect)
 
