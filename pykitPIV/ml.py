@@ -871,6 +871,7 @@ class PIVEnv(gym.Env):
     def render(self,
                quantity=None,
                camera_position=None,
+               wind_tunnel_only=False,
                c='white',
                s=10,
                lw=2,
@@ -906,6 +907,7 @@ class PIVEnv(gym.Env):
             # And we can render the virtual wind tunnel with the current interrogation window:
             env.render(quantity,
                        camera_position,
+                       wind_tunnel_only=False,
                        c='white',
                        s=20,
                        lw=1,
@@ -940,7 +942,8 @@ class PIVEnv(gym.Env):
             This defines the bottom-left corner of the interrogation window.
             Example can be ``numpy.array([10,50])`` which positions camera at the location :math:`10 \\text{px}`
             along the height dimension and :math:`50 \\text{px}` along the width dimension.
-            If set to ``None``, only the wind tunnel is plotted.
+        :param wind_tunnel_only: (optional)
+            ``bool`` specifying if only the wind tunnel should be plotted.
         :param c: (optional)
             ``str`` specifying the color for the interrogation window outline.
         :param s: (optional)
@@ -989,27 +992,30 @@ class PIVEnv(gym.Env):
 
         figure = plt.figure(figsize=figsize)
 
-        if camera_position is not None:
-            spec = figure.add_gridspec(ncols=9,
-                                       nrows=3,
-                                       width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1, 0.2, 1],
-                                       height_ratios=[2, 0.2, 1])
-        else:
+        if wind_tunnel_only:
+
             spec = figure.add_gridspec(ncols=1,
                                        nrows=1,
                                        width_ratios=[1],
                                        height_ratios=[1])
 
-        # Visualize a rectangle that defines the virtual wind tunnel:
-        if camera_position is not None:
-            figure.add_subplot(spec[0, 0:9])
-        else:
             figure.add_subplot(spec[0, 0])
 
+        else:
+
+            spec = figure.add_gridspec(ncols=9,
+                                       nrows=3,
+                                       width_ratios=[1, 0.2, 1, 0.2, 1, 0.2, 1, 0.2, 1],
+                                       height_ratios=[2, 0.2, 1])
+
+            figure.add_subplot(spec[0, 0:9])
+
+        # Visualize the user-provided quantity or the displacement field magnitude:
         if quantity is not None:
             ims = plt.imshow(quantity, cmap=cmap, origin='lower', zorder=0)
         else:
             ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], cmap=cmap, origin='lower', zorder=0)
+
         plt.colorbar(ims)
 
         if add_streamplot:
@@ -1049,16 +1055,10 @@ class PIVEnv(gym.Env):
         if not yticks:
             plt.yticks([])
 
+        # Visualize the camera position:
         if camera_position is not None:
 
             plt.scatter(camera_position[1]-0.5, camera_position[0]-0.5, c=c, s=s, zorder=2)
-
-            if normalize_cbars:
-                vmin = np.min(self.flowfield.velocity_field_magnitude[0,0,:,:])
-                vmax = np.max(self.flowfield.velocity_field_magnitude[0,0,:,:])
-            else:
-                vmin = None
-                vmax = None
 
             # Visualize a rectangle that defines the current interrogation window:
             rect = patches.Rectangle((camera_position[1]-0.5, camera_position[0]-0.5),
@@ -1075,6 +1075,15 @@ class PIVEnv(gym.Env):
                                      linewidth=lw/2, edgecolor=c, facecolor='none', zorder=2)
             ax = plt.gca()
             ax.add_patch(rect)
+
+        if not wind_tunnel_only:
+
+            if normalize_cbars:
+                vmin = np.min(self.flowfield.velocity_field_magnitude[0,0,:,:])
+                vmax = np.max(self.flowfield.velocity_field_magnitude[0,0,:,:])
+            else:
+                vmin = None
+                vmax = None
 
             # Visualize the target under the interrogation window:
             figure.add_subplot(spec[2, 0])
