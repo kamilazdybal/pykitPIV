@@ -186,7 +186,7 @@ class TestFlowFieldClass(unittest.TestCase):
     def test_flowfield__Flowfield__generate_random_velocity_field(self):
 
         flowfield = FlowField(n_images=10,
-                              size=(128, 512),
+                              size=(100, 200),
                               size_buffer=10,
                               random_seed=100)
 
@@ -214,7 +214,7 @@ class TestFlowFieldClass(unittest.TestCase):
     def test_flowfield__Flowfield__generate_sinusoidal_velocity_field(self):
 
         flowfield = FlowField(n_images=10,
-                              size=(128, 512),
+                              size=(100, 200),
                               size_buffer=10,
                               random_seed=100)
 
@@ -242,7 +242,7 @@ class TestFlowFieldClass(unittest.TestCase):
     def test_flowfield__Flowfield__generate_checkered_velocity_field(self):
 
         flowfield = FlowField(n_images=10,
-                              size=(128, 512),
+                              size=(100, 200),
                               size_buffer=10,
                               random_seed=100)
 
@@ -271,7 +271,7 @@ class TestFlowFieldClass(unittest.TestCase):
     def test_flowfield__Flowfield__generate_chebyshev_velocity_field(self):
 
         flowfield = FlowField(n_images=10,
-                              size=(128, 512),
+                              size=(100, 200),
                               size_buffer=10,
                               random_seed=100)
 
@@ -300,7 +300,7 @@ class TestFlowFieldClass(unittest.TestCase):
     def test_flowfield__Flowfield__generate_spherical_harmonics_velocity_field(self):
 
         flowfield = FlowField(n_images=10,
-                              size=(128, 512),
+                              size=(100, 200),
                               size_buffer=10,
                               random_seed=100)
 
@@ -314,6 +314,36 @@ class TestFlowFieldClass(unittest.TestCase):
                                                                   stop=0.8,
                                                                   order=1,
                                                                   degree=1)
+
+            flowfield.velocity_field
+            flowfield.velocity_field_magnitude
+
+        except Exception:
+
+            self.assertTrue(False)
+
+        self.assertTrue(flowfield.velocity_field is not None)
+        self.assertTrue(flowfield.velocity_field_magnitude is not None)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_flowfield__Flowfield__generate_radial_velocity_field(self):
+
+        flowfield = FlowField(n_images=10,
+                              size=(100, 200),
+                              size_buffer=10,
+                              random_seed=100)
+
+        self.assertTrue(flowfield.velocity_field is None)
+        self.assertTrue(flowfield.velocity_field_magnitude is None)
+
+        try:
+
+            flowfield.generate_radial_velocity_field(source=True,
+                                                     displacement=(0,10),
+                                                     imposed_source_location=(10,50),
+                                                     sigma=5.0,
+                                                     epsilon=1e-6)
 
             flowfield.velocity_field
             flowfield.velocity_field_magnitude
