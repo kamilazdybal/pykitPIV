@@ -177,11 +177,11 @@ class Particle:
       :math:`[\\text{px}]` for each image. Template distances are random numbers between ``distances[0]`` and ``distances[1]``.
     - **density_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle densities in particle
       per pixel :math:`[\\text{ppp}]` for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
-    - **n_of_particles** - (read-only) ``list`` specifying the number of particles created for each image based on each template density.
+    - **n_of_particles** - (read-only) ``list`` specifying the number of particles created for each image, :math:`n_i`, based on each template density.
     - **particle_coordinates** - (read-only) ``list`` specifying the absolute coordinates of all particle centers for each image.
       The positions are computed based on the ``seeding_mode``. The first element in each tuple are the coordinates
       along the image height, and the second element are the coordinates along the image width.
-    - **particle_positions** - (read-only) ``numpy.ndarray`` specifying the per pixel starting positions of all particles' centers
+    - **particle_positions** - (read-only) ``numpy.ndarray`` specifying the per-pixel starting positions of all particles' centers
       for each PIV image pair; these positions will later populate the first PIV image frame, :math:`I_1`.
       The positions are computed based on the ``seeding_mode``. If a particle's position falls into
       a specific pixel coordinate, this pixel's value is increased by one. Zero entry indicates that no particles are present
@@ -189,8 +189,9 @@ class Particle:
       This array has size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs,
       :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height
       and :math:`W` the width of each PIV image, and :math:`b` is an optional image buffer.
-    - **particle_diameters** - (read-only) ``list`` specifying the diameters of all seeded particles in pixels :math:`[\\text{px}]`
-      for each image based on each template diameter.
+    - **particle_diameters** - (read-only) ``list`` of ``numpy.ndarray``, each specifying the diameters of
+      all seeded particles in pixels :math:`[\\text{px}]`
+      for each image based on each template diameter. Each array in this list has length :math:`n_i`.
    """
 
     def __init__(self,
@@ -264,23 +265,16 @@ class Particle:
         self.__particle_diameter_per_image = np.random.rand(self.__n_images) * (self.__diameters[1] - self.__diameters[0]) + self.__diameters[0]
         self.__particle_distance_per_image = np.random.rand(self.__n_images) * (self.__distances[1] - self.__distances[0]) + self.__distances[0]
 
-        # Compute the seeding density for each image:
-        if seeding_mode == 'random':
-            self.__particle_density_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
-
-        elif seeding_mode == 'user':
-            print('Use the function Image.upload_particle_coordinates() to seed particles.')
-
-        elif seeding_mode == 'poisson':
-            self.__particle_density_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
-
+        # Use one of the available modes for image generation: - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         if seeding_mode == 'random':
+
+            # Compute the seeding density for each image:
+            self.__particle_density_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
 
             # Compute the total number of particles for a given particle density on each image:
             n_of_particles = self.__size[0] * self.__size[1] * self.__particle_density_per_image
             self.__n_of_particles = [int(i) for i in n_of_particles]
-
 
             # Initialize particle coordinates, positions, and diameters on each of the ``n_image`` images:
             particle_coordinates = []
@@ -304,7 +298,7 @@ class Particle:
                 # Generate diameters for all particles in the current image:
                 particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i]))
 
-                # Initialize particle coordinates:
+            # Initialize particle coordinates:
             self.__particle_coordinates = particle_coordinates
 
             # Initialize particle positions:
@@ -313,8 +307,11 @@ class Particle:
             # Initialize particle diameters:
             self.__particle_diameters = particle_diameters
 
+        elif seeding_mode == 'poisson':
 
-        if seeding_mode == 'poisson':
+            # Compute the seeding density for each image:
+            self.__particle_density_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
+
             # Initialize particle coordinates, positions, and diameters on each of the ``n_image`` images:
             particle_coordinates = []
             particle_positions = np.zeros((self.n_images, 1, self.__height_with_buffer, self.__width_with_buffer))
@@ -354,8 +351,8 @@ class Particle:
                 # Generate diameters for all particles in the current image:
                 particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, n))
 
-            # number ofparticles
-            self.__n_of_particles=n_of_particles
+            # Initialize the total number of particles:
+            self.__n_of_particles = n_of_particles
 
             # Initialize particle coordinates:
             self.__particle_coordinates = particle_coordinates
@@ -365,6 +362,22 @@ class Particle:
 
             # Initialize particle diameters:
             self.__particle_diameters = particle_diameters
+
+        elif seeding_mode == 'user':
+
+            print('Use the function Particle.upload_particle_coordinates() to seed particles.')
+
+            # Initialize the total number of particles:
+            self.__n_of_particles = None
+
+            # Initialize particle coordinates:
+            self.__particle_coordinates = None
+
+            # Initialize particle positions:
+            self.__particle_positions = None
+
+            # Initialize particle diameters:
+            self.__particle_diameters = None
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -451,14 +464,80 @@ class Particle:
 
         return seeded_array
 
-
-
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def upload_particle_coordinates(self,
                                     particle_coordinates):
         """
         Uploads user-specified starting particle coordinates.
+
+        .. note::
+
+            Note that only the :math:`x` and :math:`y` coordinates get uploaded to the current ``Particle`` class object
+            and particle diameters (``Particle.particle_diameters``) get computed for the user-specified
+            particles from the class attribute ``diameters`` that was given during ``Particle`` class object generation.
+
+            The number of particles per image (``Particle.n_of_particles``) is computed directly from
+            the user-specified ``particle_coordinates`` argument, so is ``Particle.particle_positions``.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle
+
+            # We are going to generate 10 PIV image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (128,512)
+
+            # Initialize the first particle object:
+            particles_1 = Particle(n_images,
+                                   size=image_size,
+                                   diameters=(2,4),
+                                   diameter_std=1,
+                                   densities=(0.1, 0.1),
+                                   seeding_mode='random')
+
+            # Initialize the second particle object:
+            particles_2 = Particle(n_images,
+                                   size=image_size,
+                                   densities=(0.1, 0.1),
+                                   seeding_mode='random')
+
+            # Overwrite the coordinates in the first particle object with the second one:
+            particles_1.upload_particle_coordinates(particles_2.particle_coordinates)
+
+        Alternatively, you can instantiate an object of the ``Particle`` class with the ``seeding_mode='user'``,
+        which will initially make all the particle parameters empty. Those parameters get populated the moment you
+        call the ``upload_particle_coordinates()`` function.
+
+        **Example:**
+
+        .. code:: python
+
+            # Initialize the first particle object:
+            particles_1 = Particle(n_images,
+                                   size=image_size,
+                                   diameters=(2,4),
+                                   diameter_std=1,
+                                   seeding_mode='user')
+
+            # Initially, all of these attributes will be None:
+            particles_1.particle_coordinates
+            particles_1.particle_positions
+            particles_1.particle_diameters
+            particles_1.n_of_particles
+
+            # Initialize the second particle object:
+            particles_2 = Particle(n_images,
+                                   size=image_size,
+                                   densities=(0.1, 0.1),
+                                   seeding_mode='random')
+
+            # Overwrite the coordinates in the first particle object with the second one:
+            particles_1.upload_particle_coordinates(particles_2.particle_coordinates)
 
         :param particle_coordinates:
             ``list`` of ``tuple`` specifying the coordinates of particles in image :math:`I_1`.
@@ -483,6 +562,7 @@ class Particle:
         # Initialize particle positions and diameters on each of the ``n_image`` images:
         particle_positions = np.zeros((self.n_images, 1, self.__height_with_buffer, self.__width_with_buffer))
         particle_diameters = []
+        n_of_particles = []
 
         # Populate particle data for each of the ``n_image`` images:
         for i in range(0,self.n_images):
@@ -491,13 +571,20 @@ class Particle:
             self.__y_coordinates = particle_coordinates[i][0]
             self.__x_coordinates = particle_coordinates[i][1]
 
+            n_particles = len(particle_coordinates[i][0])
+
+            n_of_particles.append(n_particles)
+
             seeded_array = self.__populate_seeded_array()
 
             # Populate the 4D tensor of shape (N, C_in, H, W):
             particle_positions[i, 0, :, :] = seeded_array
 
             # Generate diameters for all particles in the current image:
-            particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i]))
+            particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, n_particles))
+
+        # Initialize the total number of particles:
+        self.__n_of_particles = n_of_particles
 
         # Initialize particle coordinates:
         self.__particle_coordinates = particle_coordinates
@@ -530,7 +617,7 @@ class Particle:
              dpi=300,
              filename=None):
         """
-        Plots a particles.
+        Plots particles.
 
         :param idx:
             ``int`` specifying the index of the image to plot out of ``n_images`` number of images.
