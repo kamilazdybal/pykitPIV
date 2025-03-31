@@ -954,15 +954,30 @@ class FlowField:
     def generate_radial_velocity_field(self,
                                        source=True,
                                        displacement=(2,2),
-                                       source_strength=1.0,
                                        imposed_source_location=None,
                                        sigma=20.0,
                                        epsilon=1e-6):
         """
         Generates a radial velocity field that has a single source or sink.
-        Each velocity component is computed as:
+        The velocity components are computed as:
 
+        .. math::
 
+            u(h, w) = \\Big( 1 - \\exp{ \\big( \\frac{-r^2}{2 \\sigma^2} \\big)} \\Big) \\frac{(w - w_s)}{r + \\varepsilon}
+
+        .. math::
+
+            v(h, w) = \\Big( 1 - \\exp{ \\big( \\frac{-r^2}{2 \\sigma^2} \\big)} \\Big) \\frac{(h - h_s)}{r + \\varepsilon}
+
+        where :math:`\\sigma` is the size of source/sink, :math:`r` is the radial distance from the source/sink computed as:
+
+        .. math::
+
+            r = \\sqrt{((w - w_s)^2 + (h - h_s)^2)}
+
+        and where :math:`w_s` and :math:`h_s` are the location of the source/sink.
+
+        :math:`\\varepsilon` is a small value added to avoid dividing by zero.
 
         **Example:**
 
@@ -974,7 +989,7 @@ class FlowField:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (128,512)
+            image_size = (200,200)
 
             # Initialize a flow field object:
             flowfield = FlowField(n_images=n_images,
@@ -982,11 +997,10 @@ class FlowField:
                                   size_buffer=10,
                                   random_seed=100)
 
-            # Generate raidal velocity field:
+            # Generate radial velocity field:
             flowfield.generate_radial_velocity_field(source=True,
                                                      displacement=(2,2),
-                                                     source_strength=1.0,
-                                                     imposed_source_location=None,
+                                                     imposed_source_location=(50,50),
                                                      sigma=5.0,
                                                      epsilon=1e-6)
 
@@ -996,9 +1010,18 @@ class FlowField:
             # Access the velocity field magnitude:
             flowfield.velocity_field_magnitude
 
+        :param source: (optional)
+            ``bool`` specifying generation of the source (``True``) or sink (``False``).
         :param displacement: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
             displacement.
+        :param imposed_source_location: (optional)
+            ``tuple`` specifying the user-imposed source location, :math:`(h_s, w_s)`.
+            Note that you need to account for the buffer size when specifying the values :math:`(h_s, w_s)`.
+        :param sigma: (optional)
+            ``int`` or ``float`` specifying the size of the source/sink, :math:`\\sigma`.
+        :param epsilon: (optional)
+            ``float`` specifying the :math:`\\varepsilon`.
        """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1024,8 +1047,8 @@ class FlowField:
         if imposed_source_location is not None:
             source_h, source_w = imposed_source_location
         else:
-            self.__source_h = np.random.rand(self.__n_images) * (self.size_with_buffer[0]-1)
-            self.__source_w = np.random.rand(self.__n_images) * (self.size_with_buffer[1]-1)
+            source_h = np.random.rand(self.__n_images) * (self.size_with_buffer[0]-1)
+            source_w = np.random.rand(self.__n_images) * (self.size_with_buffer[1]-1)
 
         for i in range(0, self.n_images):
 
@@ -1034,14 +1057,13 @@ class FlowField:
                 dx = grid_w - source_w
                 dy = grid_h - source_h
             else:
-                dx = grid_w - self.__source_w[i]
-                dy = grid_h - self.__source_h[i]
+                dx = grid_w - source_w[i]
+                dy = grid_h - source_h[i]
 
             # Radial distance:
             r = np.sqrt(dx ** 2 + dy ** 2)
 
-            ramp = 1.0 - np.exp(- (r ** 2) / (2.0 * sigma ** 2))
-            outflow_magnitude = source_strength * ramp
+            outflow_magnitude = 1.0 - np.exp(- (r ** 2) / (2.0 * sigma ** 2))
 
             velocity_field_u = outflow_magnitude * dx / (r + epsilon)
             velocity_field_v = outflow_magnitude * dy / (r + epsilon)
@@ -1053,6 +1075,7 @@ class FlowField:
             velocity_field_v = velocity_magnitude_scale * velocity_field_v
 
             self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+
             if source:
                 self.__velocity_field[i, 0, :, :] = velocity_field_u
                 self.__velocity_field[i, 1, :, :] = velocity_field_v
