@@ -363,3 +363,68 @@ class TestParticleClass(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def test_particle__Particle__upload_particle_coordinates(self):
+
+        particles_1 = Particle(1,
+                             size=(200, 200),
+                             densities=(0.1, 0.1),
+                             seeding_mode='random')
+
+        particles_2 = Particle(1,
+                             size=(200, 200),
+                             densities=(0.1, 0.1),
+                             seeding_mode='random')
+
+        # Check that x-coordinates are not the same:
+        self.assertTrue(np.all(particles_1.particle_coordinates[0][0] != particles_2.particle_coordinates[0][0]))
+
+        # Check that y-coordinates are not the same:
+        self.assertTrue(np.all(particles_1.particle_coordinates[0][1] != particles_2.particle_coordinates[0][1]))
+
+        # Upload particle coordinates:
+        particles_1.upload_particle_coordinates(particles_2.particle_coordinates)
+
+        # Check that x-coordinates are the same:
+        self.assertTrue(np.all(particles_1.particle_coordinates[0][0] == particles_2.particle_coordinates[0][0]))
+
+        # Check that y-coordinates are the same:
+        self.assertTrue(np.all(particles_1.particle_coordinates[0][1] == particles_2.particle_coordinates[0][1]))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__upload_particle_coordinates_to_empty_object(self):
+
+        particles_1 = Particle(1,
+                               size=(200, 200),
+                               diameters=(2, 4),
+                               diameter_std=1,
+                               seeding_mode='user')
+
+        self.assertTrue(particles_1.particle_coordinates is None)
+        self.assertTrue(particles_1.particle_positions is None)
+        self.assertTrue(particles_1.particle_diameters is None)
+        self.assertTrue(particles_1.n_of_particles is None)
+
+        particles_2 = Particle(1,
+                               size=(200, 200),
+                               densities=(0.1, 0.1),
+                               seeding_mode='random')
+
+        # Upload particle coordinates:
+        particles_1.upload_particle_coordinates(particles_2.particle_coordinates)
+
+        self.assertTrue(particles_1.particle_coordinates is not None)
+        self.assertTrue(particles_1.particle_positions is not None)
+        self.assertTrue(particles_1.particle_diameters is not None)
+        self.assertTrue(particles_1.n_of_particles is not None)
+
+        # Check that x-coordinates are the same:
+        self.assertTrue(np.all(particles_1.particle_coordinates[0][0] == particles_2.particle_coordinates[0][0]))
+
+        # Check that y-coordinates are the same:
+        self.assertTrue(np.all(particles_1.particle_coordinates[0][1] == particles_2.particle_coordinates[0][1]))
+
+        # Check that the number of particles are the same:
+        self.assertTrue(particles_1.n_of_particles == particles_2.n_of_particles)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
