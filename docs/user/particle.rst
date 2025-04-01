@@ -10,8 +10,4 @@ Class: ``Particle``
 
 .. autofunction:: pykitPIV.particle.Particle.upload_particle_coordinates
 
-.. autofunction:: pykitPIV.particle.Particle.plot
-
-.. autofunction:: pykitPIV.particle.Particle.plot_properties_per_image
-
-.. autofunction:: pykitPIV.particle.Particle.plot_properties_across_images
+.. autofunction:: pykitPIV.particle.Particle.plot_properties

@@ -743,12 +743,58 @@ class Particle:
                         dpi=300,
                         filename=None):
         """
-        Plots statistical properties of the generated particles across all ``n_images`` images.
+        Plots statistical properties of the generated particles across all ``n_images`` images or a subset of those.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle
+
+            # We are going to generate 100 PIV image pairs:
+            n_images = 100
+
+            # Initialize a particle object:
+            particles = Particle(n_images,
+                                 size=(200,200),
+                                 size_buffer=10,
+                                 diameters=(1,4),
+                                 distances=(1,2),
+                                 densities=(0.05,0.1),
+                                 diameter_std=0.1,
+                                 seeding_mode='random',
+                                 random_seed=100)
+
+            # Visualize properties on images indexed from 0 to 40:
+            particles.plot_properties(idx=(0,40),
+                                      c_hist='k',
+                                      c_scatter='b',
+                                      s=30,
+                                      figsize=(15,10),
+                                      dpi=300,
+                                      filename='Particle_plot_properties.png')
+
+        The code above will produce a figure like below:
+
+        .. image:: ../images/Particle_plot_properties.png
+            :width: 800
 
 
-
-
-
+        :param idx: (optional)
+            ``tuple`` or ``int`` specifying the slice or the index of images whose properties to plot.
+            If set to ``None``, properties of all ``n_images`` will be plotted.
+        :param c_hist: (optional)
+            ``str`` specifying the color of the histogram bars.
+        :param c_scatter: (optional)
+            ``str`` specifying the color of the scatter plots.
+        :param s: (optional)
+            ``int`` or ``float`` specifying the size of scatter points
+        :param figsize: (optional)
+            ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
+        :param dpi: (optional)
+            ``int`` specifying the dpi for the image.
+        :param filename: (optional)
+            ``str`` specifying the path and filename to save an image. If set to ``None``, the image will not be saved.
 
         :return:
             - **plt** - ``matplotlib.pyplot`` image handle.
@@ -763,9 +809,9 @@ class Particle:
 
         figure = plt.figure(figsize=figsize)
 
-        spec = figure.add_gridspec(ncols=3,
+        spec = figure.add_gridspec(ncols=5,
                                    nrows=7,
-                                   width_ratios=[1, 1, 1],
+                                   width_ratios=[1, 0.1, 1, 0.1, 1],
                                    height_ratios=[1, 0.1, 0.7, 0.1, 0.7, 0.1, 0.7])
 
         figure.add_subplot(spec[0, 0])
@@ -773,19 +819,21 @@ class Particle:
         plt.xlabel('Number of particles [$-$]')
         plt.ylabel('Number of images [$-$]')
 
-        figure.add_subplot(spec[0, 1])
+        figure.add_subplot(spec[0, 2])
         plt.hist(self.__particle_density_per_image[idx_list], color=c_hist)
         plt.xlabel('Particle density [$p/px$]')
+        plt.ylabel('Number of images [$-$]')
 
-        figure.add_subplot(spec[0, 2])
+        figure.add_subplot(spec[0, 4])
         if not isinstance(idx, int):
             collected_diameters = np.hstack(self.particle_diameters[idx_list[0]:idx_list[-1]+1])
         else:
             collected_diameters = self.particle_diameters[idx]
         plt.hist(collected_diameters, color=c_hist)
-        plt.xlabel('Particle diameters [$px$]')
+        plt.xlabel('Particle diameter [$px$]')
+        plt.ylabel('Number of particles [$-$]')
 
-        figure.add_subplot(spec[2, 0:3])
+        figure.add_subplot(spec[2, 0:5])
         plt.scatter(idx_list, np.array(self.n_of_particles)[idx_list], c=c_scatter, s=s, zorder=1)
         plt.ylabel('Number of particles [$-$]')
         plt.xticks(idx_list, rotation=90)
@@ -794,7 +842,7 @@ class Particle:
         for i in idx_list:
             plt.plot([i, i], [0, np.array(self.n_of_particles)[i]], c=c_scatter, ls='-', lw=1, zorder=10)
 
-        figure.add_subplot(spec[4, 0:3])
+        figure.add_subplot(spec[4, 0:5])
         plt.scatter(idx_list, self.__particle_density_per_image[idx_list], c=c_scatter, s=s)
         plt.ylabel('Particle density [$p/px$]')
         plt.xticks(idx_list, rotation=90)
@@ -803,8 +851,15 @@ class Particle:
         for i in idx_list:
             plt.plot([i, i], [0, self.__particle_density_per_image[i]], c=c_scatter, ls='-', lw=1, zorder=10)
 
-        figure.add_subplot(spec[6, 0:3])
+        figure.add_subplot(spec[6, 0:5])
         plt.scatter(idx_list, self.__particle_diameter_per_image[idx_list], c=c_scatter, s=s, zorder=10)
+        minima = []
+        maxima = []
+        for i in idx_list:
+            minima.append(np.min(self.particle_diameters[i]))
+            maxima.append(np.max(self.particle_diameters[i]))
+        plt.scatter(idx_list, minima, c=c_scatter, s=s, marker="_", zorder=10)
+        plt.scatter(idx_list, maxima, c=c_scatter, s=s*2, marker="_", zorder=10)
         plt.xlabel('Image index [$-$]')
         plt.ylabel('Particle diameter [$px$]')
         plt.xticks(idx_list, rotation=90)
