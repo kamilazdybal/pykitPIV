@@ -144,7 +144,11 @@ class Particle:
     :param diameter_std: (optional)
         ``float`` or ``int`` specifying the standard deviation in pixels :math:`[\\text{px}]` for the distribution
         of particle diameters within one PIV image pair. If set to zero, all particles in a PIV image pair will have
-        diameters exactly equal.
+        diameters exactly equal. If the choice of the ``diameter_std`` causes any diameters to be negative, the diameters
+        will be clipped such that the minimum diameter is ``min_diameter``.
+    :param min_diameter: (optional)
+        ``float`` or ``int`` specifying the minimum particle diameter that will be used if the standard deviation
+        (``diameter_std``) causes any diameters to be negative.
     :param seeding_mode: (optional)
         ``str`` specifying the seeding mode for initializing particles in the image domain.
         It can be one of the following: ``'random'``, ``'poisson'``, or ``'user'``.
@@ -168,6 +172,7 @@ class Particle:
     - **distances** - (read-only) as per user input.
     - **densities** - (read-only) as per user input.
     - **diameter_std** - (read-only) as per user input.
+    - **min_diameter** - (read-only) as per user input.
     - **seeding_mode** - (read-only) as per user input.
     - **random_seed** - (read-only) as per user input.
     - **size_with_buffer** - (read-only) ``tuple`` specifying the size of each image in pixels with buffer added.
@@ -202,6 +207,7 @@ class Particle:
                  distances=(0.5,2),
                  densities=(0.05,0.1),
                  diameter_std=0.1,
+                 min_diameter=1e-2,
                  seeding_mode='random',
                  random_seed=None):
 
@@ -233,6 +239,12 @@ class Particle:
         if (not isinstance(diameter_std, float)) and (not isinstance(diameter_std, int)):
             raise ValueError("Parameter `diameter_std` has to be of type 'float' or 'int'.")
 
+        if (not isinstance(min_diameter, float)) and (not isinstance(min_diameter, int)):
+            raise ValueError("Parameter `min_diameter` has to be of type 'float' or 'int'.")
+
+        if min_diameter < 0:
+            raise ValueError("Parameter `min_diameter` has to be positive.")
+
         __seeding_mode = ['random', 'user', 'poisson']
         if seeding_mode not in __seeding_mode:
             raise ValueError("Parameter `seeding_mode` has to be 'random', 'user', or 'poisson'.")
@@ -253,6 +265,7 @@ class Particle:
         self.__distances = distances
         self.__densities = densities
         self.__diameter_std = diameter_std
+        self.__min_diameter = min_diameter
         self.__seeding_mode = seeding_mode
         self.__random_seed = random_seed
 
@@ -296,7 +309,8 @@ class Particle:
                 particle_positions[i, 0, :, :] = seeded_array
 
                 # Generate diameters for all particles in the current image:
-                particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i]))
+                current_diameters = np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i])
+                particle_diameters.append(np.clip(current_diameters, min_diameter, np.max(current_diameters)))
 
             # Initialize particle coordinates:
             self.__particle_coordinates = particle_coordinates
@@ -409,6 +423,10 @@ class Particle:
     @property
     def diameter_std(self):
         return self.__diameter_std
+
+    @property
+    def min_diameter(self):
+        return self.__min_diameter
 
     @property
     def seeding_mode(self):
