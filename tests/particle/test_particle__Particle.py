@@ -363,6 +363,36 @@ class TestParticleClass(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def test_particle__Particle__particle_diameters(self):
+
+        particles = Particle(1,
+                             size=(200,200),
+                             size_buffer=10,
+                             diameters=(1, 1),
+                             distances=(1, 2),
+                             densities=(0.1, 0.1),
+                             diameter_std=1,
+                             min_diameter=0,
+                             seeding_mode='random',
+                             random_seed=None)
+
+        self.assertTrue(np.all(particles.particle_diameters[0] >= 0))
+
+        particles = Particle(1,
+                             size=(200,200),
+                             size_buffer=10,
+                             diameters=(1, 1),
+                             distances=(1, 2),
+                             densities=(0.1, 0.1),
+                             diameter_std=1,
+                             min_diameter=0.4,
+                             seeding_mode='random',
+                             random_seed=None)
+
+        self.assertTrue(np.all(particles.particle_diameters[0] >= 0.4))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_particle__Particle__upload_particle_coordinates(self):
 
         particles_1 = Particle(1,
