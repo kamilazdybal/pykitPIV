@@ -734,26 +734,88 @@ class Particle:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def plot_properties_per_image(self):
-        """
-        Plots statistical properties of the generated particles on one selected image out of all ``n_images`` images.
-
-        :return:
-            - **plt** - ``matplotlib.pyplot`` image handle.
-        """
-
-        raise NotImplementedError('This function not implemented yet.')
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    def plot_properties_across_images(self):
+    def plot_properties(self,
+                        idx=None,
+                        c_hist='k',
+                        c_scatter='b',
+                        s=4,
+                        figsize=(5,5),
+                        dpi=300,
+                        filename=None):
         """
         Plots statistical properties of the generated particles across all ``n_images`` images.
 
+
+
+
+
+
         :return:
             - **plt** - ``matplotlib.pyplot`` image handle.
         """
 
-        raise NotImplementedError('This function not implemented yet.')
+        if idx is None:
+            idx_list = [i for i in range(0,self.n_images)]
+        elif isinstance(idx, tuple):
+            idx_list = [i for i in range(idx[0], idx[1]+1)]
+        elif isinstance(idx, int):
+            idx_list = [idx]
+
+        figure = plt.figure(figsize=figsize)
+
+        spec = figure.add_gridspec(ncols=3,
+                                   nrows=7,
+                                   width_ratios=[1, 1, 1],
+                                   height_ratios=[1, 0.1, 0.7, 0.1, 0.7, 0.1, 0.7])
+
+        figure.add_subplot(spec[0, 0])
+        plt.hist(np.array(self.n_of_particles)[idx_list], color=c_hist)
+        plt.xlabel('Number of particles [$-$]')
+        plt.ylabel('Number of images [$-$]')
+
+        figure.add_subplot(spec[0, 1])
+        plt.hist(self.__particle_density_per_image[idx_list], color=c_hist)
+        plt.xlabel('Particle density [$p/px$]')
+
+        figure.add_subplot(spec[0, 2])
+        if not isinstance(idx, int):
+            collected_diameters = np.hstack(self.particle_diameters[idx_list[0]:idx_list[-1]+1])
+        else:
+            collected_diameters = self.particle_diameters[idx]
+        plt.hist(collected_diameters, color=c_hist)
+        plt.xlabel('Particle diameters [$px$]')
+
+        figure.add_subplot(spec[2, 0:3])
+        plt.scatter(idx_list, np.array(self.n_of_particles)[idx_list], c=c_scatter, s=s, zorder=1)
+        plt.ylabel('Number of particles [$-$]')
+        plt.xticks(idx_list, rotation=90)
+        plt.xlim([idx_list[0]-1, idx_list[-1]+1])
+        plt.grid(alpha=0.3, zorder=1)
+        for i in idx_list:
+            plt.plot([i, i], [0, np.array(self.n_of_particles)[i]], c=c_scatter, ls='-', lw=1, zorder=10)
+
+        figure.add_subplot(spec[4, 0:3])
+        plt.scatter(idx_list, self.__particle_density_per_image[idx_list], c=c_scatter, s=s)
+        plt.ylabel('Particle density [$p/px$]')
+        plt.xticks(idx_list, rotation=90)
+        plt.xlim([idx_list[0]-1, idx_list[-1]+1])
+        plt.grid(alpha=0.3, zorder=1)
+        for i in idx_list:
+            plt.plot([i, i], [0, self.__particle_density_per_image[i]], c=c_scatter, ls='-', lw=1, zorder=10)
+
+        figure.add_subplot(spec[6, 0:3])
+        plt.scatter(idx_list, self.__particle_diameter_per_image[idx_list], c=c_scatter, s=s, zorder=10)
+        plt.xlabel('Image index [$-$]')
+        plt.ylabel('Particle diameter [$px$]')
+        plt.xticks(idx_list, rotation=90)
+        plt.xlim([idx_list[0]-1, idx_list[-1]+1])
+        plt.grid(alpha=0.3, zorder=1)
+        for i in idx_list:
+            plt.plot([i, i], [0, self.__particle_diameter_per_image[i]], c=c_scatter, ls='-', lw=1, zorder=10)
+
+        if filename is not None:
+            plt.savefig(filename, dpi=dpi, bbox_inches='tight')
+
+        return plt
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
