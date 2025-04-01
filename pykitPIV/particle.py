@@ -310,7 +310,10 @@ class Particle:
 
                 # Generate diameters for all particles in the current image:
                 current_diameters = np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i])
-                particle_diameters.append(np.clip(current_diameters, min_diameter, np.max(current_diameters)))
+                if self.n_of_particles[i] > 0:
+                    particle_diameters.append(np.clip(current_diameters, min_diameter, np.max(current_diameters)))
+                else:
+                    particle_diameters.append(np.array([]))
 
             # Initialize particle coordinates:
             self.__particle_coordinates = particle_coordinates
