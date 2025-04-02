@@ -25,7 +25,7 @@ class TestParticleClass(unittest.TestCase):
                                  densities=(0.1, 0.11),
                                  diameters=(6, 10),
                                  distances=(1, 1),
-                                 diameter_std=1,
+                                 diameter_std=(1,1),
                                  seeding_mode='random',
                                  random_seed=None)
         except Exception:
@@ -156,7 +156,7 @@ class TestParticleClass(unittest.TestCase):
             particles.densities = (0.05, 0.1)
 
         with self.assertRaises(AttributeError):
-            particles.diameter_std = 0.1
+            particles.diameter_std = (0.1, 0.1)
 
         with self.assertRaises(AttributeError):
             particles.seeding_mode = 'random'
@@ -238,7 +238,7 @@ class TestParticleClass(unittest.TestCase):
 
         # Check that the standard deviation for particle diameters is within the specified tolerance:
 
-        diameter_std = 1
+        diameter_std = (1,1)
 
         for i in range(0,loop_for):
 
@@ -251,24 +251,9 @@ class TestParticleClass(unittest.TestCase):
 
             actual_std = np.std(particles.particle_diameters[0])
 
-            self.assertTrue(np.abs(actual_std - diameter_std) <= tolerance)
+            self.assertTrue(np.abs(actual_std - diameter_std[0]) <= tolerance)
 
-        diameter_std = 0.1
-
-        for i in range(0,loop_for):
-
-            particles = Particle(1,
-                                 size=(200, 200),
-                                 densities=(0.1, 0.11),
-                                 diameters=(6, 10),
-                                 diameter_std=diameter_std,
-                                 seeding_mode='random')
-
-            actual_std = np.std(particles.particle_diameters[0])
-
-            self.assertTrue(np.abs(actual_std - diameter_std) <= tolerance)
-
-        diameter_std = 0.01
+        diameter_std = (0.1,0.1)
 
         for i in range(0,loop_for):
 
@@ -281,7 +266,22 @@ class TestParticleClass(unittest.TestCase):
 
             actual_std = np.std(particles.particle_diameters[0])
 
-            self.assertTrue(np.abs(actual_std - diameter_std) <= tolerance)
+            self.assertTrue(np.abs(actual_std - diameter_std[0]) <= tolerance)
+
+        diameter_std = (0.01,0.01)
+
+        for i in range(0,loop_for):
+
+            particles = Particle(1,
+                                 size=(200, 200),
+                                 densities=(0.1, 0.11),
+                                 diameters=(6, 10),
+                                 diameter_std=diameter_std,
+                                 seeding_mode='random')
+
+            actual_std = np.std(particles.particle_diameters[0])
+
+            self.assertTrue(np.abs(actual_std - diameter_std[0]) <= tolerance)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -371,7 +371,7 @@ class TestParticleClass(unittest.TestCase):
                              diameters=(1, 1),
                              distances=(1, 2),
                              densities=(0.1, 0.1),
-                             diameter_std=1,
+                             diameter_std=(1,1),
                              min_diameter=0,
                              seeding_mode='random',
                              random_seed=None)
@@ -384,7 +384,7 @@ class TestParticleClass(unittest.TestCase):
                              diameters=(1, 1),
                              distances=(1, 2),
                              densities=(0.1, 0.1),
-                             diameter_std=1,
+                             diameter_std=(1,1),
                              min_diameter=0.4,
                              seeding_mode='random',
                              random_seed=None)
@@ -427,7 +427,7 @@ class TestParticleClass(unittest.TestCase):
         particles_1 = Particle(1,
                                size=(200, 200),
                                diameters=(2, 4),
-                               diameter_std=1,
+                               diameter_std=(1,1),
                                seeding_mode='user')
 
         self.assertTrue(particles_1.particle_coordinates is None)

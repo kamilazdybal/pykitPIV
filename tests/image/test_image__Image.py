@@ -262,7 +262,7 @@ class TestImageClass(unittest.TestCase):
                              diameters=(2, 4),
                              distances=(1, 2),
                              densities=(0.05, 0.06),
-                             diameter_std=0.5,
+                             diameter_std=(0.5,0.5),
                              seeding_mode='random',
                              random_seed=random_seed)
 
@@ -313,7 +313,7 @@ class TestImageClass(unittest.TestCase):
                              diameters=(2, 4),
                              distances=(1, 2),
                              densities=(0.05, 0.06),
-                             diameter_std=0.5,
+                             diameter_std=(0.5,0.5),
                              seeding_mode='random',
                              random_seed=random_seed)
 
@@ -364,7 +364,7 @@ class TestImageClass(unittest.TestCase):
                              diameters=(2, 4),
                              distances=(1, 2),
                              densities=(0.05, 0.06),
-                             diameter_std=0.5,
+                             diameter_std=(0.5,0.5),
                              seeding_mode='random',
                              random_seed=random_seed)
 
@@ -420,7 +420,7 @@ class TestImageClass(unittest.TestCase):
                              diameters=(2, 4),
                              distances=(1, 2),
                              densities=(0.05, 0.06),
-                             diameter_std=0.5,
+                             diameter_std=(0.5,0.5),
                              seeding_mode='random',
                              random_seed=random_seed)
 
