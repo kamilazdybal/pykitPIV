@@ -46,7 +46,7 @@ class ParticleSpecs:
                  diameters=(3, 6),
                  distances=(0.5, 2),
                  densities=(0.05, 0.1),
-                 diameter_std=0.1,
+                 diameter_std=(0, 0.1),
                  seeding_mode='random',
                  random_seed=None):
 
@@ -105,7 +105,7 @@ class Particle:
                              diameters=(2,4),
                              distances=(1,2),
                              densities=(0.01,0.05),
-                             diameter_std=1,
+                             diameter_std=(0,0.1),
                              seeding_mode='random',
                              random_seed=100)
 
@@ -142,8 +142,9 @@ class Particle:
         particle seeding density on an image in particle per pixel :math:`[\\text{ppp}]` to randomly sample from.
         Only used when ``seeding_mode`` is ``'random'``.
     :param diameter_std: (optional)
-        ``float`` or ``int`` specifying the standard deviation in pixels :math:`[\\text{px}]` for the distribution
-        of particle diameters within one PIV image pair. If set to zero, all particles in a PIV image pair will have
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+        standard deviation in pixels :math:`[\\text{px}]` for the distribution
+        of particle diameters within each PIV image pair. If set to zero, all particles in a PIV image pair will have
         diameters exactly equal. If the choice of the ``diameter_std`` causes any diameters to be negative, the diameters
         will be clipped such that the minimum diameter is ``min_diameter``.
     :param min_diameter: (optional)
@@ -206,7 +207,7 @@ class Particle:
                  diameters=(3,6),
                  distances=(0.5,2),
                  densities=(0.05,0.1),
-                 diameter_std=0.1,
+                 diameter_std=(0,0.1),
                  min_diameter=1e-2,
                  seeding_mode='random',
                  random_seed=None):
@@ -235,9 +236,8 @@ class Particle:
         check_min_max_tuple(distances, 'distances')
         check_two_element_tuple(densities, 'densities')
         check_min_max_tuple(densities, 'densities')
-
-        if (not isinstance(diameter_std, float)) and (not isinstance(diameter_std, int)):
-            raise ValueError("Parameter `diameter_std` has to be of type 'float' or 'int'.")
+        check_two_element_tuple(diameter_std, 'diameter_std')
+        check_min_max_tuple(diameter_std, 'diameter_std')
 
         if (not isinstance(min_diameter, float)) and (not isinstance(min_diameter, int)):
             raise ValueError("Parameter `min_diameter` has to be of type 'float' or 'int'.")
@@ -277,6 +277,7 @@ class Particle:
         # Initialize parameters for particle generation:
         self.__particle_diameter_per_image = np.random.rand(self.__n_images) * (self.__diameters[1] - self.__diameters[0]) + self.__diameters[0]
         self.__particle_distance_per_image = np.random.rand(self.__n_images) * (self.__distances[1] - self.__distances[0]) + self.__distances[0]
+        self.__particle_diameter_std_per_image = np.random.rand(self.__n_images) * (self.__diameter_std[1] - self.__diameter_std[0]) + self.__diameter_std[0]
 
         # Use one of the available modes for image generation: - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -309,7 +310,7 @@ class Particle:
                 particle_positions[i, 0, :, :] = seeded_array
 
                 # Generate diameters for all particles in the current image:
-                current_diameters = np.random.normal(self.diameter_per_image[i], self.diameter_std, self.n_of_particles[i])
+                current_diameters = np.random.normal(self.diameter_per_image[i], self.diameter_std_per_image[i], self.n_of_particles[i])
                 if self.n_of_particles[i] > 0:
                     particle_diameters.append(np.clip(current_diameters, min_diameter, np.max(current_diameters)))
                 else:
@@ -366,7 +367,7 @@ class Particle:
                 particle_positions[i, 0, :, :] = seeded_array
 
                 # Generate diameters for all particles in the current image:
-                particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, n))
+                particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std_per_image[i], n))
 
             # Initialize the total number of particles:
             self.__n_of_particles = n_of_particles
@@ -449,6 +450,10 @@ class Particle:
         return self.__particle_diameter_per_image
 
     @property
+    def diameter_std_per_image(self):
+        return self.__particle_diameter_std_per_image
+
+    @property
     def distance_per_image(self):
         return self.__particle_distance_per_image
 
@@ -517,7 +522,7 @@ class Particle:
             particles_1 = Particle(n_images,
                                    size=image_size,
                                    diameters=(2,4),
-                                   diameter_std=1,
+                                   diameter_std=(0,1),
                                    densities=(0.1, 0.1),
                                    seeding_mode='random')
 
@@ -542,7 +547,7 @@ class Particle:
             particles_1 = Particle(n_images,
                                    size=image_size,
                                    diameters=(2,4),
-                                   diameter_std=1,
+                                   diameter_std=(0,1),
                                    seeding_mode='user')
 
             # Initially, all of these attributes will be None:
@@ -602,7 +607,7 @@ class Particle:
             particle_positions[i, 0, :, :] = seeded_array
 
             # Generate diameters for all particles in the current image:
-            particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std, n_particles))
+            particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std_per_image[i], n_particles))
 
         # Initialize the total number of particles:
         self.__n_of_particles = n_of_particles
@@ -782,7 +787,7 @@ class Particle:
                                  diameters=(1,4),
                                  distances=(1,2),
                                  densities=(0.05,0.1),
-                                 diameter_std=0.1,
+                                 diameter_std=(0,0.1),
                                  seeding_mode='random',
                                  random_seed=100)
 
