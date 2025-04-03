@@ -402,9 +402,11 @@ class Motion:
 
         n_added_particles = int(current_gain_percentage * n_particles / 100)
 
-        added_particle_coordinates = 1
+        added_particle_coordinates = np.zeros((n_added_particles, 2))
+        added_particle_coordinates[:, 0] = self.__particles.size_with_buffer[0] * np.random.rand(n_added_particles)
+        added_particle_coordinates[:, 1] = self.__particles.size_with_buffer[1] * np.random.rand(n_added_particles)
 
-        added_particle_diameters = 1
+        added_particle_diameters = np.random.normal(self.__particles.diameter_per_image[idx], self.__particles.diameter_std_per_image[idx], n_added_particles)
 
         if self.__verbose: print('Image ' + str(idx+1) + ':\t' + str(n_added_particles) + ' particles added')
 
@@ -518,7 +520,7 @@ class Motion:
                 added_particle_coordinates, added_particle_diameters = self.__add_particles(i, current_n_of_particles)
 
                 particle_coordinates_old = np.vstack((particle_coordinates_old, added_particle_coordinates))
-                updated_particle_diameters = np.vstack((updated_particle_diameters, added_particle_diameters))
+                updated_particle_diameters = np.hstack((updated_particle_diameters, added_particle_diameters))
 
             particle_coordinates_I2.append((particle_coordinates_old[:,0], particle_coordinates_old[:,1]))
             self.__updated_particle_diameters.append(updated_particle_diameters)
@@ -694,12 +696,21 @@ class Motion:
                 y_R = 1.0 / 6.0 * (y_R1 + 2 * y_R2 + 2 * y_R3 + y_R4)
                 x_R = 1.0 / 6.0 * (x_R1 + 2 * x_R2 + 2 * x_R3 + x_R4)
 
+            current_n_of_particles = particle_coordinates_old.shape[0]
+
             if self.__particles_lost:
 
-                idx_retained = self.__lose_particles(i, particle_coordinates_old.shape[0])
+                idx_retained = self.__lose_particles(i, current_n_of_particles)
 
                 particle_coordinates_old = particle_coordinates_old[idx_retained,:]
                 updated_particle_diameters = updated_particle_diameters[idx_retained]
+
+            if self.__particles_gained:
+
+                added_particle_coordinates, added_particle_diameters = self.__add_particles(i, current_n_of_particles)
+
+                particle_coordinates_old = np.vstack((particle_coordinates_old, added_particle_coordinates))
+                updated_particle_diameters = np.hstack((updated_particle_diameters, added_particle_diameters))
 
             particle_coordinates_I2.append((particle_coordinates_old[:,0], particle_coordinates_old[:,1]))
             self.__updated_particle_diameters.append(updated_particle_diameters)
