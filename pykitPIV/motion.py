@@ -253,6 +253,7 @@ class Motion:
             self.__loss_percentage_per_image = np.random.rand(self.__particles.n_images) * (self.__particle_loss[1] - self.__particle_loss[0]) + self.__particle_loss[0]
         else:
             self.__particles_lost = False
+            self.__loss_percentage_per_image = None
 
         # Check whether particles gain will have to be modeled:
         if isinstance(self.__particle_gain, str):
@@ -261,12 +262,14 @@ class Motion:
                 self.__gain_percentage_per_image = self.__loss_percentage_per_image
             else:
                 self.__particles_gained = False
+                self.__gain_percentage_per_image = None
         else:
             if self.__particle_gain[1] > 0:
                 self.__particles_gained = True
                 self.__gain_percentage_per_image = np.random.rand(self.__particles.n_images) * (self.__particle_gain[1] - self.__particle_gain[0]) + self.__particle_gain[0]
             else:
                 self.__particles_gained = False
+                self.__gain_percentage_per_image = None
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -350,6 +353,7 @@ class Motion:
                 self.__gain_percentage_per_image = self.__loss_percentage_per_image
         else:
             self.__particles_lost = False
+            self.__loss_percentage_per_image = None
 
     @particle_gain.setter
     def particle_gain(self, new_particle_gain):
@@ -370,12 +374,14 @@ class Motion:
                 self.__gain_percentage_per_image = self.__loss_percentage_per_image
             else:
                 self.__particles_gained = False
+                self.__gain_percentage_per_image = None
         else:
             if self.__particle_gain[1] > 0:
                 self.__particles_gained = True
                 self.__gain_percentage_per_image = np.random.rand(self.__particles.n_images) * (self.__particle_gain[1] - self.__particle_gain[0]) + self.__particle_gain[0]
             else:
                 self.__particles_gained = False
+                self.__gain_percentage_per_image = None
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
