@@ -148,7 +148,7 @@ class Motion:
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         percentage of lost particles between two consecutive PIV images. This percentage of particles from image :math:`I_1` will be randomly
         added in image :math:`I_2`. This parameter mimics the gain of luminosity for new particles that arrive into the laser plane.
-        It can also be set to a ``str`` ``'matching'``, in which case the gain of particles will exactly match
+        It can also be set to ``'matching'``, in which case the gain of particles will exactly match
         the number of particles lost per each PIV image pair.
     :param verbose: (optional)
         ``bool`` specifying if the verbose print statements should be displayed.
