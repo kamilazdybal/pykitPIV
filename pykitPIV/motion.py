@@ -110,7 +110,7 @@ class Motion:
                              diameters=(2, 4),
                              distances=(1, 2),
                              densities=(0.01, 0.05),
-                             diameter_std=1,
+                             diameter_std=(0.1,1),
                              seeding_mode='random',
                              random_seed=100)
 
@@ -126,8 +126,13 @@ class Motion:
                                                  displacement=(2, 5))
 
         # Initialize a motion object:
-        motion = Motion(particles, flowfield)
-
+        motion = Motion(particles,
+                        flowfield,
+                        time_separation=1,
+                        particle_loss=(0,2),
+                        particle_gain='matching',
+                        verbose=False,
+                        random_seed=None)
 
     :param particles:
         ``Particle`` class instance specifying the properties and positions of particles.
@@ -143,6 +148,8 @@ class Motion:
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         percentage of lost particles between two consecutive PIV images. This percentage of particles from image :math:`I_1` will be randomly
         added in image :math:`I_2`. This parameter mimics the gain of luminosity for new particles that arrive into the laser plane.
+        It can also be set to a ``str`` ``'matching'``, in which case the gain of particles will exactly match
+        the number of particles lost per each PIV image pair.
     :param verbose: (optional)
         ``bool`` specifying if the verbose print statements should be displayed.
     :param random_seed: (optional)
@@ -195,8 +202,12 @@ class Motion:
         check_two_element_tuple(particle_loss, 'particle_loss')
         check_min_max_tuple(particle_loss, 'particle_loss')
 
-        check_two_element_tuple(particle_gain, 'particle_gain')
-        check_min_max_tuple(particle_gain, 'particle_gain')
+        if isinstance(particle_gain, str):
+            if particle_gain != 'matching':
+                raise ValueError("When parameter `particle_gain` is a string it has to be equal to 'matching'.")
+        else:
+            check_two_element_tuple(particle_gain, 'particle_gain')
+            check_min_max_tuple(particle_gain, 'particle_gain')
 
         # Check that a velocity field is present in the FlowField class object:
         if flowfield.velocity_field is None:
@@ -218,6 +229,7 @@ class Motion:
         self.__flowfield = flowfield
         self.__time_separation = time_separation
         self.__particle_loss = particle_loss
+        self.__particle_gain = particle_gain
         self.__verbose = verbose
         self.__random_seed = random_seed
 
@@ -235,11 +247,26 @@ class Motion:
 
         self.__displacement_field_magnitude = np.sqrt(self.displacement_field[:, 0:1, :, :] ** 2 + self.displacement_field[:, 1:2, :, :] ** 2)
 
-        # Check whether particles loss/gain will have to be modeled:
+        # Check whether particles loss will have to be modeled:
         if self.__particle_loss[1] > 0:
             self.__particles_lost = True
+            self.__loss_percentage_per_image = np.random.rand(self.__particles.n_images) * (self.__particle_loss[1] - self.__particle_loss[0]) + self.__particle_loss[0]
         else:
             self.__particles_lost = False
+
+        # Check whether particles gain will have to be modeled:
+        if isinstance(self.__particle_gain, str):
+            if self.__particle_loss[1] > 0:
+                self.__particles_gained = True
+                self.__gain_percentage_per_image = self.__loss_percentage_per_image
+            else:
+                self.__particles_gained = False
+        else:
+            if self.__particle_gain[1] > 0:
+                self.__particles_gained = True
+                self.__gain_percentage_per_image = np.random.rand(self.__particles.n_images) * (self.__particle_gain[1] - self.__particle_gain[0]) + self.__particle_gain[0]
+            else:
+                self.__particles_gained = False
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -252,7 +279,23 @@ class Motion:
     def particle_loss(self):
         return self.__particle_loss
 
+    @property
+    def particle_gain(self):
+        return self.__particle_gain
+
+    @property
+    def random_seed(self):
+        return self.__random_seed
+
     # Properties computed at class init:
+    @property
+    def loss_percentage_per_image(self):
+        return self.__loss_percentage_per_image
+
+    @property
+    def gain_percentage_per_image(self):
+        return self.__gain_percentage_per_image
+
     @property
     def particle_coordinates_I1(self):
         return self.__particle_coordinates_I1
@@ -299,11 +342,40 @@ class Motion:
 
         self.__particle_loss = new_particle_loss
 
-        # Check whether particles loss/gain will have to be modeled:
+        # Check whether particle loss will have to be modeled:
         if self.__particle_loss[1] > 0:
             self.__particles_lost = True
+            self.__loss_percentage_per_image = np.random.rand(self.__particles.n_images) * (self.__particle_loss[1] - self.__particle_loss[0]) + self.__particle_loss[0]
+            if isinstance(self.__particle_gain, str):
+                self.__gain_percentage_per_image = self.__loss_percentage_per_image
         else:
             self.__particles_lost = False
+
+    @particle_gain.setter
+    def particle_gain(self, new_particle_gain):
+
+        if isinstance(new_particle_gain, str):
+            if new_particle_gain != 'matching':
+                raise ValueError("When parameter `particle_gain` is a string it has to be equal to 'matching'.")
+        else:
+            check_two_element_tuple(new_particle_gain, 'particle_gain')
+            check_min_max_tuple(new_particle_gain, 'particle_gain')
+
+        self.__particle_gain = new_particle_gain
+
+        # Check whether particle gain will have to be modeled:
+        if isinstance(self.__particle_gain, str):
+            if self.__particle_loss[1] > 0:
+                self.__particles_gained = True
+                self.__gain_percentage_per_image = self.__loss_percentage_per_image
+            else:
+                self.__particles_gained = False
+        else:
+            if self.__particle_gain[1] > 0:
+                self.__particles_gained = True
+                self.__gain_percentage_per_image = np.random.rand(self.__particles.n_images) * (self.__particle_gain[1] - self.__particle_gain[0]) + self.__particle_gain[0]
+            else:
+                self.__particles_gained = False
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -311,15 +383,32 @@ class Motion:
                          idx,
                          n_particles):
 
-        current_loss_percentage = np.random.rand(1) * (self.__particle_loss[1] - self.__particle_loss[0]) + self.__particle_loss[0]
-        current_loss_percentage = current_loss_percentage[0]
+        current_loss_percentage = self.loss_percentage_per_image[idx]
 
-        idx_removed = np.random.choice(np.array([i for i in range(0,n_particles)]), int(current_loss_percentage*n_particles/100), replace=False)
+        idx_removed = np.random.choice(np.array([i for i in range(0,n_particles)]), int(current_loss_percentage * n_particles / 100), replace=False)
         idx_retained = [ii for ii in range(0, n_particles) if ii not in idx_removed]
 
         if self.__verbose: print('Image ' + str(idx+1) + ':\t' + str(n_particles - len(idx_retained)) + ' particles lost')
 
         return idx_retained
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def __add_particles(self,
+                        idx,
+                        n_particles):
+
+        current_gain_percentage = self.gain_percentage_per_image[idx]
+
+        n_added_particles = int(current_gain_percentage * n_particles / 100)
+
+        added_particle_coordinates = 1
+
+        added_particle_diameters = 1
+
+        if self.__verbose: print('Image ' + str(idx+1) + ':\t' + str(n_added_particles) + ' particles added')
+
+        return added_particle_coordinates, added_particle_diameters
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -415,12 +504,21 @@ class Motion:
                 particle_coordinates_old = particle_coordinates_old[idx_retained,:]
                 updated_particle_diameters = updated_particle_diameters[idx_retained]
 
+            current_n_of_particles = particle_coordinates_old.shape[0]
+
             if self.__particles_lost:
 
-                idx_retained = self.__lose_particles(i, particle_coordinates_old.shape[0])
+                idx_retained = self.__lose_particles(i, current_n_of_particles)
 
                 particle_coordinates_old = particle_coordinates_old[idx_retained,:]
                 updated_particle_diameters = updated_particle_diameters[idx_retained]
+
+            if self.__particles_gained:
+
+                added_particle_coordinates, added_particle_diameters = self.__add_particles(i, current_n_of_particles)
+
+                particle_coordinates_old = np.vstack((particle_coordinates_old, added_particle_coordinates))
+                updated_particle_diameters = np.vstack((updated_particle_diameters, added_particle_diameters))
 
             particle_coordinates_I2.append((particle_coordinates_old[:,0], particle_coordinates_old[:,1]))
             self.__updated_particle_diameters.append(updated_particle_diameters)
