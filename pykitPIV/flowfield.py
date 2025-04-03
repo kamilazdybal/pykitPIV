@@ -1046,19 +1046,16 @@ class FlowField:
 
         if imposed_source_location is not None:
             source_h, source_w = imposed_source_location
-        else:
-            source_h = np.random.rand(self.__n_images) * (self.size_with_buffer[0]-1)
-            source_w = np.random.rand(self.__n_images) * (self.size_with_buffer[1]-1)
 
         for i in range(0, self.n_images):
 
+            if imposed_source_location is None:
+                source_h = np.random.rand(1) * (self.size_with_buffer[0] - 1)
+                source_w = np.random.rand(1) * (self.size_with_buffer[1] - 1)
+
             # Vector from source to each point:
-            if imposed_source_location is not None:
-                dx = grid_w - source_w
-                dy = grid_h - source_h
-            else:
-                dx = grid_w - source_w[i]
-                dy = grid_h - source_h[i]
+            dx = grid_w - source_w
+            dy = grid_h - source_h
 
             # Radial distance:
             r = np.sqrt(dx ** 2 + dy ** 2)
@@ -1099,7 +1096,7 @@ class FlowField:
 
             v(h, w) = - 2 (h - h_o)
 
-        where :math:`(h_o, w_o)` is the origin location.
+        where :math:`(h_o, w_o)` is the origin location on the PIV image.
 
         This potential flow is irrotational and divergence-free and can therefore be used for generating BOS images.
 
@@ -1162,8 +1159,8 @@ class FlowField:
         for i in range(0, self.n_images):
 
             if imposed_origin is None:
-                origin_h = np.random.rand(1) * self.size_with_buffer[0]
-                origin_w = np.random.rand(1) * self.size_with_buffer[1]
+                origin_h = np.random.rand(1) * (self.size_with_buffer[0] - 1)
+                origin_w = np.random.rand(1) * (self.size_with_buffer[1] - 1)
 
             # Vector from source to each point:
             dx = grid_w - origin_w
