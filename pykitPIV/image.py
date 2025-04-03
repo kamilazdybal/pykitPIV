@@ -821,12 +821,13 @@ class Image:
 
                 if image_instance == 1:
                     particle_diameter_on_image = self.__particles.particle_diameters[idx][p]
+                    ceil_of_particle_radius = np.ceil(self.__particles.particle_diameters[idx][p] / 2).astype(int)
                 elif image_instance == 2:
                     particle_diameter_on_image = self.__motion.updated_particle_diameters[idx][p]
+                    ceil_of_particle_radius = np.ceil(self.__motion.updated_particle_diameters[idx][p] / 2).astype(int)
 
                 px_c_height = np.floor(particle_height_coordinate[p]).astype(int)
                 px_c_width = np.floor(particle_width_coordinate[p]).astype(int)
-                ceil_of_particle_radius = np.ceil(self.__particles.particle_diameters[idx][p] / 2).astype(int)
 
                 # We only apply the Gaussian blur in the square neighborhood of the particle center:
                 for h in range(px_c_height - ceil_of_particle_radius, px_c_height + ceil_of_particle_radius + 1):
