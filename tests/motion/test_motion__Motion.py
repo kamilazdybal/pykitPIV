@@ -65,19 +65,33 @@ class TestMotionClass(unittest.TestCase):
                                                  n_gaussian_filter_iter=20,
                                                  displacement=(0, 10))
 
-        motion = Motion(particles, flowfield)
+        motion = Motion(particles,
+                        flowfield,
+                        time_separation=1,
+                        particle_loss=(1, 2),
+                        particle_gain=(1, 2),
+                        verbose=False,
+                        random_seed=None
+                        )
 
         # Attributes coming from user input:
         try:
             motion.time_separation
             motion.particle_loss
+            motion.particle_gain
+            motion.random_seed
         except Exception:
             self.assertTrue(False)
 
         # Attributes computed at class init:
         try:
+            motion.loss_percentage_per_image
+            motion.gain_percentage_per_image
             motion.particle_coordinates_I1
             motion.particle_coordinates_I2
+            motion.updated_particle_diameters
+            motion.displacement_field
+            motion.displacement_field_magnitude
         except Exception:
             self.assertTrue(False)
 
@@ -142,7 +156,13 @@ class TestMotionClass(unittest.TestCase):
                                                  n_gaussian_filter_iter=20,
                                                  displacement=(0, 10))
 
-        motion = Motion(particles, flowfield, time_separation=0.1)
+        motion = Motion(particles,
+                        flowfield,
+                        time_separation=0.1,
+                        particle_loss=(20,20),
+                        particle_gain=(0,0),
+                        random_seed=100)
+
         motion.forward_euler(n_steps=10)
 
         size_of_diameters = motion.updated_particle_diameters[0].shape
@@ -151,6 +171,30 @@ class TestMotionClass(unittest.TestCase):
 
         self.assertTrue(size_of_diameters[0] == size_of_coordinates_y[0])
         self.assertTrue(size_of_diameters[0] == size_of_coordinates_x[0])
+
+        motion_no_loss = Motion(particles,
+                                flowfield,
+                                time_separation=0.1,
+                                particle_loss=(0,0),
+                                particle_gain=(0,0),
+                                random_seed=100)
+
+        motion_no_loss.forward_euler(n_steps=10)
+
+        # Check that particles have been removed:
+
+        self.assertTrue(motion.updated_particle_diameters[0].shape != motion_no_loss.updated_particle_diameters[0].shape)
+
+        motion_with_loss_again = Motion(particles,
+                                        flowfield,
+                                        time_separation=0.1,
+                                        particle_loss=(20,20),
+                                        particle_gain=(0,0),
+                                        random_seed=100)
+
+        motion_with_loss_again.forward_euler(n_steps=10)
+
+        self.assertTrue(motion.updated_particle_diameters[0].shape == motion_with_loss_again.updated_particle_diameters[0].shape)
 
         # Scenario 2
         particles = Particle(1, size_buffer=2)
@@ -187,5 +231,60 @@ class TestMotionClass(unittest.TestCase):
 
         self.assertTrue(size_of_diameters[0] == size_of_coordinates_y[0])
         self.assertTrue(size_of_diameters[0] == size_of_coordinates_x[0])
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_motion__Motion__addition_of_particles(self):
+
+        # Scenario 1
+        particles = Particle(1, size_buffer=20)
+        flowfield = FlowField(1, size_buffer=20)
+
+        flowfield.generate_random_velocity_field(gaussian_filters=(10, 11),
+                                                 n_gaussian_filter_iter=20,
+                                                 displacement=(0, 10))
+
+        motion = Motion(particles,
+                        flowfield,
+                        time_separation=0.1,
+                        particle_loss=(0,0),
+                        particle_gain=(0,0),
+                        random_seed=100)
+
+        motion.forward_euler(n_steps=10)
+
+        motion_with_gain = Motion(particles,
+                                flowfield,
+                                time_separation=0.1,
+                                particle_loss=(20,20),
+                                particle_gain='matching',
+                                random_seed=100)
+
+        motion_with_gain.forward_euler(n_steps=10)
+
+        self.assertTrue(motion.updated_particle_diameters[0].shape == motion_with_gain.updated_particle_diameters[0].shape)
+
+        motion_with_non_matching_gain = Motion(particles,
+                                flowfield,
+                                time_separation=0.1,
+                                particle_loss=(20,20),
+                                particle_gain=(10,10),
+                                random_seed=100)
+
+        motion_with_non_matching_gain.forward_euler(n_steps=10)
+
+        self.assertTrue(motion.updated_particle_diameters[0].shape > motion_with_non_matching_gain.updated_particle_diameters[0].shape)
+
+        motion_with_non_matching_loss = Motion(particles,
+                                                flowfield,
+                                                time_separation=0.1,
+                                                particle_loss=(0,0),
+                                                particle_gain=(20,20),
+                                                random_seed=100)
+
+        motion_with_non_matching_loss.forward_euler(n_steps=10)
+
+        self.assertTrue(motion.updated_particle_diameters[0].shape < motion_with_non_matching_loss.updated_particle_diameters[0].shape)
+        self.assertTrue(motion_with_non_matching_gain.updated_particle_diameters[0].shape < motion_with_non_matching_loss.updated_particle_diameters[0].shape)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
