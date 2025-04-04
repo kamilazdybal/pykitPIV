@@ -42,31 +42,31 @@ class MotionSpecs:
                  n_images=1,
                  size=(512, 512),
                  size_buffer=10,
-                 random_seed=None,
                  n_steps=10,
                  time_separation=1,
-                 particle_loss=(0, 2),
-                 particle_gain=(0, 2)):
+                 particle_loss=(0, 0),
+                 particle_gain=(0, 0),
+                 random_seed=None,):
 
         self.n_images = n_images
         self.size = size
         self.size_buffer = size_buffer
-        self.random_seed = random_seed
         self.n_steps = n_steps
         self.time_separation = time_separation
         self.particle_loss = particle_loss
         self.particle_gain = particle_gain
+        self.random_seed = random_seed
 
     def __repr__(self):
         return (f"{self.__class__.__name__}"
                 f"(n_images={self.n_images},\n"
                 f"size={self.size},\n"
                 f"size_buffer={self.size_buffer},\n"
-                f"random_seed={self.random_seed},\n"
                 f"n_steps={self.n_steps},\n"
                 f"time_separation={self.time_separation},\n"
                 f"particle_loss={self.particle_loss},\n"
-                f"particle_gain={self.particle_gain})"
+                f"particle_gain={self.particle_gain},\n"
+                f"random_seed={self.random_seed})"
                 )
 
 ################################################################################
@@ -170,8 +170,8 @@ class Motion:
                  particles,
                  flowfield,
                  time_separation=1,
-                 particle_loss=(0, 2),
-                 particle_gain=(0, 2),
+                 particle_loss=(0, 0),
+                 particle_gain=(0, 0),
                  verbose=False,
                  random_seed=None):
 
