@@ -9,7 +9,7 @@ for training machine learning (ML) algorithms in velocimetry.
 various parameters that would normally be available in an experimental setting, such as seeding density,
 properties of the laser plane, camera exposure, particle loss, or experimental noise.
 We also provide an atlas of challenging synthetic velocity fields from analytic formulations,
-including flows with dilation and potential flows.
+including **compressible** and **incompressible** (potential) flows.
 The effects of particle drift and diffusion in stationary isotropic turbulence can also be added atop the
 velocity fields using the simplified Langevin model (SLM). In addition, a variational approach can
 connect with the real wind tunnel experimentation and use a generative model to sample new training data
