@@ -239,24 +239,32 @@ class Particle:
             check_min_max_tuple(diameters, 'diameters')
         elif isinstance(diameters, int) or isinstance(diameters, float):
             check_positive_int_or_float(diameters, 'diameters')
+        else:
+            raise ValueError("Parameter `diameters` has to be of type 'tuple' or 'int' or 'float'.")
 
         if isinstance(distances, tuple):
             check_two_element_tuple(distances, 'distances')
             check_min_max_tuple(distances, 'distances')
         elif isinstance(distances, int) or isinstance(distances, float):
             check_positive_int_or_float(distances, 'distances')
+        else:
+            raise ValueError("Parameter `distances` has to be of type 'tuple' or 'int' or 'float'.")
 
         if isinstance(densities, tuple):
             check_two_element_tuple(densities, 'densities')
             check_min_max_tuple(densities, 'densities')
         elif isinstance(densities, int) or isinstance(densities, float):
             check_positive_int_or_float(densities, 'densities')
+        else:
+            raise ValueError("Parameter `densities` has to be of type 'tuple' or 'int' or 'float'.")
 
         if isinstance(diameter_std, tuple):
             check_two_element_tuple(diameter_std, 'diameter_std')
             check_min_max_tuple(diameter_std, 'diameter_std')
         elif isinstance(diameter_std, int) or isinstance(diameter_std, float):
             check_non_negative_int_or_float(diameter_std, 'diameter_std')
+        else:
+            raise ValueError("Parameter `diameter_std` has to be of type 'tuple' or 'int' or 'float'.")
 
         if (not isinstance(min_diameter, float)) and (not isinstance(min_diameter, int)):
             raise ValueError("Parameter `min_diameter` has to be of type 'float' or 'int'.")
