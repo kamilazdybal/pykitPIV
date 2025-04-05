@@ -23,7 +23,7 @@ to be any random value between :math:`1 \text{px}` and :math:`4 \text{px}`, acro
 which denotes that the minimum particle diameter should be :math:`1 \text{px}`
 and the maximum particle diameter should be :math:`4 \text{px}`.
 
-During image generation, the actual particle diameters for each of the :math:`n` images will be drawn
+During image generation, the actual particle diameters for each of the :math:`N` images will be drawn
 from a uniform distribution like so:
 
 .. code:: python
@@ -55,7 +55,7 @@ Forcing a fixed value
 *********************
 
 The same experimental setting, which by default is randomized between some minimum and maximum value, can also be
-set to a fixed value for all :math:`n` images.
+set to a fixed value for all :math:`N` images.
 This can be accomplished by setting that parameter to an ``int`` or a ``float`` instead of a ``tuple``.
 
 For example, when:
@@ -64,7 +64,7 @@ For example, when:
 
     diameters = 2.0
 
-particle diameters will be exactly :math:`2 \text{px}` for all :math:`n` images.
+particle diameters will be exactly :math:`2 \text{px}` for all :math:`N` images.
 
 Of course, this will accomplish the same thing as setting:
 

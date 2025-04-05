@@ -6,7 +6,7 @@
 
 ### [`03`: Create `PyTorch` data loaders]()
 
-### [`04`: Connect with `PCAfold`]()
+### [`04`: Connect with `PCAfold` to postprocess PIV images]()
 
 ### [`05`: Upload external velocity field]()
 
@@ -14,13 +14,13 @@
 
 ### [`07`: Postprocess PIV images]()
 
-### [`08`: Integration with LIMA - Lightweight Image Matching Architecture]()
+### [`08`: Integration with `LIMA` - Lightweight Image Matching Architecture]()
 
 ### [`09`: Generate a temporal sequence of PIV images]()
 
 ### [`10`: Use the simplified Langevin model (SLM) to generate realistic velocity fields]()
 
-### [`11`: Create a reinforcement learning environment using a "virtual wind tunnel"]()
+### [`11`: Create a "virtual wind tunnel" as a reinforcement learning environment]()
 
 ### [`12`: Train reinforcement learning to detect sources and sinks]()
 
