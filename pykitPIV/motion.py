@@ -144,12 +144,14 @@ class Motion:
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         percentage of lost particles between two consecutive PIV images. This percentage of particles from image :math:`I_1` will be randomly
         removed in image :math:`I_2`. This parameter mimics the complete loss of luminosity of particles that move perpendicular to the laser plane.
+        It can also be set to ``int`` or ``float`` to generate a fixed particle loss value across all :math:`N` image pairs.
     :param particle_gain: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         percentage of lost particles between two consecutive PIV images. This percentage of particles from image :math:`I_1` will be randomly
         added in image :math:`I_2`. This parameter mimics the gain of luminosity for new particles that arrive into the laser plane.
         It can also be set to ``'matching'``, in which case the gain of particles will exactly match
         the number of particles lost per each PIV image pair.
+        It can also be set to ``int`` or ``float`` to generate a fixed particle gain value across all :math:`N` image pairs.
     :param verbose: (optional)
         ``bool`` specifying if the verbose print statements should be displayed.
     :param random_seed: (optional)
@@ -199,15 +201,24 @@ class Motion:
         if time_separation <= 0:
             raise ValueError("Parameter `time_separation` has to be a non-zero, positive number.")
 
-        check_two_element_tuple(particle_loss, 'particle_loss')
-        check_min_max_tuple(particle_loss, 'particle_loss')
+        if isinstance(particle_loss, tuple):
+            check_two_element_tuple(particle_loss, 'particle_loss')
+            check_min_max_tuple(particle_loss, 'particle_loss')
+        elif isinstance(particle_loss, int) or isinstance(particle_loss, float):
+            check_non_negative_int_or_float(particle_loss, 'particle_loss')
+        else:
+            raise ValueError("Parameter `particle_loss` has to be of type 'tuple' or 'int' or 'float'.")
 
         if isinstance(particle_gain, str):
             if particle_gain != 'matching':
                 raise ValueError("When parameter `particle_gain` is a string it has to be equal to 'matching'.")
-        else:
+        elif isinstance(particle_gain, tuple):
             check_two_element_tuple(particle_gain, 'particle_gain')
             check_min_max_tuple(particle_gain, 'particle_gain')
+        elif isinstance(particle_gain, int) or isinstance(particle_gain, float):
+            check_non_negative_int_or_float(particle_gain, 'particle_gain')
+        else:
+            raise ValueError("Parameter `particle_gain` has to be of type 'tuple' or 'int' or 'float' or set to a string 'matching'.")
 
         # Check that a velocity field is present in the FlowField class object:
         if flowfield.velocity_field is None:
@@ -228,8 +239,19 @@ class Motion:
         self.__particles = particles
         self.__flowfield = flowfield
         self.__time_separation = time_separation
-        self.__particle_loss = particle_loss
-        self.__particle_gain = particle_gain
+
+        if isinstance(particle_loss, tuple):
+            self.__particle_loss = particle_loss
+        else:
+            self.__particle_loss = (particle_loss, particle_loss)
+
+        if isinstance(particle_gain, tuple):
+            self.__particle_gain = particle_gain
+        elif isinstance(particle_gain, int) or isinstance(particle_gain, float):
+            self.__particle_gain = (particle_gain, particle_gain)
+        else:
+            self.__particle_gain = particle_gain
+
         self.__verbose = verbose
         self.__random_seed = random_seed
 
@@ -340,10 +362,18 @@ class Motion:
     @particle_loss.setter
     def particle_loss(self, new_particle_loss):
 
-        check_two_element_tuple(new_particle_loss, 'particle_loss')
-        check_min_max_tuple(new_particle_loss, 'particle_loss')
+        if isinstance(new_particle_loss, tuple):
+            check_two_element_tuple(new_particle_loss, 'particle_loss')
+            check_min_max_tuple(new_particle_loss, 'particle_loss')
+        elif isinstance(new_particle_loss, int) or isinstance(new_particle_loss, float):
+            check_non_negative_int_or_float(new_particle_loss, 'particle_loss')
+        else:
+            raise ValueError("Parameter `particle_loss` has to be of type 'tuple' or 'int' or 'float'.")
 
-        self.__particle_loss = new_particle_loss
+        if isinstance(new_particle_loss, tuple):
+            self.__particle_loss = new_particle_loss
+        else:
+            self.__particle_loss = (new_particle_loss, new_particle_loss)
 
         # Check whether particle loss will have to be modeled:
         if self.__particle_loss[1] > 0:
@@ -361,11 +391,20 @@ class Motion:
         if isinstance(new_particle_gain, str):
             if new_particle_gain != 'matching':
                 raise ValueError("When parameter `particle_gain` is a string it has to be equal to 'matching'.")
-        else:
+        elif isinstance(new_particle_gain, tuple):
             check_two_element_tuple(new_particle_gain, 'particle_gain')
             check_min_max_tuple(new_particle_gain, 'particle_gain')
+        elif isinstance(new_particle_gain, int) or isinstance(new_particle_gain, float):
+            check_non_negative_int_or_float(new_particle_gain, 'particle_gain')
+        else:
+            raise ValueError("Parameter `particle_gain` has to be of type 'tuple' or 'int' or 'float' or set to a string 'matching'.")
 
-        self.__particle_gain = new_particle_gain
+        if isinstance(new_particle_gain, tuple):
+            self.__particle_gain = new_particle_gain
+        elif isinstance(new_particle_gain, int) or isinstance(new_particle_gain, float):
+            self.__particle_gain = (new_particle_gain, new_particle_gain)
+        else:
+            self.__particle_gain = new_particle_gain
 
         # Check whether particle gain will have to be modeled:
         if isinstance(self.__particle_gain, str):
