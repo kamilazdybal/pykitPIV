@@ -312,8 +312,11 @@ class Particle:
 
         # Initialize parameters for particle generation:
         self.__particle_diameter_per_image = np.random.rand(self.__n_images) * (self.__diameters[1] - self.__diameters[0]) + self.__diameters[0]
-        self.__particle_distance_per_image = np.random.rand(self.__n_images) * (self.__distances[1] - self.__distances[0]) + self.__distances[0]
         self.__particle_diameter_std_per_image = np.random.rand(self.__n_images) * (self.__diameter_std[1] - self.__diameter_std[0]) + self.__diameter_std[0]
+
+        # These are initialized to None and will be overwritten depending on which seeding mode the user chooses:
+        self.__particle_density_per_image = None
+        self.__particle_distance_per_image = None
 
         # Use one of the available modes for image generation: - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -364,6 +367,7 @@ class Particle:
         elif seeding_mode == 'poisson':
 
             # Compute the seeding density for each image:
+            self.__particle_distance_per_image = np.random.rand(self.__n_images) * (self.__distances[1] - self.__distances[0]) + self.__distances[0]
             self.__particle_density_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
 
             # Initialize particle coordinates, positions, and diameters on each of the ``n_image`` images:
