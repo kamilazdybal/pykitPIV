@@ -33,9 +33,132 @@ class TestParticleClass(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def test_particle__Particle__attributes_available_after_class_init(self):
+    def test_particle__Particle__allowed_calls_densities_int(self):
 
-        particles = Particle(1)
+        try:
+            particles = Particle(1,
+                                 size=(20, 20),
+                                 size_buffer=10,
+                                 densities=1)
+        except Exception:
+            self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__allowed_calls_diameters_int(self):
+
+        try:
+            particles = Particle(1,
+                                 size=(20, 20),
+                                 size_buffer=10,
+                                 diameters=6)
+        except Exception:
+            self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__allowed_calls_distances_int(self):
+
+        try:
+            particles = Particle(1,
+                                 size=(20, 20),
+                                 size_buffer=10,
+                                 distances=1)
+        except Exception:
+            self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__allowed_calls_diameters_std_int(self):
+
+        try:
+            particles = Particle(1,
+                                 size=(20, 20),
+                                 size_buffer=10,
+                                 diameter_std=1)
+        except Exception:
+            self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__allowed_calls_diameters_std_int(self):
+
+        try:
+            particles = Particle(1,
+                                 size=(20, 20),
+                                 size_buffer=10,
+                                 diameter_std=0)
+        except Exception:
+            self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__allowed_calls_densities_float(self):
+
+        try:
+            particles = Particle(1,
+                                 size=(20, 20),
+                                 size_buffer=10,
+                                 densities=0.8)
+        except Exception:
+            self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__allowed_calls_diameters_float(self):
+
+        try:
+            particles = Particle(1,
+                                 size=(20, 20),
+                                 size_buffer=10,
+                                 diameters=2.5)
+        except Exception:
+            self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__allowed_calls_distances_float(self):
+
+        try:
+            particles = Particle(1,
+                                 size=(20, 20),
+                                 size_buffer=10,
+                                 distances=1.5)
+        except Exception:
+            self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__allowed_calls_diameters_std_float(self):
+
+        try:
+            particles = Particle(1,
+                                 size=(20, 20),
+                                 size_buffer=10,
+                                 diameter_std=0.5)
+        except Exception:
+            self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__allowed_calls_diameters_std_float(self):
+
+        try:
+            particles = Particle(1,
+                                 size=(20, 20),
+                                 size_buffer=10,
+                                 diameter_std=0.0)
+        except Exception:
+            self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__attributes_available_after_class_init_random_seeding_mode(self):
+
+        # Random seeding mode:
+
+        particles = Particle(1,
+                             seeding_mode='random')
 
         # Attributes coming from user input:
         try:
@@ -46,6 +169,7 @@ class TestParticleClass(unittest.TestCase):
             particles.distances
             particles.densities
             particles.diameter_std
+            particles.min_diameter
             particles.seeding_mode
             particles.random_seed
         except Exception:
@@ -55,9 +179,11 @@ class TestParticleClass(unittest.TestCase):
         try:
             particles.size_with_buffer
             particles.diameter_per_image
+            particles.diameter_std_per_image
             particles.distance_per_image
             particles.density_per_image
             particles.n_of_particles
+            particles.particle_coordinates
             particles.particle_positions
             particles.particle_diameters
         except Exception:
@@ -65,12 +191,109 @@ class TestParticleClass(unittest.TestCase):
 
         self.assertTrue(isinstance(particles.size_with_buffer, tuple))
         self.assertTrue(isinstance(particles.diameter_per_image, np.ndarray))
-        self.assertTrue(isinstance(particles.distance_per_image, np.ndarray))
+        self.assertTrue(isinstance(particles.diameter_std_per_image, np.ndarray))
+        self.assertTrue(particles.distance_per_image is None)
         self.assertTrue(isinstance(particles.density_per_image, np.ndarray))
-
         self.assertTrue(isinstance(particles.n_of_particles, list))
+        self.assertTrue(isinstance(particles.particle_coordinates, list))
         self.assertTrue(isinstance(particles.particle_positions, np.ndarray))
         self.assertTrue(isinstance(particles.particle_diameters, list))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__attributes_available_after_class_init_poisson_seeding_mode(self):
+
+        # Poisson seeding mode:
+
+        particles = Particle(1,
+                             seeding_mode='poisson')
+
+        # Attributes coming from user input:
+        try:
+            particles.n_images
+            particles.size
+            particles.size_buffer
+            particles.diameters
+            particles.distances
+            particles.densities
+            particles.diameter_std
+            particles.min_diameter
+            particles.seeding_mode
+            particles.random_seed
+        except Exception:
+            self.assertTrue(False)
+
+        # Attributes computed at class init:
+        try:
+            particles.size_with_buffer
+            particles.diameter_per_image
+            particles.diameter_std_per_image
+            particles.distance_per_image
+            particles.density_per_image
+            particles.n_of_particles
+            particles.particle_coordinates
+            particles.particle_positions
+            particles.particle_diameters
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(isinstance(particles.size_with_buffer, tuple))
+        self.assertTrue(isinstance(particles.diameter_per_image, np.ndarray))
+        self.assertTrue(isinstance(particles.diameter_std_per_image, np.ndarray))
+        self.assertTrue(isinstance(particles.distance_per_image, np.ndarray))
+        self.assertTrue(isinstance(particles.density_per_image, np.ndarray))
+        self.assertTrue(isinstance(particles.n_of_particles, list))
+        self.assertTrue(isinstance(particles.particle_coordinates, list))
+        self.assertTrue(isinstance(particles.particle_positions, np.ndarray))
+        self.assertTrue(isinstance(particles.particle_diameters, list))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_particle__Particle__attributes_available_after_class_init_user_seeding_mode(self):
+
+        # User seeding mode:
+
+        particles = Particle(1,
+                             seeding_mode='user')
+
+        # Attributes coming from user input:
+        try:
+            particles.n_images
+            particles.size
+            particles.size_buffer
+            particles.diameters
+            particles.distances
+            particles.densities
+            particles.diameter_std
+            particles.min_diameter
+            particles.seeding_mode
+            particles.random_seed
+        except Exception:
+            self.assertTrue(False)
+
+        # Attributes computed at class init:
+        try:
+            particles.size_with_buffer
+            particles.diameter_per_image
+            particles.diameter_std_per_image
+            particles.distance_per_image
+            particles.density_per_image
+            particles.n_of_particles
+            particles.particle_coordinates
+            particles.particle_positions
+            particles.particle_diameters
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(isinstance(particles.size_with_buffer, tuple))
+        self.assertTrue(isinstance(particles.diameter_per_image, np.ndarray))
+        self.assertTrue(isinstance(particles.diameter_std_per_image, np.ndarray))
+        self.assertTrue(particles.distance_per_image is None)
+        self.assertTrue(particles.density_per_image is None)
+        self.assertTrue(particles.n_of_particles is None)
+        self.assertTrue(particles.particle_coordinates is None)
+        self.assertTrue(particles.particle_positions is None)
+        self.assertTrue(particles.particle_diameters is None)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -192,18 +415,20 @@ class TestParticleClass(unittest.TestCase):
 
         for i in range(0,loop_for):
 
-            particles = Particle(100,
-                                 size=(200, 200),
-                                 distances=(6, 10.5))
+            particles = Particle(5,
+                                 size=(20, 20),
+                                 distances=(6, 10.5),
+                                 seeding_mode='poisson')
 
             self.assertTrue(np.min(particles.distance_per_image) >= 6)
             self.assertTrue(np.max(particles.distance_per_image) <= 10.5)
 
         for i in range(0,loop_for):
 
-            particles = Particle(100,
-                                 size=(200, 200),
-                                 distances=(1.5, 8))
+            particles = Particle(5,
+                                 size=(20, 20),
+                                 distances=(1.5, 8),
+                                 seeding_mode='poisson')
 
             self.assertTrue(np.min(particles.distance_per_image) >= 1.5)
             self.assertTrue(np.max(particles.distance_per_image) <= 8)
