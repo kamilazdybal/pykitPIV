@@ -83,7 +83,7 @@ class ParticleSpecs:
 
 class Particle:
     """
-    Generates tracer particles with specified properties for a set of :math:`N` PIV image pairs.
+    Generates tracer particles with specified properties for a set of :math:`N` image pairs.
     This class generates the starting positions for tracer particles, *i.e.*, the ones used for :math:`I_1`.
 
     **Example:**
@@ -116,7 +116,7 @@ class Particle:
         :width: 800
 
     :param n_images:
-        ``int`` specifying the number of PIV image pairs, :math:`N`, to create.
+        ``int`` specifying the number of image pairs, :math:`N`, to create.
     :param size: (optional)
         ``tuple`` of two ``int`` elements specifying the size of images in pixels :math:`[\\text{px}]`.
         The first number is the image height, :math:`H`, the second number is the image width, :math:`W`.
@@ -127,12 +127,13 @@ class Particle:
         in order to allow new particles to arrive into the image area
         and prevent spurious disappearance of particles near image boundaries.
     :param diameters: (optional)
-        ``tuple`` of two ``int`` elements specifying the minimum (first element) and maximum (second element)
-        particle diameter in pixels :math:`[\\text{px}]` to randomly sample from across all generated PIV image pairs.
-        Note, that one PIV pair will be associated with one (fixed) particle diameter, but the random sample
-        between minimum and maximum diameter will generate variation in diameters across :math:`N` PIV image pairs.
-        You can steer the deviation from that diameter within each single PIV image pair
+        ``tuple`` of two ``int`` or ``float`` elements specifying the minimum (first element) and maximum (second element)
+        particle diameter in pixels :math:`[\\text{px}]` to randomly sample from across all generated image pairs.
+        Note, that one image pair will be associated with one (fixed) particle diameter, but the random sample
+        between minimum and maximum diameter will generate variation in diameters across :math:`N` image pairs.
+        You can steer the deviation from that diameter within each single image pair
         using the ``diameter_std`` parameter.
+        It can also be set to ``int`` or ``float`` to generate a fixed diameter value across all :math:`N` image pairs.
     :param distances: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         particle distances in pixels :math:`[\\text{px}]` to randomly sample from.
@@ -144,7 +145,7 @@ class Particle:
     :param diameter_std: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         standard deviation in pixels :math:`[\\text{px}]` for the distribution
-        of particle diameters within each PIV image pair. If set to zero, all particles in a PIV image pair will have
+        of particle diameters within each image pair. If set to zero, all particles in an image pair will have
         diameters exactly equal. If the choice of the ``diameter_std`` causes any diameters to be negative, the diameters
         will be clipped such that the minimum diameter is ``min_diameter``.
     :param min_diameter: (optional)
@@ -159,7 +160,7 @@ class Particle:
           from one another. This is particularly useful for generation BOS-like background image.
         - ``'user'`` seeding allows for particle coordinates to be provided by the user.
           This provides an interesting functionality where the user can chain movement of particles and create
-          time-resolved PIV sequence of images.
+          time-resolved sequence of images.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
         If specified, all image generation is reproducible.
@@ -188,13 +189,13 @@ class Particle:
       The positions are computed based on the ``seeding_mode``. The first element in each tuple are the coordinates
       along the image height, and the second element are the coordinates along the image width.
     - **particle_positions** - (read-only) ``numpy.ndarray`` specifying the per-pixel starting positions of all particles' centers
-      for each PIV image pair; these positions will later populate the first PIV image frame, :math:`I_1`.
+      for each image pair; these positions will later populate the first image frame, :math:`I_1`.
       The positions are computed based on the ``seeding_mode``. If a particle's position falls into
       a specific pixel coordinate, this pixel's value is increased by one. Zero entry indicates that no particles are present
       inside that pixel.
-      This array has size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number PIV image pairs,
+      This array has size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number of image pairs,
       :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height
-      and :math:`W` the width of each PIV image, and :math:`b` is an optional image buffer.
+      and :math:`W` the width of each image, and :math:`b` is an optional image buffer.
     - **particle_diameters** - (read-only) ``list`` of ``numpy.ndarray``, each specifying the diameters of
       all seeded particles in pixels :math:`[\\text{px}]`
       for each image based on each template diameter. Each array in this list has length :math:`n_i`.
@@ -230,8 +231,12 @@ class Particle:
         if size_buffer < 0:
             raise ValueError("Parameter `size_buffer` has to non-negative.")
 
-        check_two_element_tuple(diameters, 'diameters')
-        check_min_max_tuple(diameters, 'diameters')
+        if isinstance(diameters, tuple):
+            check_two_element_tuple(diameters, 'diameters')
+            check_min_max_tuple(diameters, 'diameters')
+        elif isinstance(diameters, int) or isinstance(diameters, float):
+            check_positive_int_or_float(diameters, 'diameters')
+
         check_two_element_tuple(distances, 'distances')
         check_min_max_tuple(distances, 'distances')
         check_two_element_tuple(densities, 'densities')
@@ -261,7 +266,12 @@ class Particle:
         self.__n_images = n_images
         self.__size = size
         self.__size_buffer = size_buffer
-        self.__diameters = diameters
+
+        if isinstance(diameters, tuple):
+            self.__diameters = diameters
+        else:
+            self.__diameters = (diameters, diameters)
+
         self.__distances = distances
         self.__densities = densities
         self.__diameter_std = diameter_std
