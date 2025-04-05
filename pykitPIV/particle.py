@@ -127,27 +127,30 @@ class Particle:
         in order to allow new particles to arrive into the image area
         and prevent spurious disappearance of particles near image boundaries.
     :param diameters: (optional)
-        ``tuple`` of two ``int`` or ``float`` elements specifying the minimum (first element) and maximum (second element)
+        ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         particle diameter in pixels :math:`[\\text{px}]` to randomly sample from across all generated image pairs.
         Note, that one image pair will be associated with one (fixed) particle diameter, but the random sample
         between minimum and maximum diameter will generate variation in diameters across :math:`N` image pairs.
+        It can also be set to ``int`` or ``float`` to generate a fixed diameter value across all :math:`N` image pairs.
         You can steer the deviation from that diameter within each single image pair
         using the ``diameter_std`` parameter.
-        It can also be set to ``int`` or ``float`` to generate a fixed diameter value across all :math:`N` image pairs.
     :param distances: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         particle distances in pixels :math:`[\\text{px}]` to randomly sample from.
         Only used when ``seeding_mode`` is ``'poisson'``.
+        It can also be set to ``int`` or ``float`` to generate fixed distances across all :math:`N` image pairs.
     :param densities: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         particle seeding density on an image in particle per pixel :math:`[\\text{ppp}]` to randomly sample from.
         Only used when ``seeding_mode`` is ``'random'``.
+        It can also be set to ``int`` or ``float`` to generate a fixed densities value across all :math:`N` image pairs.
     :param diameter_std: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         standard deviation in pixels :math:`[\\text{px}]` for the distribution
         of particle diameters within each image pair. If set to zero, all particles in an image pair will have
         diameters exactly equal. If the choice of the ``diameter_std`` causes any diameters to be negative, the diameters
         will be clipped such that the minimum diameter is ``min_diameter``.
+        It can also be set to ``int`` or ``float`` to generate a fixed standard deviation value across all :math:`N` image pairs.
     :param min_diameter: (optional)
         ``float`` or ``int`` specifying the minimum particle diameter that will be used if the standard deviation
         (``diameter_std``) causes any diameters to be negative.
@@ -157,7 +160,7 @@ class Particle:
 
         - ``'random'`` seeding generates random locations of particles on the available image area.
         - ``'poisson'`` seeding is also random, but makes sure that particles are kept at minimum ``distances``
-          from one another. This is particularly useful for generation BOS-like background image.
+          from one another. This is particularly useful when generating BOS images.
         - ``'user'`` seeding allows for particle coordinates to be provided by the user.
           This provides an interesting functionality where the user can chain movement of particles and create
           time-resolved sequence of images.
@@ -237,12 +240,23 @@ class Particle:
         elif isinstance(diameters, int) or isinstance(diameters, float):
             check_positive_int_or_float(diameters, 'diameters')
 
-        check_two_element_tuple(distances, 'distances')
-        check_min_max_tuple(distances, 'distances')
-        check_two_element_tuple(densities, 'densities')
-        check_min_max_tuple(densities, 'densities')
-        check_two_element_tuple(diameter_std, 'diameter_std')
-        check_min_max_tuple(diameter_std, 'diameter_std')
+        if isinstance(distances, tuple):
+            check_two_element_tuple(distances, 'distances')
+            check_min_max_tuple(distances, 'distances')
+        elif isinstance(distances, int) or isinstance(distances, float):
+            check_positive_int_or_float(distances, 'distances')
+
+        if isinstance(densities, tuple):
+            check_two_element_tuple(densities, 'densities')
+            check_min_max_tuple(densities, 'densities')
+        elif isinstance(densities, int) or isinstance(densities, float):
+            check_positive_int_or_float(densities, 'densities')
+
+        if isinstance(diameter_std, tuple):
+            check_two_element_tuple(diameter_std, 'diameter_std')
+            check_min_max_tuple(diameter_std, 'diameter_std')
+        elif isinstance(diameter_std, int) or isinstance(diameter_std, float):
+            check_non_negative_int_or_float(diameter_std, 'diameter_std')
 
         if (not isinstance(min_diameter, float)) and (not isinstance(min_diameter, int)):
             raise ValueError("Parameter `min_diameter` has to be of type 'float' or 'int'.")
@@ -272,9 +286,21 @@ class Particle:
         else:
             self.__diameters = (diameters, diameters)
 
-        self.__distances = distances
-        self.__densities = densities
-        self.__diameter_std = diameter_std
+        if isinstance(distances, tuple):
+            self.__distances = distances
+        else:
+            self.__distances = (distances, distances)
+
+        if isinstance(densities, tuple):
+            self.__densities = densities
+        else:
+            self.__densities = (densities, densities)
+
+        if isinstance(diameter_std, tuple):
+            self.__diameter_std = diameter_std
+        else:
+            self.__diameter_std = (diameter_std, diameter_std)
+
         self.__min_diameter = min_diameter
         self.__seeding_mode = seeding_mode
         self.__random_seed = random_seed
