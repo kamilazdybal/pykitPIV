@@ -206,12 +206,12 @@ class Particle:
 
     def __init__(self,
                  n_images,
-                 size=(512,512),
+                 size=(512, 512),
                  size_buffer=10,
-                 diameters=(3,6),
-                 distances=(0.5,2),
-                 densities=(0.05,0.1),
-                 diameter_std=(0,0.1),
+                 diameters=(3, 6),
+                 distances=(0.5, 2),
+                 densities=(0.05, 0.1),
+                 diameter_std=(0, 0.1),
                  min_diameter=1e-2,
                  seeding_mode='random',
                  random_seed=None):
