@@ -13,7 +13,7 @@ including **compressible** and **incompressible** (potential) flows.
 The effects of particle drift and diffusion in stationary isotropic turbulence can also be added atop the
 velocity fields using the simplified Langevin model (SLM). In addition, a variational approach can
 connect with the real wind tunnel experimentation and use a generative model to sample new training data
-that belongs to the distribution of the specific experimental setting.
+that belong to the distribution of the specific experimental setting.
 This can help in re-training ML agents whenever there is a need to extend their range of operation
 to new experimental scenarios.
 
@@ -22,7 +22,7 @@ It exploits the idea that if the time separation between two experimental images
 kinematic relationship between two consecutive images is sufficient to determine particle displacement fields.
 
 The graph below shows the overview of functionalities and possible workflows constructed
-from the five main classes that mimic an experimental setup and act as a "*virtual wind tunnel*".
+from the five main classes that mimic an experimental setup and act as a *virtual wind tunnel*.
 The ML module (``pykitPIV.ml``) connects with each of the five main classes and provides integrations
 with algorithms such as **convolutional neural networks**, **reinforcement learning**,
 **variational and generative approaches**, and **active learning**.
@@ -67,6 +67,7 @@ If you use **pykitPIV** in your work, we will appreciate the citation to the fol
 
     preliminaries/classes
     preliminaries/indexing
+    preliminaries/randomization
     preliminaries/setting-spectra
 
 .. toctree::
