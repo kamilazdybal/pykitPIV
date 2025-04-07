@@ -118,24 +118,34 @@ class Postprocess:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def add_gaussian_noise(self,
-                           noise_level,
-                           std):
+                           loc=0.0,
+                           scale=1000):
         """
         Adds Gaussian noise to the PIV image pairs tensor or any image-like array of size :math:`(N, H, W)`
         or :math:`(N, 2, H, W)`.
 
-        :param std: (optional)
+        :param scale: (optional)
             ``int`` or ``flaot`` specifying the standard deviation for the noise.
+            The unit of the standard deviation is image intensity.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+        # Input parameter check:
 
+        if not isinstance(loc, int) and not isinstance(loc, float):
+            raise ValueError("Parameter `loc` has to be of type `int` or `float`.")
 
+        if not isinstance(scale, int) and not isinstance(scale, float):
+            raise ValueError("Parameter `scale` has to be of type `int` or `float`.")
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        pass
+        image_tensor_with_noise = self.image_tensor + np.random.normal(loc=loc,
+                                                                       scale=scale,
+                                                                       size=np.shape(self.image_tensor))
 
+        self.__processed_image_tensor = image_tensor_with_noise
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
