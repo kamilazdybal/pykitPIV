@@ -23,27 +23,31 @@ class Postprocess:
 
     .. code:: python
 
-        from pykitPIV import Postprocess
+        from pykitPIV import Image, Postprocess
 
-        # Generate images:
-
-
-
+        # Upload saved images:
+        image = Image()
+        images_tensor_dic = image.upload_from_h5(filename='pykitPIV-dataset.h5')
+        images_tensor = images_tensor_dic['I']
 
         # Initialize a postprocessing object:
         postprocess = Postprocess(image_tensor, random_seed=100)
 
+        # Check if paired or single image frames have been uploaded:
+        postprocess.image_pair
 
     :param image_tensor:
-        ``numpy.ndarray`` specifying image or images to postprocess. It can be an array of size ``(n_images, image_height, image_width)``
-            or ``(n_images, 2, image_height, image_width)``.
+        ``numpy.ndarray`` specifying image or images to postprocess. It can be an array of size :math:`(N, H, W)`
+        or :math:`(N, 2, H, W)`.
     :param random_seed: (optional)
-        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
+        ``int`` specifying the random seed for random number generation in ``numpy``.
+        If specified, all operations are reproducible.
 
     **Attributes:**
 
     - **random_seed** - (read-only) as per user input.
     - **image_tensor** - (read-only) ``numpy.ndarray`` storing the image tensor to postprocess.
+    - **image_pair** - (read-only) ``bool`` specifying whether paired or single images have been uploaded.
     - **processed_image_tensor** - (read-only) ``numpy.ndarray`` storing the postprocessed image tensor.
     """
 
@@ -104,27 +108,67 @@ class Postprocess:
 
     # Properties computed at class init:
     @property
+    def image_pair(self):
+        return self.__image_pair
+
+    @property
     def processed_image_tensor(self):
         return self.__processed_image_tensor
 
-    @property
-    def image_pair(self):
-        return self.__image_pair
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def add_gaussian_noise(self,
+                           noise_level,
+                           std):
+        """
+        Adds Gaussian noise to the PIV image pairs tensor or any image-like array of size :math:`(N, H, W)`
+        or :math:`(N, 2, H, W)`.
+
+        :param std: (optional)
+            ``int`` or ``flaot`` specifying the standard deviation for the noise.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+
+
+        pass
+
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def add_shot_noise(self):
+        """
+        Adds shot noise to the PIV image pairs tensor or any image-like array of size :math:`(N, H, W)`
+        or :math:`(N, 2, H, W)`.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+
+
+
+        pass
+
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def log_transform_images(self,
                              addition=1):
         """
-        Log-transforms PIV image pairs tensor or any image-like array of size ``(n_images, image_height, image_width)``
-        or ``(n_images, 2, image_height, image_width)``.
+        Log-transforms PIV image pairs tensor or any image-like array of size  :math:`(N, H, W)`
+        or :math:`(N, 2, H, W)`.
 
         .. math::
 
             \mathbf{T}_{\\text{log}} = \log_{10} (\mathbf{T} + a)
 
         :param addition: (optional)
-            ``int`` specifying the added constant, :math:`a`, whose purpose is to eliminate zero elements in the images tensor.
+            ``int`` or ``float`` specifying the added constant, :math:`a`,
+            whose purpose is to eliminate zero elements in the images tensor.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -216,7 +260,8 @@ class Postprocess:
              dpi=300,
              filename=None):
         """
-        Plots a single, post-processed static image. For PIV images, the user can select between :math:`I_1` or :math:`I_2`.
+        Plots a single, post-processed static image. For PIV images,
+        the user can select between :math:`I_1` or :math:`I_2`.
 
         :param original:
             ``bool`` specifying whether the original or the post-processed image tensor should be plotted.

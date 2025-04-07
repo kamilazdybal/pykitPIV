@@ -241,7 +241,7 @@ class PIVEnv(gym.Env):
         pre-process them as needed.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
-        If specified, all image generation is reproducible.
+        If specified, all operations are reproducible.
     """
 
     def __init__(self,
@@ -1817,7 +1817,7 @@ class Rewards:
         ``bool`` specifying if the verbose print statements should be displayed.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
-        If specified, all image generation is reproducible.
+        If specified, all operations are reproducible.
     """
 
     def __init__(self,
@@ -1996,7 +1996,7 @@ class Cues:
         ``bool`` specifying if the verbose print statements should be displayed.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
-        If specified, all image generation is reproducible.
+        If specified, all operations are reproducible.
     :param sample_every_n: (optional)
         ``int`` specifying the step in sampling the displacement vectors over a uniform grid.
     :param normalize_displacement_vectors: (optional)

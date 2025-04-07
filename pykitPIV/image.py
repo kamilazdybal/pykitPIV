@@ -104,7 +104,8 @@ class Image:
     :param verbose: (optional)
         ``bool`` specifying if the verbose print statements should be displayed.
     :param random_seed: (optional)
-        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
+        ``int`` specifying the random seed for random number generation in ``numpy``.
+        If specified, all operations are reproducible.
 
     **Attributes:**
 

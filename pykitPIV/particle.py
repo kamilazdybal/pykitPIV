@@ -166,7 +166,7 @@ class Particle:
           time-resolved sequence of images.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
-        If specified, all image generation is reproducible.
+        If specified, all operations are reproducible.
 
     **Attributes:**
 

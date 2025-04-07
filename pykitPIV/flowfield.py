@@ -159,7 +159,8 @@ class FlowField:
         ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
         This number should be approximately equal to the maximum displacement that particles are subject to in order to allow for new particles to arrive into the image area.
     :param random_seed: (optional)
-        ``int`` specifying the random seed for random number generation in ``numpy``. If specified, all image generation is reproducible.
+        ``int`` specifying the random seed for random number generation in ``numpy``.
+        If specified, all operations are reproducible.
 
     **Attributes:**
 
