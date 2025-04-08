@@ -19,6 +19,15 @@ class Postprocess:
     """
     Postprocesses images.
 
+    .. note::
+
+        Running multiple postprocessing functions on a single object of the ``Postprocess`` class will create
+        a superposition of those functions. This way, you can chain multiple transformations, such as:
+
+        log-transformation :math:`\\rightarrow` smoothing :math:`\\rightarrow` adding Gaussian noise.
+
+        The final outcome will always be stored in the attribute ``processed_image_tensor``.
+
     **Example:**
 
     .. code:: python
@@ -46,9 +55,11 @@ class Postprocess:
     **Attributes:**
 
     - **random_seed** - (read-only) as per user input.
-    - **image_tensor** - (read-only) ``numpy.ndarray`` storing the image tensor to postprocess.
+    - **image_tensor** - (read-only) ``numpy.ndarray`` storing the (original) image tensor to postprocess.
     - **image_pair** - (read-only) ``bool`` specifying whether paired or single images have been uploaded.
     - **processed_image_tensor** - (read-only) ``numpy.ndarray`` storing the postprocessed image tensor.
+      Note that when multiple postprocessing operations are called on the same object of class ``Postprocess``,
+      this quantity will store a superposition of them, corresponding to the sequence of execution.
     """
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -93,7 +104,10 @@ class Postprocess:
         self.__image_tensor = image_tensor
 
         # Initialize processed image tensor:
-        self.__processed_image_tensor = None
+        self.__processed_image_tensor = image_tensor
+
+        # Initialize parameters of the Gaussian noise:
+        self.__scale_per_image = None
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -115,17 +129,43 @@ class Postprocess:
     def processed_image_tensor(self):
         return self.__processed_image_tensor
 
+    @property
+    def scale_per_image(self):
+        return self.__scale_per_image
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def add_gaussian_noise(self,
                            loc=0.0,
-                           scale=1000):
+                           scale=(500, 1000)):
         """
-        Adds Gaussian noise to the PIV image pairs tensor or any image-like array of size :math:`(N, H, W)`
+        Adds Gaussian noise to the image tensor or any image-like array of size :math:`(N, H, W)`
         or :math:`(N, 2, H, W)`.
 
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Image, Postprocess
+
+            # Upload saved images:
+            image = Image()
+            images_tensor_dic = image.upload_from_h5(filename='pykitPIV-dataset.h5')
+            images_tensor = images_tensor_dic['I']
+
+            # Initialize a postprocessing object:
+            postprocess = Postprocess(image_tensor, random_seed=100)
+
+            # Add noise to the uploaded images:
+            postprocess.add_gaussian_noise(loc=0.0,
+                                           scale=(500,1000))
+
+        :param loc: (optional)
+            ``int`` or ``float`` specifying the center of the Gaussian distribution.
         :param scale: (optional)
-            ``int`` or ``flaot`` specifying the standard deviation for the noise.
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+            standard deviation for the noise on an image to randomly sample from.
+            It can also be set to ``int`` or ``float`` to generate a fixed standard deviation value across all :math:`N` image pairs.
             The unit of the standard deviation is image intensity.
         """
 
@@ -136,14 +176,37 @@ class Postprocess:
         if not isinstance(loc, int) and not isinstance(loc, float):
             raise ValueError("Parameter `loc` has to be of type `int` or `float`.")
 
-        if not isinstance(scale, int) and not isinstance(scale, float):
-            raise ValueError("Parameter `scale` has to be of type `int` or `float`.")
+        if isinstance(scale, tuple):
+            check_two_element_tuple(scale, 'scale')
+            check_min_max_tuple(scale, 'scale')
+        elif isinstance(scale, int) or isinstance(scale, float):
+            check_non_negative_int_or_float(scale, 'scale')
+        else:
+            raise ValueError("Parameter `scale` has to be of type 'tuple' or 'int' or 'float'.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        image_tensor_with_noise = self.image_tensor + np.random.normal(loc=loc,
-                                                                       scale=scale,
-                                                                       size=np.shape(self.image_tensor))
+        if isinstance(scale, tuple):
+            __scales = scale
+        else:
+            __scales = (scale, scale)
+
+        n_images = self.image_tensor.shape[0]
+
+        self.__scale_per_image = np.random.rand(n_images) * (__scales[1] - __scales[0]) + __scales[0]
+
+        image_tensor_with_noise = np.zeros_like(self.image_tensor)
+
+        for i in range(0, n_images):
+
+            if self.__image_pair:
+                image_tensor_with_noise[i,:,:,:] = self.processed_image_tensor[i,:,:,:] + np.random.normal(loc=loc,
+                                                                                                           scale=self.__scale_per_image[i],
+                                                                                                           size=np.shape(self.image_tensor[i,:,:,:]))
+            else:
+                image_tensor_with_noise[i,:,:] = self.processed_image_tensor[i,:,:] + np.random.normal(loc=loc,
+                                                                                                       scale=self.__scale_per_image[i],
+                                                                                                       size=np.shape(self.image_tensor[i,:,:]))
 
         self.__processed_image_tensor = image_tensor_with_noise
 
@@ -151,8 +214,25 @@ class Postprocess:
 
     def add_shot_noise(self):
         """
-        Adds shot noise to the PIV image pairs tensor or any image-like array of size :math:`(N, H, W)`
+        Adds shot noise to the image tensor or any image-like array of size :math:`(N, H, W)`
         or :math:`(N, 2, H, W)`.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Image, Postprocess
+
+            # Upload saved images:
+            image = Image()
+            images_tensor_dic = image.upload_from_h5(filename='pykitPIV-dataset.h5')
+            images_tensor = images_tensor_dic['I']
+
+            # Initialize a postprocessing object:
+            postprocess = Postprocess(image_tensor, random_seed=100)
+
+            # Add shot noise to the uploaded images:
+            postprocess.add_shot_noise()
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -169,12 +249,30 @@ class Postprocess:
     def log_transform_images(self,
                              addition=1):
         """
-        Log-transforms PIV image pairs tensor or any image-like array of size  :math:`(N, H, W)`
+        Log-transforms image tensor or any image-like array of size  :math:`(N, H, W)`
         or :math:`(N, 2, H, W)`.
 
         .. math::
 
             \mathbf{T}_{\\text{log}} = \log_{10} (\mathbf{T} + a)
+
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Image, Postprocess
+
+            # Upload saved images:
+            image = Image()
+            images_tensor_dic = image.upload_from_h5(filename='pykitPIV-dataset.h5')
+            images_tensor = images_tensor_dic['I']
+
+            # Initialize a postprocessing object:
+            postprocess = Postprocess(image_tensor, random_seed=100)
+
+            # Create a log-transformation of image intensities:
+            postprocess.log_transform_images(addition=10000)
 
         :param addition: (optional)
             ``int`` or ``float`` specifying the added constant, :math:`a`,
@@ -192,14 +290,16 @@ class Postprocess:
 
         log_transformed_image_tensor = np.zeros_like(self.image_tensor)
 
-        for i in range(0, self.image_tensor.shape[0]):
+        n_images = self.image_tensor.shape[0]
+
+        for i in range(0, n_images):
 
             if self.__image_pair:
-                log_transformed_image_tensor[i, 0, :, :] = np.log10(self.image_tensor[i, 0, :, :] + addition)
-                log_transformed_image_tensor[i, 1, :, :] = np.log10(self.image_tensor[i, 1, :, :] + addition)
+                log_transformed_image_tensor[i, 0, :, :] = np.log10(self.processed_image_tensor[i, 0, :, :] + addition)
+                log_transformed_image_tensor[i, 1, :, :] = np.log10(self.processed_image_tensor[i, 1, :, :] + addition)
             else:
-                log_transformed_image_tensor[i, :, :] = np.log10(self.image_tensor[i, :, :] + addition)
-                log_transformed_image_tensor[i, :, :] = np.log10(self.image_tensor[i, :, :] + addition)
+                log_transformed_image_tensor[i, :, :] = np.log10(self.processed_image_tensor[i, :, :] + addition)
+                log_transformed_image_tensor[i, :, :] = np.log10(self.processed_image_tensor[i, :, :] + addition)
 
         self.__processed_image_tensor = log_transformed_image_tensor
 
@@ -210,7 +310,7 @@ class Postprocess:
                       filter='gaussian',
                       padding='zeros'):
         """
-        Filters PIV image pairs tensor by applying a convolution with specified kernel properties.
+        Filters image tensor by applying a convolution with specified kernel properties.
 
         .. math::
 
