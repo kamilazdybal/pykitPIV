@@ -212,7 +212,8 @@ class Postprocess:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def add_shot_noise(self):
+    def add_shot_noise(self,
+                       strength=0.001):
         """
         Adds shot noise to the image tensor or any image-like array of size :math:`(N, H, W)`
         or :math:`(N, 2, H, W)`.
@@ -232,17 +233,42 @@ class Postprocess:
             postprocess = Postprocess(image_tensor, random_seed=100)
 
             # Add shot noise to the uploaded images:
-            postprocess.add_shot_noise()
+            postprocess.add_shot_noise(strength=0.001)
+
+        :param strength: (optional)
+            ``int`` or ``float`` specifying the strength of the shot noise.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+        # Input parameter check:
 
+        if isinstance(strength, int) or isinstance(strength, float):
+            check_non_negative_int_or_float(strength, 'strength')
 
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+        n_images = self.image_tensor.shape[0]
+        height = self.image_tensor.shape[-2]
+        width = self.image_tensor.shape[-1]
 
-        pass
+        image_tensor_with_noise = np.zeros_like(self.image_tensor)
 
+        if self.__image_pair:
+
+            for i in range(0, n_images):
+                for h in range(0, height):
+                    for w in range(0, width):
+
+                        image_tensor_with_noise[i,0,h,w] = self.processed_image_tensor[i,0,h,w] - strength * np.random.poisson(lam=np.abs(self.processed_image_tensor[i,0,h,w]))
+
+        else:
+            for i in range(0, n_images):
+                for h in range(0, height):
+                    for w in range(0, width):
+                        image_tensor_with_noise[i, h, w] = self.processed_image_tensor[i, h, w] - strength * np.random.poisson(lam=np.abs(self.processed_image_tensor[i,h,w]))
+
+        self.__processed_image_tensor = image_tensor_with_noise
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
