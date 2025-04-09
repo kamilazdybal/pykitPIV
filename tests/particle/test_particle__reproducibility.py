@@ -52,7 +52,7 @@ class TestParticleClassReproducibility(unittest.TestCase):
                                densities=(0.05,0.1),
                                diameter_std=(0,0.1),
                                min_diameter=1e-2,
-                               seeding_mode='random',
+                               seeding_mode='poisson',
                                random_seed=None)
 
         particles_2 = Particle(n_images,
@@ -63,7 +63,7 @@ class TestParticleClassReproducibility(unittest.TestCase):
                                densities=(0.05,0.1),
                                diameter_std=(0,0.1),
                                min_diameter=1e-2,
-                               seeding_mode='random',
+                               seeding_mode='poisson',
                                random_seed=None)
 
         self.assertTrue(not np.array_equal(particles_1.distance_per_image, particles_2.distance_per_image))
@@ -279,7 +279,7 @@ class TestParticleClassReproducibility(unittest.TestCase):
                                densities=(0.05,0.1),
                                diameter_std=(0,0.1),
                                min_diameter=1e-2,
-                               seeding_mode='random',
+                               seeding_mode='poisson',
                                random_seed=100)
 
         particles_2 = Particle(n_images,
@@ -290,7 +290,7 @@ class TestParticleClassReproducibility(unittest.TestCase):
                                densities=(0.05,0.1),
                                diameter_std=(0,0.1),
                                min_diameter=1e-2,
-                               seeding_mode='random',
+                               seeding_mode='poisson',
                                random_seed=200)
 
         self.assertTrue(not np.array_equal(particles_1.distance_per_image, particles_2.distance_per_image))
@@ -733,7 +733,7 @@ class TestParticleClassReproducibility(unittest.TestCase):
                                densities=(0.05,0.1),
                                diameter_std=(0,0.1),
                                min_diameter=1e-2,
-                               seeding_mode='random',
+                               seeding_mode='poisson',
                                random_seed=100)
 
         particles_2 = Particle(n_images,
@@ -744,7 +744,7 @@ class TestParticleClassReproducibility(unittest.TestCase):
                                densities=(0.05,0.1),
                                diameter_std=(0,0.1),
                                min_diameter=1e-2,
-                               seeding_mode='random',
+                               seeding_mode='poisson',
                                random_seed=100)
 
         self.assertTrue(not np.array_equal(particles_1.distance_per_image, particles_2.distance_per_image))
