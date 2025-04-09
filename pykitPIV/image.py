@@ -1028,6 +1028,37 @@ class Image:
         """
         Measures the number of light intensity counts in a given image.
 
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, Image
+
+            # Initialize a particle object:
+            particles = Particle(10,
+                                 size=(20,29),
+                                 size_buffer=0)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add particles to an image:
+            image.add_particles(particles)
+
+            # Add reflected light to an image:
+            image.add_reflected_light(exposures=(0.5, 0.9),
+                                      maximum_intensity=2**16-1,
+                                      laser_beam_thickness=1,
+                                      laser_over_exposure=1,
+                                      laser_beam_shape=0.95,
+                                      alpha=1/8,
+                                      covariance_matrix=None,
+                                      clip_intensities=True,
+                                      normalize_intensities=False)
+
+            # Measure light intensity counts:
+            counts_dictionary = image.measure_counts(image.images_I1[0,:,:])
+
         :param image:
             ``numpy.ndarray`` specifying the single PIV image.
 
@@ -1129,6 +1160,96 @@ class Image:
         """
         Saves the image pairs tensor and/or the associated flow targets tensor to ``.h5`` data format.
 
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, FlowField, Motion, Image
+
+            # We are going to generate 10 PIV image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (128, 512)
+
+            # Initialize a particle object:
+            particles = Particle(n_images=n_images,
+                                 size=image_size,
+                                 size_buffer=10,
+                                 diameters=(2, 4),
+                                 distances=(1, 2),
+                                 densities=(0.01, 0.05),
+                                 diameter_std=(0.1,1),
+                                 seeding_mode='random',
+                                 random_seed=100)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images=n_images,
+                                  size=image_size,
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            # Generate random velocity field:
+            flowfield.generate_random_velocity_field(gaussian_filters=(2, 10),
+                                                     n_gaussian_filter_iter=10,
+                                                     displacement=(2, 5))
+
+            # Initialize a motion object:
+            motion = Motion(particles,
+                            flowfield,
+                            time_separation=1,
+                            particle_loss=(0,2),
+                            particle_gain='matching',
+                            verbose=False,
+                            random_seed=None)
+
+            # Advect particles:
+            motion.forward_euler(n_steps=10)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add particles to an image:
+            image.add_particles(particles)
+
+            # Add flow field to an image:
+            image.add_flowfield(flowfield)
+
+            # Add motion to an image:
+            image.add_motion(motion)
+
+            # Add reflected light to an image:
+            image.add_reflected_light(exposures=(0.5, 0.9),
+                                      maximum_intensity=2**16-1,
+                                      laser_beam_thickness=1,
+                                      laser_over_exposure=1,
+                                      laser_beam_shape=0.95,
+                                      alpha=1/8,
+                                      covariance_matrix=None,
+                                      clip_intensities=True,
+                                      normalize_intensities=False)
+
+            # Remove buffers from images:
+            images_I1 = image.remove_buffers(image.images_I1)
+            images_I2 = image.remove_buffers(image.images_I2)
+
+            # Remove buffers from targets:
+            velocity_field = image.remove_buffers(image.get_velocity_field())
+            displacement_field = image.remove_buffers(image.get_displacement_field())
+
+            # Prepare a tensors dictionary to save:
+            images_intensities = image.concatenate_tensors((images_I1, images_I2))
+            flow_targets = image.concatenate_tensors((velocity_field, displacement_field))
+
+            tensors_dictionary = {"I"      : images_intensities,
+                                  "target" : flow_targets}
+
+            # Save tensors to h5:
+            image.save_to_h5(tensors_dictionary,
+                             save_individually=False,
+                             filename='dataset.h5',
+                             verbose=True)
+
         :param tensors_dictionary:
             ``dict`` specifying the tensors to save.
         :param save_individually: (optional)
@@ -1196,6 +1317,18 @@ class Image:
                        filename=None):
         """
         Upload image pairs tensor and/or the associated flow targets tensor from ``.h5`` data format.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Image
+
+            # Instantiate an empty image object:
+            image = Image()
+
+            # Upload the saved dataset to the empty image object:
+            tensors_dictionary_uploaded = image.upload_from_h5(filename='dataset.h5')
 
         :param filename: (optional)
             ``str`` specifying the path and filename to save the ``.h5`` data. Note that ``'-pair-#'`` will be added
