@@ -12,7 +12,5 @@ Class: ``Postprocess``
 
 .. autofunction:: pykitPIV.postprocess.Postprocess.log_transform_images
 
-.. autofunction:: pykitPIV.postprocess.Postprocess.filter_images
-
 .. autofunction:: pykitPIV.postprocess.Postprocess.plot
 
