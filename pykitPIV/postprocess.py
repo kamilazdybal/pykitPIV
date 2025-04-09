@@ -22,11 +22,11 @@ class Postprocess:
     .. note::
 
         Running multiple postprocessing functions on a single object of the ``Postprocess`` class will create
-        a superposition of those functions. This way, you can chain multiple transformations, such as:
+        a superposition of effects that those functions have. This way, the user can chain multiple transformations, such as:
 
-        log-transformation :math:`\\rightarrow` smoothing :math:`\\rightarrow` adding Gaussian noise.
+        adding shot noise :math:`\\rightarrow` adding Gaussian noise :math:`\\rightarrow` log-transformation.
 
-        The final outcome will always be stored in the attribute ``processed_image_tensor``.
+        The final outcome will always be stored in the class attribute ``processed_image_tensor``.
 
     **Example:**
 
@@ -55,7 +55,7 @@ class Postprocess:
     **Attributes:**
 
     - **random_seed** - (read-only) as per user input.
-    - **image_tensor** - (read-only) ``numpy.ndarray`` storing the (original) image tensor to postprocess.
+    - **image_tensor** - (read-only) as per user input.
     - **image_pair** - (read-only) ``bool`` specifying whether paired or single images have been uploaded.
     - **processed_image_tensor** - (read-only) ``numpy.ndarray`` storing the postprocessed image tensor.
       Note that when multiple postprocessing operations are called on the same object of class ``Postprocess``,
