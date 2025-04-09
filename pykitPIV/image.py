@@ -989,9 +989,8 @@ class Image:
                                       clip_intensities=True,
                                       normalize_intensities=False)
 
-            # Remove buffers from image frames:
+            # Remove buffers from the first image frame:
             images_I1 = image.remove_buffers(image.images_I1)
-            images_I2 = image.remove_buffers(image.images_I2)
 
         :param input_tensor:
             ``numpy.ndarray`` specifying the input tensor. It has to have size :math:`(N, C_{in}, H+2b, W+2b)`.
