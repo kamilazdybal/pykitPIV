@@ -1817,7 +1817,8 @@ class Image:
 
         anim = animation.FuncAnimation(fig, updatefig, frames=range(2), interval=50, blit=True)
 
-        anim.save(filename, fps=2, bitrate=-1, dpi=dpi, savefig_kwargs={'bbox_inches' : 'tight'})
+        if filename is not None:
+            anim.save(filename, fps=2, bitrate=-1, dpi=dpi, savefig_kwargs={'bbox_inches' : 'tight'})
 
         return anim
 
