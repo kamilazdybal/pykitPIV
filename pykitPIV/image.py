@@ -29,7 +29,7 @@ class ImageSpecs:
         image_spec = ImageSpecs()
 
         # Change one field of motion_spec:
-        image_spec.exposures = (0.95, 0.95)
+        image_spec.exposures = 0.95
 
         # You can print the current values of all attributes:
         print(image_spec)
@@ -40,7 +40,7 @@ class ImageSpecs:
                  size=(512, 512),
                  size_buffer=10,
                  random_seed=None,
-                 exposures=(0.98, 0.98),
+                 exposures=(0.5, 1),
                  maximum_intensity=2**16 - 1,
                  laser_beam_thickness=1,
                  laser_over_exposure=1,
@@ -666,7 +666,7 @@ class Image:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def add_reflected_light(self,
-                            exposures=(0.5,0.9),
+                            exposures=(0.5, 1),
                             maximum_intensity=2**16-1,
                             laser_beam_thickness=2,
                             laser_over_exposure=1,
@@ -718,6 +718,7 @@ class Image:
         :param exposures: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
             light exposure.
+            It can also be set to ``int`` or ``float`` to generate a fixed exposure value across all :math:`N` image pairs.
         :param maximum_intensity: (optional)
             ``int`` specifying the maximum light intensity. This will be the brightest possible pixel, which will
             only happen if the particle is located at the center of that pixel and at the center of the laser plane.
@@ -754,8 +755,13 @@ class Image:
 
         # Input parameter check:
 
-        check_two_element_tuple(exposures, 'exposures')
-        check_min_max_tuple(exposures, 'exposures')
+        if isinstance(exposures, tuple):
+            check_two_element_tuple(exposures, 'exposures')
+            check_min_max_tuple(exposures, 'exposures')
+        elif isinstance(exposures, int) or isinstance(exposures, float):
+            check_non_negative_int_or_float(exposures, 'exposures')
+        else:
+            raise ValueError("Parameter `exposures` has to be of type 'tuple' or 'int' or 'float'.")
 
         if not(isinstance(maximum_intensity, int)):
             raise ValueError("Parameter `maximum_intensity` has to be of type `int`.")
@@ -793,11 +799,16 @@ class Image:
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+        if isinstance(exposures, tuple):
+            __exposures = exposures
+        else:
+            __exposures = (exposures, exposures)
+
         # Save the maximum intensity:
         self.__maximum_intensity = maximum_intensity
 
         # Randomize image exposure:
-        self.__exposures_per_image = np.random.rand(self.__particles.n_images) * (exposures[1] - exposures[0]) + exposures[0]
+        self.__exposures_per_image = np.random.rand(self.__particles.n_images) * (__exposures[1] - __exposures[0]) + __exposures[0]
 
         # Function for adding Gaussian light distribution to image I1 or image I2:
         def __gaussian_light(idx,
