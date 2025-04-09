@@ -112,6 +112,22 @@ class Particle:
         # Access particle coordinates on the first image:
         (height_coordinates, width_coordinates) = particles.particle_coordinates[0]
 
+    Alternatively, all particle properties can also be made fixed across all :math:`N` image pairs
+    by passing integers or floats instead of tuples:
+
+    .. code:: python
+
+        # Initialize a particle object:
+        particles = Particle(n_images=n_images,
+                             size=image_size,
+                             size_buffer=10,
+                             diameters=2,
+                             distances=1,
+                             densities=0.1,
+                             diameter_std=0.1,
+                             seeding_mode='random',
+                             random_seed=100)
+
     .. image:: ../images/Particle-setting-spectrum.png
         :width: 800
 
