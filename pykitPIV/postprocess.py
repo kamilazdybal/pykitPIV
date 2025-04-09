@@ -137,7 +137,8 @@ class Postprocess:
 
     def add_gaussian_noise(self,
                            loc=0.0,
-                           scale=(500, 1000)):
+                           scale=(500, 1000),
+                           clip=None):
         """
         Adds Gaussian noise to the image tensor or any image-like array of size :math:`(N, H, W)`
         or :math:`(N, 2, H, W)`.
@@ -158,7 +159,8 @@ class Postprocess:
 
             # Add noise to the uploaded images:
             postprocess.add_gaussian_noise(loc=0.0,
-                                           scale=(500,1000))
+                                           scale=(500,1000),
+                                           clip=2**16-1)
 
         :param loc: (optional)
             ``int`` or ``float`` specifying the center of the Gaussian distribution.
@@ -167,6 +169,9 @@ class Postprocess:
             standard deviation for the noise on an image to randomly sample from.
             It can also be set to ``int`` or ``float`` to generate a fixed standard deviation value across all :math:`N` image pairs.
             The unit of the standard deviation is image intensity.
+        :param clip: (optional)
+            ``int`` or ``float`` specifying whether maximum values on images should be clipped to a specified value.
+            If set to ``None``, values are not clipped.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -207,6 +212,9 @@ class Postprocess:
                 image_tensor_with_noise[i,:,:] = self.processed_image_tensor[i,:,:] + np.random.normal(loc=loc,
                                                                                                        scale=self.__scale_per_image[i],
                                                                                                        size=np.shape(self.image_tensor[i,:,:]))
+
+        if clip is not None:
+            image_tensor_with_noise = np.clip(image_tensor_with_noise, 0, clip)
 
         self.__processed_image_tensor = image_tensor_with_noise
 
