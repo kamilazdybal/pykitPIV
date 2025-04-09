@@ -712,6 +712,27 @@ class Image:
                                       clip_intensities=True,
                                       normalize_intensities=False)
 
+        Alternatively, we can model astigmatic PIV by providing a coviariance matrix:
+
+        **Example:**
+
+        .. code:: python
+
+            # Define a full, positive semi-definite covariance matrix:
+            covariance_matrix = np.array([[3.0, -2],
+                                          [-2, 2.0]])
+
+            # Add reflected light to an image:
+            image.add_reflected_light(exposures=(0.5, 0.9),
+                                      maximum_intensity=2**16-1,
+                                      laser_beam_thickness=1,
+                                      laser_over_exposure=1,
+                                      laser_beam_shape=0.95,
+                                      alpha=1/8,
+                                      covariance_matrix=covariance_matrix,
+                                      clip_intensities=True,
+                                      normalize_intensities=False)
+
         .. image:: ../images/Image-setting-spectrum.png
             :width: 800
 
@@ -939,6 +960,45 @@ class Image:
         """
         Removes image buffers from the input tensor. If the input tensor is a four-dimensional array of size
         :math:`(N, \_, H+2b, W+2b)`, then the output is a four-dimensional tensor array of size :math:`(N, \_, H, W)`.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, Image
+
+            # Initialize a particle object:
+            particles = Particle(10,
+                                 size=(128,512),
+                                 size_buffer=10)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+
+            # Add particles to an image:
+            image.add_particles(particles)
+
+            # Add reflected light to an image:
+            image.add_reflected_light(exposures=(0.5, 0.9),
+                                      maximum_intensity=2**16-1,
+                                      laser_beam_thickness=1,
+                                      laser_over_exposure=1,
+                                      laser_beam_shape=0.95,
+                                      alpha=1/8,
+                                      covariance_matrix=None,
+                                      clip_intensities=True,
+                                      normalize_intensities=False)
+
+            # Remove buffers from image frames:
+            images_I1 = image.remove_buffers(image.images_I1)
+            images_I2 = image.remove_buffers(image.images_I2)
+
+        :param input_tensor:
+            ``numpy.ndarray`` specifying the input tensor. It has to have size :math:`(N, C_{in}, H+2b, W+2b)`.
+
+        :return:
+            - **input_tensor** - ``numpy.ndarray`` specifying the input tensor with buffers removed.
+              It has size :math:`(N, C_{in}, H, W)`.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
