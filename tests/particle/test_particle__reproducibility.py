@@ -8,7 +8,7 @@ n_images = 1
 size = (20, 20)
 size_buffer = 1
 
-class TestParticleClass(unittest.TestCase):
+class TestParticleClassReproducibility(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     # Random seed set to None

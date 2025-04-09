@@ -106,3 +106,135 @@ class TestPostprocessClass(unittest.TestCase):
             pp.scale_per_image = 1
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_postprocess__Postprocess__add_gaussian_noise(self):
+
+        pp = Postprocess(image_tensor=images_tensor,
+                         random_seed=100)
+
+        self.assertTrue(np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+        try:
+            pp.add_gaussian_noise(loc=0.0,
+                                  scale=(500,1000),
+                                  clip=2**16-1)
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(not np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+        pp = Postprocess(image_tensor=images_tensor,
+                         random_seed=100)
+
+        try:
+            pp.add_gaussian_noise(loc=0.0,
+                                  scale=1000,
+                                  clip=2**16-1)
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(not np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+        pp = Postprocess(image_tensor=images_tensor,
+                         random_seed=100)
+
+        try:
+            pp.add_gaussian_noise(loc=0.0,
+                                  scale=1000,
+                                  clip=None)
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(not np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_postprocess__Postprocess__add_shot_noise(self):
+
+        pp = Postprocess(image_tensor=images_tensor,
+                         random_seed=100)
+
+        self.assertTrue(np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+        try:
+            pp.add_shot_noise(strength=1,
+                              clip=2**16-1)
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(not np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+        pp = Postprocess(image_tensor=images_tensor,
+                         random_seed=100)
+
+        try:
+            pp.add_shot_noise(strength=1,
+                              clip=None)
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(not np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+        pp = Postprocess(image_tensor=images_tensor,
+                         random_seed=100)
+
+        try:
+            pp.add_shot_noise(strength=0.1,
+                              clip=None)
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(not np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_postprocess__Postprocess__log_transform_images(self):
+
+        pp = Postprocess(image_tensor=images_tensor,
+                         random_seed=100)
+
+        self.assertTrue(np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+        try:
+            pp.log_transform_images(addition=10000)
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(not np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_postprocess__Postprocess__chain_transformations(self):
+
+        pp = Postprocess(image_tensor=images_tensor,
+                         random_seed=100)
+
+        self.assertTrue(np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+        try:
+            pp.add_shot_noise(strength=1,
+                              clip=2**16-1)
+
+            first_transform = pp.processed_image_tensor
+
+            self.assertTrue(not np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+
+            pp.add_gaussian_noise(loc=0.0,
+                                  scale=1000,
+                                  clip=2**16-1)
+
+            second_transform = pp.processed_image_tensor
+
+            self.assertTrue(not np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+            self.assertTrue(not np.array_equal(pp.processed_image_tensor, first_transform))
+
+            pp.log_transform_images(addition=10000)
+
+            self.assertTrue(not np.array_equal(pp.processed_image_tensor, pp.image_tensor))
+            self.assertTrue(not np.array_equal(pp.processed_image_tensor, first_transform))
+            self.assertTrue(not np.array_equal(pp.processed_image_tensor, second_transform))
+
+        except Exception:
+            self.assertTrue(False)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
