@@ -169,14 +169,20 @@ class FlowField:
     - **size** - (read-only) as per user input.
     - **size_buffer** - (read-only) as per user input.
     - **random_seed** - (read-only) as per user input.
-    - **displacement** - (read-only) as per user input.
-    - **displacement_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the displacements per each image. Template diameters are random numbers between ``displacement[0]`` and ``displacement[1]``.
-    - **gaussian_filters** - (read-only) as per user input.
-    - **n_gaussian_filter_iter** - (read-only) as per user input.
-    - **gaussian_filter_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the Gaussian filter sizes in pixels :math:`[\\text{px}]` for each image. Template diameters are random numbers between ``gaussian_filters[0]`` and ``gaussian_filters[1]``.
-    - **velocity_field** - (read-only) ``numpy.ndarray`` specifying the velocity vector, :math:`\\vec{V} = [u, v]`, per each image. It has size :math:`(N, 2, H+2b, W+2b)`. The second index corresponds to :math:`u` and :math:`v` velocity component, respectively.
-    - **velocity_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the velocity field magnitude, :math:`|\\vec{V}| = \\sqrt{u^2 + v^2}`, per each image. It has size :math:`(N, 1, H+2b, W+2b)`.
     - **size_with_buffer** - (read-only) ``tuple`` specifying the size of each image in pixels with buffer added.
+    - **displacement** - (read-only) ``tuple`` of two numerical elements specifying the minimum (first element)
+      and maximum (second element) maximum displacement on each image.
+      This attribute becomes available after calling one of the velocity field generators.
+    - **displacement_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the maximum displacements
+      per each image. Template displacements are random numbers between minimum and maximum displacement.
+      This attribute becomes available after calling one of the velocity field generators.
+    - **velocity_field** - (read-only) ``numpy.ndarray`` specifying the velocity vector, :math:`\\vec{V} = [u, v]`,
+      per each image. It has size :math:`(N, 2, H+2b, W+2b)`.
+      The second index corresponds to :math:`u` and :math:`v` velocity component, respectively.
+      This attribute becomes available after calling one of the velocity field generators.
+    - **velocity_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the velocity field magnitude,
+      :math:`|\\vec{V}| = \\sqrt{u^2 + v^2}`, per each image. It has size :math:`(N, 1, H+2b, W+2b)`.
+      This attribute becomes available after calling one of the velocity field generators.
     """
 
     def __init__(self,
@@ -216,18 +222,19 @@ class FlowField:
         self.__size = size
         self.__size_buffer = size_buffer
         self.__random_seed = random_seed
-        self.__displacement = None
-        self.__displacement_per_image = None
-        self.__gaussian_filters = None
-        self.__n_gaussian_filter_iter = None
-        self.__gaussian_filter_per_image = None
-        self.__velocity_field = None
-        self.__velocity_field_magnitude = None
 
         # Compute the image outline that serves as a buffer:
         self.__height_with_buffer = self.size[0] + 2 * self.size_buffer
         self.__width_with_buffer = self.size[1] + 2 * self.size_buffer
         self.__size_with_buffer = (self.__height_with_buffer, self.__width_with_buffer)
+
+        # Initialize displacements per image:
+        self.__displacement = None
+        self.__displacement_per_image = None
+
+        # Initialize the velocity field and its magnitude:
+        self.__velocity_field = None
+        self.__velocity_field_magnitude = None
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -248,6 +255,11 @@ class FlowField:
     def random_seed(self):
         return self.__random_seed
 
+    # Properties computed at class init:
+    @property
+    def size_with_buffer(self):
+        return self.__size_with_buffer
+
     @property
     def displacement(self):
         return self.__displacement
@@ -257,29 +269,12 @@ class FlowField:
         return self.__displacement_per_image
 
     @property
-    def gaussian_filters(self):
-        return self.__gaussian_filters
-
-    @property
-    def n_gaussian_filter_iter(self):
-        return self.__n_gaussian_filter_iter
-
-    @property
-    def gaussian_filter_per_image(self):
-        return self.__gaussian_filter_per_image
-
-    @property
     def velocity_field(self):
         return self.__velocity_field
 
     @property
     def velocity_field_magnitude(self):
         return self.__velocity_field_magnitude
-
-    # Properties computed at class init:
-    @property
-    def size_with_buffer(self):
-        return self.__size_with_buffer
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -412,6 +407,12 @@ class FlowField:
 
             self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(self.__velocity_field[i, 0, :, :] ** 2 + self.__velocity_field[i, 1, :, :] ** 2)
 
+        # Compute the minimum and maximum displacement:
+        self.__displacement = (np.min(np.abs(self.__velocity_field_magnitude)), np.max(np.abs(self.__velocity_field_magnitude)))
+
+        # Compute the displacement per image:
+        self.__displacement_per_image = np.max(np.abs(self.__velocity_field_magnitude), axis=(2,3))
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def generate_random_velocity_field(self,
@@ -483,15 +484,15 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
+        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+
         self.__gaussian_filters = gaussian_filters
+        self.__gaussian_filter_per_image = np.random.rand(self.__n_images) * (self.__gaussian_filters[1] - self.__gaussian_filters[0]) + self.__gaussian_filters[0]
+
         self.__n_gaussian_filter_iter = n_gaussian_filter_iter
+
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
-
-        self.__gaussian_filter_per_image = np.random.rand(self.__n_images) * (
-                    self.__gaussian_filters[1] - self.__gaussian_filters[0]) + self.__gaussian_filters[0]
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (
-                    self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         for i in range(0, self.n_images):
 
