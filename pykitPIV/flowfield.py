@@ -599,12 +599,13 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__amplitudes = amplitudes
+        self.__amplitudes_per_image = np.random.rand(self.__n_images) * (self.__amplitudes[1] - self.__amplitudes[0]) + self.__amplitudes[0]
+
         self.__wavelengths = wavelengths
+        self.__wavelengths_per_image = np.random.rand(self.__n_images) * (self.__wavelengths[1] - self.__wavelengths[0]) + self.__wavelengths[0]
+
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
-
-        self.__amplitudes_per_image = np.random.rand(self.__n_images) * (self.__amplitudes[1] - self.__amplitudes[0]) + self.__amplitudes[0]
-        self.__wavelengths_per_image = np.random.rand(self.__n_images) * (self.__wavelengths[1] - self.__wavelengths[0]) + self.__wavelengths[0]
 
         h = np.linspace(0, self.size_with_buffer[0], self.size_with_buffer[0])
         w = np.linspace(0, self.size_with_buffer[1], self.size_with_buffer[1])
@@ -628,6 +629,12 @@ class FlowField:
             self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
             self.__velocity_field[i, 0, :, :] = velocity_field_u
             self.__velocity_field[i, 1, :, :] = velocity_field_v
+
+        # Compute the minimum and maximum displacement:
+        self.__displacement = (np.min(np.abs(self.__velocity_field_magnitude)), np.max(np.abs(self.__velocity_field_magnitude)))
+
+        # Compute the displacement per image:
+        self.__displacement_per_image = np.max(np.abs(self.__velocity_field_magnitude), axis=(2,3))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -714,10 +721,10 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
+        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
-
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         h = np.linspace(-1, 1, self.size_with_buffer[0])
         w = np.linspace(-1, 1, self.size_with_buffer[1])
@@ -821,9 +828,10 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
+        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         h = np.linspace(start, stop, self.size_with_buffer[0])
         w = np.linspace(start, stop, self.size_with_buffer[1])
@@ -927,9 +935,10 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
+        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]))
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         h = np.linspace(start, stop, self.size_with_buffer[0])
         w = np.linspace(start, stop, self.size_with_buffer[1])
@@ -1042,7 +1051,6 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-
         self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
@@ -1151,7 +1159,6 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-
         self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
@@ -1433,6 +1440,12 @@ class FlowField:
 
         toc = time.perf_counter()
         if verbose: print(f'Total time: {(toc - tic) / 60:0.1f} minutes.\n' + '- ' * 40)
+
+        # Compute the updated minimum and maximum displacement:
+        self.__displacement = (np.min(np.abs(self.__velocity_field_magnitude)), np.max(np.abs(self.__velocity_field_magnitude)))
+
+        # Compute the updated displacement per image:
+        self.__displacement_per_image = np.max(np.abs(self.__velocity_field_magnitude), axis=(2,3))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
