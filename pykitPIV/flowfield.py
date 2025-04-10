@@ -1525,16 +1525,46 @@ def compute_divergence(velocity_field,
 
         \\nabla \\cdot \\vec{V} = \\frac{\\partial u}{\\partial x} + \\frac{\\partial v}{\\partial y}
 
+    .. note::
+
+        Derivatives are computed using `numpy.gradient <https://numpy.org/doc/stable/reference/generated/numpy.gradient.html>`_.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import FlowField, compute_divergence
+
+        # Initialize a flow field object:
+        flowfield = FlowField(10,
+                              size=(200, 200),
+                              size_buffer=0,
+                              random_seed=100)
+
+        # Generate random velocity field:
+        flowfield.generate_random_velocity_field(gaussian_filters=(10, 11),
+                                                 n_gaussian_filter_iter=20,
+                                                 displacement=(1, 2))
+
+        # Extract the velocity field components:
+        velocity_field = flowfield.velocity_field
+
+        # Compute the divergence of the velocity field:
+        divergence = compute_divergence(velocity_field,
+                                        edge_order=1)
+
     :param velocity_field:
         ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
         where :math:`N` is the number of PIV image pairs, :math:`2` refers to each velocity component
         :math:`u` and :math:`v` respectively,
         :math:`H` is the height and :math:`W` is the width of each PIV image.
     :param edge_order: (optional)
-        ``int`` specifying the order for the gradient computation at image boundaries.
+        ``int`` specifying the order for the gradient computation at image boundaries
+        as per `numpy.gradient <https://numpy.org/doc/stable/reference/generated/numpy.gradient.html>`_.
 
     :return:
         - **divergence** - divergence of the velocity field, :math:`\\nabla \\cdot \\vec{V}`.
+          It has size :math:`(N, H, W)`.
     """
 
     (dudy, dudx) = np.gradient(velocity_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
@@ -1555,16 +1585,46 @@ def compute_vorticity(velocity_field,
 
         \\omega = \\frac{\\partial v }{\\partial x} - \\frac{\\partial u}{\\partial y}
 
+    .. note::
+
+        Derivatives are computed using `numpy.gradient <https://numpy.org/doc/stable/reference/generated/numpy.gradient.html>`_.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import FlowField, compute_vorticity
+
+        # Initialize a flow field object:
+        flowfield = FlowField(10,
+                              size=(200, 200),
+                              size_buffer=0,
+                              random_seed=100)
+
+        # Generate random velocity field:
+        flowfield.generate_random_velocity_field(gaussian_filters=(10, 11),
+                                                 n_gaussian_filter_iter=20,
+                                                 displacement=(1, 2))
+
+        # Extract the velocity field components:
+        velocity_field = flowfield.velocity_field
+
+        # Compute the vorticity of the velocity field:
+        vorticity = compute_vorticity(velocity_field,
+                                      edge_order=1)
+
     :param velocity_field:
         ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
         where :math:`N` is the number of PIV image pairs, :math:`2` refers to each velocity component
         :math:`u` and :math:`v` respectively,
         :math:`H` is the height and :math:`W` is the width of each PIV image.
     :param edge_order: (optional)
-        ``int`` specifying the order for the gradient computation at image boundaries.
+        ``int`` specifying the order for the gradient computation at image boundaries
+        as per `numpy.gradient <https://numpy.org/doc/stable/reference/generated/numpy.gradient.html>`_.
 
     :return:
         - **vorticity** - vorticity of the velocity field, :math:`\omega`.
+          It has size :math:`(N, H, W)`.
     """
 
     (dudy, dudx) = np.gradient(velocity_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
@@ -1585,16 +1645,46 @@ def compute_q_criterion(velocity_field,
 
         Q = \\frac{1}{2} \\left( \\left(\\frac{\\partial v}{\\partial x} - \\frac{\\partial u}{\\partial y} \\right)^2 - \\left(\\frac{\\partial u}{\\partial x}^2 + \\frac{\\partial v}{\\partial y}^2 + 2 \\left( \\frac{\\partial u}{\\partial y} + \\frac{\\partial v}{\\partial x} \\right)^2 \\right) \\right)
 
+    .. note::
+
+        Derivatives are computed using `numpy.gradient <https://numpy.org/doc/stable/reference/generated/numpy.gradient.html>`_.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import FlowField, compute_q_criterion
+
+        # Initialize a flow field object:
+        flowfield = FlowField(10,
+                              size=(200, 200),
+                              size_buffer=0,
+                              random_seed=100)
+
+        # Generate random velocity field:
+        flowfield.generate_random_velocity_field(gaussian_filters=(10, 11),
+                                                 n_gaussian_filter_iter=20,
+                                                 displacement=(1, 2))
+
+        # Extract the velocity field components:
+        velocity_field = flowfield.velocity_field
+
+        # Compute the Q-criterion for the velocity field:
+        q_criterion = compute_q_criterion(velocity_field,
+                                          edge_order=1)
+
     :param velocity_field:
         ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
         where :math:`N` is the number of PIV image pairs, :math:`2` refers to each velocity component
         :math:`u` and :math:`v` respectively,
         :math:`H` is the height and :math:`W` is the width of each PIV image.
     :param edge_order: (optional)
-        ``int`` specifying the order for the gradient computation at image boundaries.
+        ``int`` specifying the order for the gradient computation at image boundaries
+        as per `numpy.gradient <https://numpy.org/doc/stable/reference/generated/numpy.gradient.html>`_.
 
     :return:
         - **q_criterion** - Q-criterion of the velocity field, :math:`Q`.
+          It has size :math:`(N, H, W)`.
     """
 
     # Compute the vorticity:

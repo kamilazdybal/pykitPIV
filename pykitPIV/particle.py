@@ -603,8 +603,6 @@ class Particle:
         which will initially make all the particle parameters empty. Those parameters get populated the moment you
         call the ``upload_particle_coordinates()`` function.
 
-        **Example:**
-
         .. code:: python
 
             # Initialize the first particle object:
