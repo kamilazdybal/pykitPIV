@@ -204,6 +204,18 @@ The \texttt{Postprocess} class contains functions that apply transformations to 
 
 \section{Illustrative examples} \label{sec:examples}
 
+\subsection{Porting with convolutional neural networks}
+
+\kamila{Here we can describe what can be achieved in terms of training a CNN.}
+
+\subsection{Porting with reinforcement learning}
+
+\kamila{Here we can describe what can be achieved in terms of training an RL agent, e.g. in the context of autonomous experimentation. Maybe the agent will learn to augment the dataset in real time to account for changing experimental settings.}
+
+
+
+
+
 Below, we present the most straightforward workflow for generating a batch of $N=100$ PIV image pairs and their associated targets and we save the resulting tensors for later use in PyTorch. Each image is 256px $\times$ 256px. We create a 10px boundary buffer during image generation to allow for new particles to enter the image area and hence to prevent spurious disappearance of particles near image boundaries.
 
 We import \texttt{pykitPIV}'s classes and specify the global parameters:
@@ -299,16 +311,6 @@ The kinematic training methodology \cite{manickathan2022kinematic}, which is the
 \kamila{It would be great if we could extend image generation to synthetic event-based camera datasets. This would make the software truly novel.}
 
 \kamila{Perhaps a nice novelty would be to allow the user to add solid boundaries into the image?}
-
-
-\subsection{Porting with convolutional neural networks}
-
-\kamila{Here we can describe what can be achieved in terms of training a CNN.}
-
-\subsection{Porting with reinforcement learning}
-
-\kamila{Here we can describe what can be achieved in terms of training an RL agent, e.g. in the context of autonomous experimentation. Maybe the agent will learn to augment the dataset in real time to account for changing experimental settings.}
-
 
 \section{Conclusions}
 

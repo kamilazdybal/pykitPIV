@@ -8,7 +8,7 @@
 
 ### [`04`: Generate potential flows](demo-pykitPIV-04-potential-flows.ipynb)
 
-### [`05`: Use the simplified Langevin model (SLM) to generate realistic velocity fields](demo-pykitPIV-05-simplified-Langevin-model.ipynb)
+### [`05`: Use the simplified Langevin model (SLM) to model particles in turbulence](demo-pykitPIV-05-simplified-Langevin-model.ipynb)
 
 ### [`06`: Upload external velocity field](demo-pykitPIV-06-uploading-external-flow-field.ipynb)
 
