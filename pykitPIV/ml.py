@@ -182,7 +182,7 @@ class PIVEnv(gym.Env):
             return cues
 
         # Initialize the Gymnasium environment:
-        env = PIVEnv(interrogation_window_size=(100,200),
+        env = PIVEnv(interrogation_window_size=(100, 200),
                      interrogation_window_size_buffer=10,
                      cues_function=cues_function,
                      particle_spec=particle_spec,
@@ -638,12 +638,12 @@ class PIVEnv(gym.Env):
             initial_camera_position, cues = env.reset()
 
             # Optionally, we can impose an initial state:
-            initial_camera_position, cues = env.reset(imposed_camera_position=np.array([10,50]))
+            initial_camera_position, cues = env.reset(imposed_camera_position=np.array([10, 50]))
 
         :param imposed_camera_position: (optional)
             ``numpy.ndarray`` of two elements specifying the initial camera position in pixels :math:`[\\text{px}]`.
             This defines the bottom-left corner of the interrogation window.
-            Example can be ``numpy.array([10,50])``
+            Example can be ``numpy.array([10, 50])``
             which positions the camera at the location :math:`10 \\text{px}` along the height dimension
             and :math:`50 \\text{px}` along the width dimension.
             If not specified, a random camera position is selected through ``env.observation_space.sample()``.
@@ -888,7 +888,7 @@ class PIVEnv(gym.Env):
                streamplot_density=1,
                streamplot_color='k',
                streamplot_linewidth=1,
-               figsize=(10,5),
+               figsize=(10, 5),
                dpi=300,
                filename=None):
         """
@@ -924,7 +924,7 @@ class PIVEnv(gym.Env):
                        streamplot_density=1,
                        streamplot_color='k',
                        streamplot_linewidth=1,
-                       figsize=(10,5),
+                       figsize=(10, 5),
                        dpi=300,
                        filename=None)
 
@@ -2060,7 +2060,7 @@ class Cues:
 
             # Instantiate an object of the Cues class:
             cues_obj = Cues(verbose=True,
-                        random_seed=None)
+                            random_seed=None)
 
             # Compute the cues vector:
             cues = cues_obj.sampled_vectors(displacement_field=displacement_field)

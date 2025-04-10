@@ -420,7 +420,7 @@ class Postprocess:
              vmax=None,
              cmap='Greys_r',
              cbar=False,
-             figsize=(5,5),
+             figsize=(5, 5),
              dpi=300,
              filename=None):
         """

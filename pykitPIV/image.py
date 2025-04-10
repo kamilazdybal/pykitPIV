@@ -211,7 +211,7 @@ class Image:
 
             # Initialize a particle object:
             particles = Particle(1,
-                                 size=(128,512),
+                                 size=(128, 512),
                                  size_buffer=10,
                                  random_seed=100)
 
@@ -258,7 +258,7 @@ class Image:
 
             # Initialize a flow field object:
             flowfield = FlowField(1,
-                                  size=(128,512),
+                                  size=(128, 512),
                                   size_buffer=10,
                                   random_seed=100)
 
@@ -303,13 +303,13 @@ class Image:
 
             # Initialize a particle object:
             particles = Particle(1,
-                                 size=(128,512),
+                                 size=(128, 512),
                                  size_buffer=10,
                                  random_seed=100)
 
             # Initialize a flow field object:
             flowfield = FlowField(1,
-                                  size=(128,512),
+                                  size=(128, 512),
                                   size_buffer=10,
                                   random_seed=100)
 
@@ -354,19 +354,19 @@ class Image:
 
             # Initialize a particle object:
             particles = Particle(1,
-                                 size=(128,512),
+                                 size=(128, 512),
                                  size_buffer=10,
                                  random_seed=100)
 
             # Initialize a flow field object:
             flowfield = FlowField(1,
-                                  size=(128,512),
+                                  size=(128, 512),
                                   size_buffer=10,
                                   random_seed=100)
 
             # Generate random velocity field:
             flowfield.generate_random_velocity_field(displacement=(0, 10),
-                                                     gaussian_filters=(10,30),
+                                                     gaussian_filters=(10, 30),
                                                      n_gaussian_filter_iter=6)
 
             # Initialize an image object:
@@ -407,19 +407,19 @@ class Image:
 
             # Initialize a particle object:
             particles = Particle(1,
-                                 size=(128,512),
+                                 size=(128, 512),
                                  size_buffer=10,
                                  random_seed=100)
 
             # Initialize a flow field object:
             flowfield = FlowField(1,
-                                  size=(128,512),
+                                  size=(128, 512),
                                   size_buffer=10,
                                   random_seed=100)
 
             # Generate random velocity field:
             flowfield.generate_random_velocity_field(displacement=(0, 10),
-                                                     gaussian_filters=(10,30),
+                                                     gaussian_filters=(10, 30),
                                                      n_gaussian_filter_iter=6)
 
             # Initialize an image object:
@@ -460,19 +460,19 @@ class Image:
 
             # Initialize a particle object:
             particles = Particle(1,
-                                 size=(128,512),
+                                 size=(128, 512),
                                  size_buffer=10,
                                  random_seed=100)
 
             # Initialize a flow field object:
             flowfield = FlowField(1,
-                                  size=(128,512),
+                                  size=(128, 512),
                                   size_buffer=10,
                                   random_seed=100)
 
             # Generate random velocity field:
             flowfield.generate_random_velocity_field(displacement=(0, 10),
-                                                     gaussian_filters=(10,30),
+                                                     gaussian_filters=(10, 30),
                                                      n_gaussian_filter_iter=6)
 
             # Initialize a motion object:
@@ -516,19 +516,19 @@ class Image:
 
             # Initialize a particle object:
             particles = Particle(1,
-                                 size=(128,512),
+                                 size=(128, 512),
                                  size_buffer=10,
                                  random_seed=100)
 
             # Initialize a flow field object:
             flowfield = FlowField(1,
-                                  size=(128,512),
+                                  size=(128, 512),
                                   size_buffer=10,
                                   random_seed=100)
 
             # Generate random velocity field:
             flowfield.generate_random_velocity_field(displacement=(0, 10),
-                                                     gaussian_filters=(10,30),
+                                                     gaussian_filters=(10, 30),
                                                      n_gaussian_filter_iter=6)
 
             # Initialize a motion object:
@@ -692,7 +692,7 @@ class Image:
 
             # Initialize a particle object:
             particles = Particle(1,
-                                 size=(128,512),
+                                 size=(128, 512),
                                  size_buffer=10)
 
             # Initialize an image object:
@@ -969,7 +969,7 @@ class Image:
 
             # Initialize a particle object:
             particles = Particle(10,
-                                 size=(128,512),
+                                 size=(128, 512),
                                  size_buffer=10)
 
             # Initialize an image object:
@@ -1035,7 +1035,7 @@ class Image:
 
             # Initialize a particle object:
             particles = Particle(10,
-                                 size=(20,29),
+                                 size=(20, 20),
                                  size_buffer=0)
 
             # Initialize an image object:
@@ -1099,19 +1099,19 @@ class Image:
 
             # Initialize a particle object:
             particles = Particle(1,
-                                 size=(128,512),
+                                 size=(128, 512),
                                  size_buffer=10,
                                  random_seed=100)
 
             # Initialize a flow field object:
             flowfield = FlowField(1,
-                                  size=(128,512),
+                                  size=(128, 512),
                                   size_buffer=10,
                                   random_seed=100)
 
             # Generate random velocity field:
             flowfield.generate_random_velocity_field(displacement=(0, 10),
-                                                     gaussian_filters=(10,30),
+                                                     gaussian_filters=(10, 30),
                                                      n_gaussian_filter_iter=6)
 
             # Initialize a motion object:
@@ -1128,7 +1128,7 @@ class Image:
             image.add_particles(particles)
 
             # Add light reflected from particles:
-            image.add_reflected_light(exposures=(0.6,0.65),
+            image.add_reflected_light(exposures=(0.6, 0.65),
                                       maximum_intensity=2**16-1,
                                       laser_beam_thickness=1,
                                       laser_over_exposure=1,
@@ -1178,7 +1178,7 @@ class Image:
                                  diameters=(2, 4),
                                  distances=(1, 2),
                                  densities=(0.01, 0.05),
-                                 diameter_std=(0.1,1),
+                                 diameter_std=(0.1, 1),
                                  seeding_mode='random',
                                  random_seed=100)
 
@@ -1197,7 +1197,7 @@ class Image:
             motion = Motion(particles,
                             flowfield,
                             time_separation=1,
-                            particle_loss=(0,2),
+                            particle_loss=(0, 2),
                             particle_gain='matching',
                             verbose=False,
                             random_seed=None)
@@ -1382,7 +1382,7 @@ class Image:
              title=None,
              cmap='Greys_r',
              origin='lower',
-             figsize=(5,5),
+             figsize=(5, 5),
              dpi=300,
              filename=None):
         """
@@ -1540,7 +1540,7 @@ class Image:
                         title=None,
                         cmap='Greys_r',
                         origin='lower',
-                        figsize=(5,5),
+                        figsize=(5, 5),
                         dpi=300,
                         filename=None):
         """
@@ -1694,7 +1694,7 @@ class Image:
                            title=None,
                            cmap='Greys_r',
                            origin='lower',
-                           figsize=(5,5),
+                           figsize=(5, 5),
                            dpi=300,
                            filename=None):
         """
@@ -1834,7 +1834,7 @@ class Image:
                    cmap='viridis',
                    vmin_vmax=None,
                    origin='lower',
-                   figsize=(5,5),
+                   figsize=(5, 5),
                    dpi=300,
                    filename=None):
         """
@@ -2080,7 +2080,7 @@ class Image:
                              add_streamplot=False,
                              streamplot_density=1,
                              streamplot_color='k',
-                             figsize=(5,5),
+                             figsize=(5, 5),
                              dpi=300,
                              filename=None):
         """

@@ -33,7 +33,7 @@ class ParticleSpecs:
         particle_spec = ParticleSpecs()
 
         # Change one field of particle_spec:
-        particle_spec.diameters = (2,2)
+        particle_spec.diameters = (2, 2)
 
         # You can print the current values of all attributes:
         print(particle_spec)
@@ -96,16 +96,16 @@ class Particle:
         n_images = 10
 
         # Specify size in pixels for each image:
-        image_size = (128,512)
+        image_size = (128, 512)
 
         # Initialize a particle object:
         particles = Particle(n_images=n_images,
                              size=image_size,
                              size_buffer=10,
-                             diameters=(2,4),
-                             distances=(1,2),
-                             densities=(0.01,0.05),
-                             diameter_std=(0,0.1),
+                             diameters=(2, 4),
+                             distances=(1, 2),
+                             densities=(0.01, 0.05),
+                             diameter_std=(0, 0.1),
                              seeding_mode='random',
                              random_seed=100)
 
@@ -580,13 +580,13 @@ class Particle:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (128,512)
+            image_size = (128, 512)
 
             # Initialize the first particle object:
             particles_1 = Particle(n_images,
                                    size=image_size,
-                                   diameters=(2,4),
-                                   diameter_std=(0,1),
+                                   diameters=(2, 4),
+                                   diameter_std=(0, 1),
                                    densities=(0.1, 0.1),
                                    seeding_mode='random')
 
@@ -608,8 +608,8 @@ class Particle:
             # Initialize the first particle object:
             particles_1 = Particle(n_images,
                                    size=image_size,
-                                   diameters=(2,4),
-                                   diameter_std=(0,1),
+                                   diameters=(2, 4),
+                                   diameter_std=(0, 1),
                                    seeding_mode='user')
 
             # Initially, all of these attributes will be None:
@@ -827,7 +827,7 @@ class Particle:
                         c_hist='k',
                         c_scatter='b',
                         s=4,
-                        figsize=(5,5),
+                        figsize=(5, 5),
                         dpi=300,
                         filename=None):
         """
@@ -844,21 +844,21 @@ class Particle:
 
             # Initialize a particle object:
             particles = Particle(n_images,
-                                 size=(200,200),
+                                 size=(200, 200),
                                  size_buffer=10,
-                                 diameters=(1,4),
-                                 distances=(1,2),
-                                 densities=(0.05,0.1),
-                                 diameter_std=(0,0.1),
+                                 diameters=(1, 4),
+                                 distances=(1, 2),
+                                 densities=(0.05, 0.1),
+                                 diameter_std=(0, 0.1),
                                  seeding_mode='random',
                                  random_seed=100)
 
             # Visualize properties on images indexed from 0 to 40:
-            particles.plot_properties(idx=(0,40),
+            particles.plot_properties(idx=(0, 40),
                                       c_hist='k',
                                       c_scatter='b',
                                       s=30,
-                                      figsize=(15,10),
+                                      figsize=(15, 10),
                                       dpi=300,
                                       filename='Particle_plot_properties.png')
 
@@ -866,7 +866,6 @@ class Particle:
 
         .. image:: ../images/Particle_plot_properties.png
             :width: 800
-
 
         :param idx: (optional)
             ``tuple`` or ``int`` specifying the slice or the index of images whose properties to plot.

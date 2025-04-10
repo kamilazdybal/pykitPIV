@@ -129,7 +129,7 @@ class Motion:
         motion = Motion(particles,
                         flowfield,
                         time_separation=1,
-                        particle_loss=(0,2),
+                        particle_loss=(0, 2),
                         particle_gain='matching',
                         verbose=False,
                         random_seed=None)
@@ -576,7 +576,7 @@ class Motion:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def runge_kutta_4th(self,
-                      n_steps):
+                        n_steps):
         """
         Advects particles with the 4th order Runge-Kutta (RK4) numerical scheme according to the formula:
 
@@ -805,7 +805,7 @@ class Motion:
                              title=None,
                              color_I1='k',
                              color_I2='#ee6c4d',
-                             figsize=(5,5),
+                             figsize=(5, 5),
                              dpi=300,
                              filename=None):
         """
@@ -913,3 +913,5 @@ class Motion:
                 plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
             return plt
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
