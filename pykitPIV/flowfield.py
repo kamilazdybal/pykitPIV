@@ -12,13 +12,14 @@ from pykitPIV.checks import *
 
 # Specify the available velocity fields in this class:
 _available_velocity_fields = {'constant': 'generate_constant_velocity_field',
-                               'random smooth': 'generate_random_velocity_field',
-                               'sinusoidal': 'generate_sinusoidal_velocity_field',
-                               'checkered': 'generate_checkered_velocity_field',
-                               'Chebyshev polynomials': 'generate_chebyshev_velocity_field',
-                               'spherical harmonics': 'generate_spherical_harmonics_velocity_field',
-                               'radial': 'generate_radial_velocity_field',
-                               'Langevin': 'generate_langevin_velocity_field'}
+                              'random smooth': 'generate_random_velocity_field',
+                              'sinusoidal': 'generate_sinusoidal_velocity_field',
+                              'checkered': 'generate_checkered_velocity_field',
+                              'Chebyshev polynomials': 'generate_chebyshev_velocity_field',
+                              'spherical harmonics': 'generate_spherical_harmonics_velocity_field',
+                              'radial': 'generate_radial_velocity_field',
+                              'potential': 'generate_potential_velocity_field',
+                              'Langevin': 'generate_langevin_velocity_field'}
 
 ########################################################################################################################
 ########################################################################################################################
@@ -321,6 +322,12 @@ class FlowField:
 
             - spherical harmonics
                 Use function: generate_spherical_harmonics_velocity_field
+
+            - radial
+                Use function: generate_radial_velocity_field
+
+            - potential
+                Use function: generate_potential_velocity_field
 
             - Langevin
                 Use function: generate_langevin_velocity_field
