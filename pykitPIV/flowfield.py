@@ -43,7 +43,7 @@ class FlowFieldSpecs:
         flowfield_spec = FlowFieldSpecs()
 
         # Change one field of flowfield_spec:
-        flowfield_spec.gaussian_filters = (4,6)
+        flowfield_spec.gaussian_filters = (4, 6)
 
         # You can print the current values of all attributes:
         print(flowfield_spec)
@@ -344,8 +344,8 @@ class FlowField:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def generate_constant_velocity_field(self,
-                                         u_magnitude=(0,4),
-                                         v_magnitude=(0,4)):
+                                         u_magnitude=(0, 4),
+                                         v_magnitude=(0, 4)):
         """
         Generates a constant velocity field.
 
@@ -359,7 +359,7 @@ class FlowField:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (128,128)
+            image_size = (128, 128)
 
             # Initialize a flow field object:
             flowfield = FlowField(n_images=n_images,
@@ -368,8 +368,8 @@ class FlowField:
                                   random_seed=100)
 
             # Generate random velocity field:
-            flowfield.generate_constant_velocity_field(u_magnitude=(0,4),
-                                                       v_magnitude=(0,4))
+            flowfield.generate_constant_velocity_field(u_magnitude=(0, 4),
+                                                       v_magnitude=(0, 4))
 
             # Access the velocity components tensor:
             flowfield.velocity_field
@@ -416,7 +416,7 @@ class FlowField:
 
     def generate_random_velocity_field(self,
                                        displacement=(0, 10),
-                                       gaussian_filters=(10,30),
+                                       gaussian_filters=(10, 30),
                                        n_gaussian_filter_iter=6):
         """
         Generates random velocity field by smoothing a random initialization of pixels with a series of Gaussian filters.
@@ -431,7 +431,7 @@ class FlowField:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (128,512)
+            image_size = (128, 512)
 
             # Initialize a flow field object:
             flowfield = FlowField(n_images=n_images,
@@ -441,7 +441,7 @@ class FlowField:
 
             # Generate random velocity field:
             flowfield.generate_random_velocity_field(displacement=(0, 10),
-                                                     gaussian_filters=(10,30),
+                                                     gaussian_filters=(10, 30),
                                                      n_gaussian_filter_iter=6)
 
             # Access the velocity components tensor:
@@ -547,7 +547,7 @@ class FlowField:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (128,512)
+            image_size = (128, 512)
 
             # Initialize a flow field object:
             flowfield = FlowField(n_images=n_images,
@@ -557,7 +557,7 @@ class FlowField:
 
             # Generate sinusoidal velocity field:
             flowfield.generate_sinusoidal_velocity_field(amplitudes=(2, 4),
-                                                         wavelengths=(20,40),
+                                                         wavelengths=(20, 40),
                                                          components='u')
 
             # Access the velocity components tensor:
@@ -771,7 +771,7 @@ class FlowField:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (128,512)
+            image_size = (128, 512)
 
             # Initialize a flow field object:
             flowfield = FlowField(n_images=n_images,
@@ -874,7 +874,7 @@ class FlowField:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (128,512)
+            image_size = (128, 512)
 
             # Initialize a flow field object:
             flowfield = FlowField(n_images=n_images,
@@ -961,7 +961,7 @@ class FlowField:
 
     def generate_radial_velocity_field(self,
                                        source=True,
-                                       displacement=(2,2),
+                                       displacement=(2, 2),
                                        imposed_source_location=None,
                                        sigma=20.0,
                                        epsilon=1e-6):
@@ -997,7 +997,7 @@ class FlowField:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (200,200)
+            image_size = (200, 200)
 
             # Initialize a flow field object:
             flowfield = FlowField(n_images=n_images,
@@ -1007,8 +1007,8 @@ class FlowField:
 
             # Generate radial velocity field:
             flowfield.generate_radial_velocity_field(source=True,
-                                                     displacement=(2,2),
-                                                     imposed_source_location=(50,50),
+                                                     displacement=(2, 2),
+                                                     imposed_source_location=(50, 50),
                                                      sigma=5.0,
                                                      epsilon=1e-6)
 
@@ -1091,8 +1091,8 @@ class FlowField:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def generate_potential_velocity_field(self,
-                                          imposed_origin=(0,0),
-                                          displacement=(2,2)):
+                                          imposed_origin=(0, 0),
+                                          displacement=(2, 2)):
         """
         Generates a potential velocity field of the form:
 
@@ -1118,7 +1118,7 @@ class FlowField:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (128,512)
+            image_size = (128, 512)
 
             # Initialize a flow field object:
             flowfield = FlowField(n_images=n_images,
@@ -1128,7 +1128,7 @@ class FlowField:
 
             # Generate sinusoidal velocity field:
             flowfield.generate_potential_velocity_field(imposed_origin=None,
-                                                        displacement=(2,2))
+                                                        displacement=(2, 2))
 
             # Access the velocity components tensor:
             flowfield.velocity_field
@@ -1263,7 +1263,7 @@ class FlowField:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (128,128)
+            image_size = (128, 128)
 
             # Initialize a mean flow field object:
             mean_flowfield = FlowField(n_images=n_images,
@@ -1273,7 +1273,7 @@ class FlowField:
 
             # Generate sinusoidal velocity field that will serve as the mean velocity field:
             mean_flowfield.generate_sinusoidal_velocity_field(amplitudes=(2, 4),
-                                                              wavelengths=(20,40),
+                                                              wavelengths=(20, 40),
                                                               components='both')
 
             # Initialize a flow field object:
@@ -1449,7 +1449,7 @@ class FlowField:
             n_images = 10
 
             # Specify size in pixels for each image:
-            image_size = (128,512)
+            image_size = (128, 512)
 
             # Initialize a flow field object:
             flowfield = FlowField(n_images=n_images,
