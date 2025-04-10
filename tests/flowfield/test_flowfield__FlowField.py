@@ -94,9 +94,6 @@ class TestFlowFieldClass(unittest.TestCase):
         # Attributes initialized at class init:
         try:
             flowfield.displacement
-            flowfield.gaussian_filters
-            flowfield.n_gaussian_filter_iter
-            flowfield.gaussian_filter_per_image
             flowfield.displacement_per_image
             flowfield.velocity_field
             flowfield.velocity_field_magnitude
@@ -104,9 +101,6 @@ class TestFlowFieldClass(unittest.TestCase):
             self.assertTrue(False)
 
         self.assertEqual(flowfield.displacement, None)
-        self.assertEqual(flowfield.gaussian_filters, None)
-        self.assertEqual(flowfield.n_gaussian_filter_iter, None)
-        self.assertEqual(flowfield.gaussian_filter_per_image, None)
         self.assertEqual(flowfield.displacement_per_image, None)
         self.assertEqual(flowfield.velocity_field, None)
         self.assertEqual(flowfield.velocity_field_magnitude, None)
@@ -137,16 +131,19 @@ class TestFlowFieldClass(unittest.TestCase):
             flowfield.size_buffer = 10
 
         with self.assertRaises(AttributeError):
+            flowfield.random_seed = None
+
+        with self.assertRaises(AttributeError):
             flowfield.displacement = (0, 10)
 
         with self.assertRaises(AttributeError):
-            flowfield.gaussian_filters = (10, 30)
+            flowfield.displacement_per_image = None
 
         with self.assertRaises(AttributeError):
-            flowfield.n_gaussian_filter_iter = 6
+            flowfield.velocity_field = None
 
         with self.assertRaises(AttributeError):
-            flowfield.random_seed = None
+            flowfield.velocity_field_magnitude = None
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -354,5 +351,159 @@ class TestFlowFieldClass(unittest.TestCase):
 
         self.assertTrue(flowfield.velocity_field is not None)
         self.assertTrue(flowfield.velocity_field_magnitude is not None)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_flowfield__Flowfield__displacement_available_after_velocity_field_generation(self):
+
+        size = (80, 80)
+
+        # Constant velocity field: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        flowfield = FlowField(n_images=10,
+                              size=size,
+                              size_buffer=10,
+                              random_seed=100)
+
+        self.assertTrue(flowfield.displacement is None)
+        self.assertTrue(flowfield.displacement_per_image is None)
+
+        flowfield.generate_constant_velocity_field(u_magnitude=(1, 4),
+                                                   v_magnitude=(1, 4))
+
+        self.assertTrue(flowfield.displacement is not None)
+        self.assertTrue(flowfield.displacement_per_image is not None)
+
+        self.assertTrue(np.allclose(flowfield.displacement_per_image, np.max(np.abs(flowfield.velocity_field_magnitude), axis=(2,3)).ravel()))
+
+        # Random velocity field: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        flowfield = FlowField(n_images=10,
+                              size=size,
+                              size_buffer=10,
+                              random_seed=100)
+
+        self.assertTrue(flowfield.displacement is None)
+        self.assertTrue(flowfield.displacement_per_image is None)
+
+        flowfield.generate_random_velocity_field(displacement=(1, 10),
+                                                 gaussian_filters=(10, 30),
+                                                 n_gaussian_filter_iter=6)
+
+        self.assertTrue(flowfield.displacement is not None)
+        self.assertTrue(flowfield.displacement_per_image is not None)
+
+        self.assertTrue(np.allclose(flowfield.displacement_per_image, np.max(np.abs(flowfield.velocity_field_magnitude), axis=(2,3)).ravel()))
+
+        # Sinusoidal velocity field: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        flowfield = FlowField(n_images=10,
+                              size=size,
+                              size_buffer=10,
+                              random_seed=100)
+
+        self.assertTrue(flowfield.displacement is None)
+        self.assertTrue(flowfield.displacement_per_image is None)
+
+        flowfield.generate_sinusoidal_velocity_field(amplitudes=(2, 4),
+                                                     wavelengths=(20, 40),
+                                                     components='u')
+
+        self.assertTrue(flowfield.displacement is not None)
+        self.assertTrue(flowfield.displacement_per_image is not None)
+
+        self.assertTrue(np.allclose(flowfield.displacement_per_image, np.max(np.abs(flowfield.velocity_field_magnitude), axis=(2,3)).ravel()))
+
+        # Checkered velocity field: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        flowfield = FlowField(n_images=10,
+                              size=size,
+                              size_buffer=10,
+                              random_seed=100)
+
+        self.assertTrue(flowfield.displacement is None)
+        self.assertTrue(flowfield.displacement_per_image is None)
+
+        flowfield.generate_checkered_velocity_field(displacement=(2, 10),
+                                                    m=10,
+                                                    n=10,
+                                                    rotation=10)
+
+        self.assertTrue(flowfield.displacement is not None)
+        self.assertTrue(flowfield.displacement_per_image is not None)
+
+        self.assertTrue(np.allclose(flowfield.displacement_per_image, np.max(np.abs(flowfield.velocity_field_magnitude), axis=(2,3)).ravel()))
+
+        # Chebyshev velocity field: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        flowfield = FlowField(n_images=10,
+                              size=size,
+                              size_buffer=10,
+                              random_seed=100)
+
+        self.assertTrue(flowfield.displacement is None)
+        self.assertTrue(flowfield.displacement_per_image is None)
+
+        flowfield.generate_chebyshev_velocity_field(displacement=(2, 10),
+                                                    start=0.3,
+                                                    stop=0.8,
+                                                    order=10)
+
+        self.assertTrue(flowfield.displacement is not None)
+        self.assertTrue(flowfield.displacement_per_image is not None)
+
+        self.assertTrue(np.allclose(flowfield.displacement_per_image, np.max(np.abs(flowfield.velocity_field_magnitude), axis=(2,3)).ravel()))
+
+        # Spherical harmonics velocity field: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        flowfield = FlowField(n_images=10,
+                              size=size,
+                              size_buffer=10,
+                              random_seed=100)
+
+        self.assertTrue(flowfield.displacement is None)
+        self.assertTrue(flowfield.displacement_per_image is None)
+
+        flowfield.generate_spherical_harmonics_velocity_field(displacement=(2, 10),
+                                                              start=0.3,
+                                                              stop=0.8,
+                                                              order=1,
+                                                              degree=1)
+
+        self.assertTrue(flowfield.displacement is not None)
+        self.assertTrue(flowfield.displacement_per_image is not None)
+
+        self.assertTrue(np.allclose(flowfield.displacement_per_image, np.max(np.abs(flowfield.velocity_field_magnitude), axis=(2,3)).ravel()))
+
+        # Radial velocity field: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        flowfield = FlowField(n_images=10,
+                              size=size,
+                              size_buffer=10,
+                              random_seed=100)
+
+        self.assertTrue(flowfield.displacement is None)
+        self.assertTrue(flowfield.displacement_per_image is None)
+
+        flowfield.generate_radial_velocity_field(source=True,
+                                                 displacement=(1, 4),
+                                                 imposed_source_location=(50, 50),
+                                                 sigma=5.0,
+                                                 epsilon=1e-6)
+
+        self.assertTrue(flowfield.displacement is not None)
+        self.assertTrue(flowfield.displacement_per_image is not None)
+
+        self.assertTrue(np.allclose(flowfield.displacement_per_image, np.max(np.abs(flowfield.velocity_field_magnitude), axis=(2,3)).ravel()))
+
+        # Potential velocity field: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        flowfield = FlowField(n_images=10,
+                              size=size,
+                              size_buffer=10,
+                              random_seed=100)
+
+        self.assertTrue(flowfield.displacement is None)
+        self.assertTrue(flowfield.displacement_per_image is None)
+
+        flowfield.generate_potential_velocity_field(imposed_origin=None,
+                                                    displacement=(2, 4))
+
+        self.assertTrue(flowfield.displacement is not None)
+        self.assertTrue(flowfield.displacement_per_image is not None)
+
+        self.assertTrue(np.allclose(flowfield.displacement_per_image, np.max(np.abs(flowfield.velocity_field_magnitude), axis=(2,3)).ravel()))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

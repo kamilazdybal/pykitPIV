@@ -339,8 +339,8 @@ class FlowField:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def generate_constant_velocity_field(self,
-                                         u_magnitude=(0, 4),
-                                         v_magnitude=(0, 4)):
+                                         u_magnitude=(1, 4),
+                                         v_magnitude=(1, 4)):
         """
         Generates a constant velocity field.
 
@@ -363,8 +363,8 @@ class FlowField:
                                   random_seed=100)
 
             # Generate random velocity field:
-            flowfield.generate_constant_velocity_field(u_magnitude=(0, 4),
-                                                       v_magnitude=(0, 4))
+            flowfield.generate_constant_velocity_field(u_magnitude=(1, 4),
+                                                       v_magnitude=(1, 4))
 
             # Access the velocity components tensor:
             flowfield.velocity_field
@@ -407,11 +407,11 @@ class FlowField:
 
             self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(self.__velocity_field[i, 0, :, :] ** 2 + self.__velocity_field[i, 1, :, :] ** 2)
 
-        # Compute the minimum and maximum displacement:
-        self.__displacement = (np.min(np.abs(self.__velocity_field_magnitude)), np.max(np.abs(self.__velocity_field_magnitude)))
+        # Compute the updated displacement per image:
+        self.__displacement_per_image = np.max(np.abs(self.__velocity_field_magnitude), axis=(2,3)).ravel()
 
-        # Compute the displacement per image:
-        self.__displacement_per_image = np.max(np.abs(self.__velocity_field_magnitude), axis=(2,3))
+        # Compute the updated minimum and maximum displacement:
+        self.__displacement = (np.min(self.__displacement_per_image), np.max(self.__displacement_per_image))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -630,16 +630,17 @@ class FlowField:
             self.__velocity_field[i, 0, :, :] = velocity_field_u
             self.__velocity_field[i, 1, :, :] = velocity_field_v
 
-        # Compute the minimum and maximum displacement:
-        self.__displacement = (np.min(np.abs(self.__velocity_field_magnitude)), np.max(np.abs(self.__velocity_field_magnitude)))
 
-        # Compute the displacement per image:
-        self.__displacement_per_image = np.max(np.abs(self.__velocity_field_magnitude), axis=(2,3))
+        # Compute the updated displacement per image:
+        self.__displacement_per_image = np.max(np.abs(self.__velocity_field_magnitude), axis=(2,3)).ravel()
+
+        # Compute the updated minimum and maximum displacement:
+        self.__displacement = (np.min(self.__displacement_per_image), np.max(self.__displacement_per_image))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def generate_checkered_velocity_field(self,
-                                          displacement=(0, 10),
+                                          displacement=(1, 10),
                                           m=10,
                                           n=10,
                                           rotation=None):
@@ -679,7 +680,7 @@ class FlowField:
                                   random_seed=100)
 
             # Generate checkered velocity field:
-            flowfield.generate_checkered_velocity_field(displacement=(0, 10),
+            flowfield.generate_checkered_velocity_field(displacement=(1, 10),
                                                         m=10,
                                                         n=10,
                                                         rotation=10)
@@ -756,7 +757,7 @@ class FlowField:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def generate_chebyshev_velocity_field(self,
-                                          displacement=(0, 10),
+                                          displacement=(1, 10),
                                           start=0.3,
                                           stop=0.8,
                                           order=10):
@@ -859,7 +860,7 @@ class FlowField:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def generate_spherical_harmonics_velocity_field(self,
-                                                    displacement=(0, 10),
+                                                    displacement=(1, 10),
                                                     start=0.3,
                                                     stop=0.8,
                                                     order=1,
@@ -872,6 +873,11 @@ class FlowField:
             u(h, w), v(h, w) = Y_n^k \\sin(n(h+w))
 
         where :math:`Y_n^k` is the spherical harmonics function of order :math:`n` and degree :math:`k`.
+
+        .. note::
+
+            This function uses
+            `scipy.special.sph_harm_y <https://docs.scipy.org/doc//scipy/reference/generated/scipy.special.sph_harm_y.html>`_.
 
         **Example:**
 
@@ -971,7 +977,7 @@ class FlowField:
 
     def generate_radial_velocity_field(self,
                                        source=True,
-                                       displacement=(2, 2),
+                                       displacement=(1, 4),
                                        imposed_source_location=None,
                                        sigma=20.0,
                                        epsilon=1e-6):
@@ -1017,7 +1023,7 @@ class FlowField:
 
             # Generate radial velocity field:
             flowfield.generate_radial_velocity_field(source=True,
-                                                     displacement=(2, 2),
+                                                     displacement=(1, 4),
                                                      imposed_source_location=(50, 50),
                                                      sigma=5.0,
                                                      epsilon=1e-6)
@@ -1101,7 +1107,7 @@ class FlowField:
 
     def generate_potential_velocity_field(self,
                                           imposed_origin=(0, 0),
-                                          displacement=(2, 2)):
+                                          displacement=(1, 4)):
         """
         Generates a potential velocity field of the form:
 
@@ -1441,11 +1447,11 @@ class FlowField:
         toc = time.perf_counter()
         if verbose: print(f'Total time: {(toc - tic) / 60:0.1f} minutes.\n' + '- ' * 40)
 
-        # Compute the updated minimum and maximum displacement:
-        self.__displacement = (np.min(np.abs(self.__velocity_field_magnitude)), np.max(np.abs(self.__velocity_field_magnitude)))
-
         # Compute the updated displacement per image:
-        self.__displacement_per_image = np.max(np.abs(self.__velocity_field_magnitude), axis=(2,3))
+        self.__displacement_per_image = np.max(np.abs(self.__velocity_field_magnitude), axis=(2,3)).ravel()
+
+        # Compute the updated minimum and maximum displacement:
+        self.__displacement = (np.min(self.__displacement_per_image), np.max(self.__displacement_per_image))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
