@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from scipy.special import chebyu, sph_harm
+from scipy.special import chebyu, sph_harm_y
 import random
 import copy
 import time
@@ -954,8 +954,8 @@ class FlowField:
         for i in range(0, self.n_images):
 
             # Generate a 2D field:
-            velocity_field_u = np.real(sph_harm(order, degree, grid_h, grid_w)) * np.sin((grid_h + grid_w) * degree)
-            velocity_field_v = np.real(sph_harm(order, degree, grid_h, grid_w)) * np.sin((grid_h + grid_w) * degree)
+            velocity_field_u = np.real(sph_harm_y(order, degree, grid_h, grid_w)) * np.sin((grid_h + grid_w) * degree)
+            velocity_field_v = np.real(sph_harm_y(order, degree, grid_h, grid_w)) * np.sin((grid_h + grid_w) * degree)
 
             velocity_magnitude = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
             velocity_magnitude_scale = self.__displacement_per_image[i] / np.max(velocity_magnitude)
