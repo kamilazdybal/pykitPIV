@@ -97,7 +97,7 @@
 \address[EMPA]{Laboratory for Computational Engineering, Swiss Federal Laboratories for Materials Science and Technology, Empa, Dübendorf, Switzerland}
 
 \begin{abstract}
-Machine learning (ML) is permeating scientific and engineering disciplines, and experimental fluid dynamics is no exception. Here, we describe \texttt{pykitPIV}, a Python library that provides rich and reproducible virtual environments for training ML algorithms in velocimetry. The generated synthetic datasets and environments mimic those coming from particle image velocimetry (PIV) and background-oriented Schlieren (BOS) experimental techniques in fluid dynamics. The library integrates with various ML algorithms, such as convolutional neural networks, variational approaches, active learning, and reinforcement learning. This library gives the user, or the ML agent, flexibility in selecting various parameters that would normally be available in an experimental setting, such as seeding density, properties of the laser plane, camera exposure, particle loss, or experimental noise. In that sense, \texttt{pykitPIV} can act as a ``virtual wind tunnel'', providing a playground for training and testing ML models. We also provide an atlas of challenging synthetic velocity fields from analytic formulations. The effects of particle drift and diffusion in stationary isotropic turbulence can also be added atop the velocity fields using the simplified Langevin model. The richness of experimental conditions and reproducibility of training data generation can help advance the growing development of ML applications in experimental fluid dynamics. With \texttt{pykitPIV}, ML agents have the freedom to interact with the virtual experiment, can assimilate data from real experiment, and can be trained to perform a variety of tasks using diverse custom-built sensory cues and rewards. Our goal is to support the current trends in the velocimetry community for faster and more accurate real-time experimental inference, moving the field towards autonomous experimentation and building robust models from experimental data.
+Machine learning (ML) is permeating scientific and engineering disciplines, and experimental fluid dynamics is no exception. Here, we describe \texttt{pykitPIV}, a Python library that provides rich and reproducible virtual environments for training ML algorithms in velocimetry. The generated synthetic datasets and environments mimic those coming from particle image velocimetry (PIV) and background-oriented Schlieren (BOS) experimental techniques in fluid dynamics. The library integrates with various ML algorithms, such as convolutional neural networks, variational approaches, active learning, and reinforcement learning. This library gives the user, or the ML agent, flexibility in selecting various parameters that would normally be available in an experimental setting, such as seeding density, properties of the laser plane, camera exposure, particle loss, or experimental noise. In that sense, \texttt{pykitPIV} acts as a ``virtual wind tunnel'', providing a playground for training and testing ML models. We also provide an atlas of challenging synthetic velocity fields from analytic formulations. The effects of particle drift and diffusion in stationary isotropic turbulence can also be added atop the velocity fields using the simplified Langevin model. The richness of experimental conditions and reproducibility of training data generation can help advance the growing development of ML applications in experimental fluid dynamics. With \texttt{pykitPIV}, ML agents have the freedom to interact with the virtual experiment, can assimilate data from real experiment, and can be trained to perform a variety of tasks using diverse custom-built sensory cues and rewards. Our goal is to support the current trends in the velocimetry community for faster and more accurate real-time experimental inference, moving the field towards autonomous experimentation and building robust models from experimental data.
 \end{abstract}
 
 \begin{keywords}
@@ -113,9 +113,10 @@ The last decade has seen advances in training convolutional neural networks (CNN
 
 % EXPERIMENTAL F. D. SPECIFICALLY CAN PROFIT FROM THOSE CNNs 
 Experimental fluid dynamics can especially profit from those architectures. Specifically, particle image velocimetry (PIV) and background-oriented Schlieren (BOS) are experimental techniques used to visualize flow patterns with high precision. Their main goal is to predict flow targets, such as displacement fields, velocity components, or vorticity, either from paired snapshots of illuminated tracer particles injected into the flow (in PIV) or from recorded deformations of the dotted background image (in BOS). Recently, RAFT-PIV \cite{lagemann2021deep} and lightweight image-matching architecture (LIMA) \citep{manickathan2023lightweight} were proposed as versions of CNNs that are further optimized for inference from velocimetry experiments. The successes of RAFT-PIV and LIMA have been demonstrated on a number of classic experimental fluid dynamics settings such as flow behind a cylinder, boundary layer flow, or convective flow of a hot air plume \cite{mucignat2023lightweight}. The advancements to these architectures are continually being made in the context of PIV \citep{yu2021lightpivnet, fan2023deep, choi2023deep, shan2024lightweight, elrefaie2024site} in order to replace and outperform state-of-the-art PIV post-processing in the future. 
-
+Currently, the main precedence that has motivated the need for those networks is that they can be trained on GPUs within the matter of hours and then ported to laboratory hardware to make flow predictions in real-time, parallel to experimental measurements. 
 % THE SUCCESS OF THOSE CNNs IN F. D. OPENS UP NEW AVENUES OF ML RESEARCH
-The advances made in optical flow architectures open up new avenues of research and allow for new machine learning (ML) use-cases to emerge that have not been possible before. In other words, CNNs can become a gateway to various other ML algorithms. Currently, the main precedence that motivates the need for those networks is that they can be trained on GPUs within the matter of hours and then ported to laboratory hardware to make flow predictions in real-time, parallel to experimental measurements. As a result, CNNs can become an image-processing workhorse behind many other machine learning (ML) algorithms such as variational approaches (VA), active learning (AL), or reinforcement learning (RL), allowing the experimental community to explore many new research avenues, such as autonomous experimentation, building models from experimental data, and enhanced flow control. Another interesting application of CNNs is for learning location of particles for particle tracking velocimetry \cite{godbersen2024peak} or exploring unsupervised training of CNNs that does not require flow targets \cite{lagemann2024challenges}. 
+However, the advances made in optical flow architectures open up new avenues of research and allow for new machine learning (ML) use-cases to emerge that have not been possible before. In that sense, CNNs can become a gateway to various other ML algorithms such as variational approaches (VA), active learning (AL), or reinforcement learning (RL). This can allow the experimental community to develop new applications such as autonomous experimentation, data assimilation and digital twinning, building models from experimental data, and enhanced flow control.
+
 
 % THERE' STILL WORK TO BE DONE...
 % TO IMPROVE CNNs
@@ -129,11 +130,16 @@ To advance the development and performance of ML algorithms for complex experime
 \item How do we generate synthetic datasets whose distribution belongs to the distribution of the given experimental setting?
 \item As ML for PIV post-processing becomes widely used, how do we make sure that training-data generation is reproducible and can be easily shared between research groups?
 \end{enumerate}
-
-This has paves the way towards autonomous experimentation, 
+At the same time, new questions can be pursued, such as:
+\begin{enumerate}
+\item 
+\item 
+\end{enumerate}
 
 % OUR SOFTWARE HELPS TO DO THAT WORK.
-To help researchers answer those questions, in this paper, we present \texttt{pykitPIV} (\textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}), a Python library for synthetic PIV image generation that allows to create rich and challenging experimental scenarios. The library generates paired image intensities, $I_1$ and $I_2$, separated by $\Delta t$ in time, and the corresponding displacement fields, $d\mathbf{s} = [d \mathbf{x}, d\mathbf{y}]$ that have per-pixel resolution by construction. \texttt{pykitPIV} exploits the kinematic relationship between two consecutive PIV image frames \cite{manickathan2022kinematic}. Given any velocity field, tracer particles are advected from one time frame to the next using a second-order accurate numerical scheme. \texttt{pykitPIV} thus provides experiment-like datasets and environments and the associated post-processing targets (\textit{e.g.}, $d\mathbf{s}$) which establish the ground truth for ML algorithms. This is in contrast to raw experimental data which lacks the ground truth. Synthetic dataset are scarce and often do not exploit challenging flow scenarios. \texttt{pykitPIV} addresses this gap and allows for rich experimental conditions to be generated and presented to ML algorithms as batches of data.
+
+To help researchers answer those questions, in this paper, we present \texttt{pykitPIV} (\textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}), a Python library that provides virtual velocimetry environments and ready-to-use ML integrations. It allows to create rich and challenging experimental scenarios. %The library generates paired image intensities, $I_1$ and $I_2$, separated by $\Delta t$ in time, and the corresponding displacement fields, $d\mathbf{s} = [d \mathbf{x}, d\mathbf{y}]$ that have per-pixel resolution by construction. 
+\texttt{pykitPIV} exploits the kinematic relationship between two consecutive PIV image frames \cite{manickathan2022kinematic}. Given any velocity field, tracer particles are advected from one time frame to the next using a second-order accurate numerical scheme. \texttt{pykitPIV} thus provides experiment-like datasets and environments and the associated post-processing targets (\textit{e.g.}, $d\mathbf{s}$) which establish the ground truth for ML algorithms. This is in contrast to raw experimental data which lacks the ground truth. Synthetic dataset are scarce and often do not exploit challenging flow scenarios. \texttt{pykitPIV} addresses this gap and allows for rich experimental conditions to be generated and presented to ML algorithms as batches of data.
 ML algorithms for PIV are often trained using synthetic images generated with open-source realistic flowfields, \textit{e.g.}, taken from the John Hopkins Turbulence Database (JHTD) \cite{perlman2007data}. While the JHTD database is openly available, the synthetic image generation is often performed by different groups using in-house codes. We have hopes that providing \texttt{pykitPIV} as an open-source Python library, researchers can easily share their image generation workflows, making the training of ML algorithms fully reproducible.
 
 \begin{figure*}[t]
@@ -193,6 +199,8 @@ Thanks to its targeted architecture and parameters, LIMA achieves high accuracy 
 
 \subsection{Reinforcement learning environments}
 
+The virtual wind tunnel is modeled as a subclass of a Gymnasium environment \cite{brockman2016openai}.
+
 \kamila{Here we can describe what can be achieved in terms of training an RL agent, e.g. in the context of autonomous experimentation. Maybe the agent will learn to augment the dataset in real time to account for changing experimental settings.}
 
 We import \texttt{pykitPIV}'s classes and specify the global parameters:
@@ -222,15 +230,22 @@ particles = Particle(n_images,
 
 \section{Impact} \label{sec:results}
 
-The kinematic training methodology \cite{manickathan2022kinematic}, which is the core concept behind generating PIV image pairs with \texttt{pykitPIV}, has been used to train CNNs in optical flow estimation \cite{manickathan2022kinematic, manickathan2023lightweight, mucignat2023lightweight}. The approach proved successful, which suggests that for small enough $\Delta t$, learning the kinematic relationship between two consecutive PIV snapshots, as opposed to knowing the full dynamic relationship, is sufficient to train CNNs.
-
+The kinematic training methodology \cite{manickathan2022kinematic}, which is the core concept behind generating PIV image pairs with \texttt{pykitPIV}, has been used to train CNNs in optical flow estimation in the earlier works coming from our group \cite{manickathan2022kinematic, manickathan2023lightweight, mucignat2023lightweight}. 
+Parts of \texttt{pykitPIV} are translated from the earlier MATLAB code used in our group.
+The approach proved successful, which suggests that for small enough $\Delta t$, learning the kinematic relationship between two consecutive PIV snapshots, as opposed to knowing the full dynamic relationship, is sufficient to train CNNs.
 
 \cite{mucignat2024respiratory}
 
-
-To date, we have been able to identify four openly-available synthetic image generation (SIG) packages: one written in the ANSI C language coming from the EUROPIV project \cite{lecordier2004europiv}, two written in MATLAB \citep{ben2020openpiv, mendes2020piv}, and third package, implemented in both MATLAB and Python, with a limited scope in order to specifically track defocusing and tackle astigmatic PIV. These existing SIG implementations make integrating with Python interfaces more difficult. With the emerging ML applications, a package that readily ports to libraries such as PyTorch \cite{paszke2017automatic, paszke2019pytorch}, TensorFlow \cite{tensorflow2015}, or Keras \cite{chollet2015keras} is the ideal solution. Our library allows for easier porting with ML algorithms. This not only allows to generate training data for ML in a single Python workflow, but also allows the ML algorithm to interact with the image generation process. Specifically, the high flexibility in the types of created images can port very well with variational approaches (VA) or with reinforcement learning (RL) algorithms, where an agent may learn to augment the training dataset in real-time to account for changes in experimental settings. Within the tutorials provided with the software, we delineate interesting examples for each of these ML applications.
+To date, we have been able to identify four openly-available synthetic image generation (SIG) packages: one written in the ANSI C language coming from the EUROPIV project \cite{lecordier2004europiv}, two written in MATLAB \citep{ben2020openpiv, mendes2020piv}, and third package, implemented in both MATLAB and Python, with a limited scope in order to specifically track defocusing and tackle astigmatic PIV. These existing SIG implementations make integrating with Python interfaces more difficult. With the emerging ML applications, a package that readily ports to libraries such as PyTorch \cite{paszke2017automatic, paszke2019pytorch}, TensorFlow \cite{tensorflow2015}, or Keras \cite{chollet2015keras} is the ideal solution. Our library allows for porting with ML algorithms. This not only allows to generate training data for ML in a single Python workflow, but also allows the ML algorithm to interact with the image generation process. Specifically, the high flexibility in the types of created images can port very well with variational approaches (VA) or with reinforcement learning (RL) algorithms, where an agent may learn to augment the training dataset in real-time to account for changes in experimental settings. Within the tutorials provided with the software, we delineate interesting examples for each of these ML applications.
 
 Finally, the powerful novelty of this package, as compared to previous MATLAB-based packages, is the introduction of new adjustable parameters that mimic various aspects of the experimental settings. 
+
+
+% IMPACT ON PTV
+Another interesting application of CNNs is for learning location of particles for particle tracking velocimetry \cite{godbersen2024peak} 
+
+or exploring unsupervised training of CNNs that does not require flow targets \cite{lagemann2024challenges}. 
+
 
 Notably, our library can integrate with the post-processing Python software developed in \cite{aguilar2022dpivsoft}.
 
@@ -240,6 +255,9 @@ Notably, our library can integrate with the post-processing Python software deve
 
 \section{Conclusions}
 
+
+
+This has paves the way towards autonomous experimentation.
 
 We plan a continued development of this library.
 
