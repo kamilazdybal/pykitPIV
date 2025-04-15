@@ -1931,7 +1931,7 @@ class Rewards:
 
             # Design a custom transformation that looks for regions of high divergence (either positive or negative)
             # and computes the maximum absolute value of divergence in that region:
-            def reward_transformation(div):
+            def transformation(div):
                 return np.max(np.abs(div))
 
             # Compute the reward based on the divergence for the present velocity field:

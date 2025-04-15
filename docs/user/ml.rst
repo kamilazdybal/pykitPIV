@@ -65,6 +65,7 @@ Custom reinforcement learning rewards
 
 .. autofunction:: pykitPIV.ml.Rewards.q_criterion
 
+.. autofunction:: pykitPIV.ml.Rewards.divergence
 
 *********************************************
 Custom reinforcement learning cues
