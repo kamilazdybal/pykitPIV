@@ -70,7 +70,7 @@
     showstringspaces=false,
     showtabs=false,                  
     tabsize=2,
-    emph={Particle, FlowField, Image, Motion},
+    emph={Particle, FlowField, Image, Motion, PIVEnv, gymnasium, gym, Env},
     emphstyle=\bfseries\color{color-classes},
 }
 
@@ -97,7 +97,8 @@
 \address[EMPA]{Laboratory for Computational Engineering, Swiss Federal Laboratories for Materials Science and Technology, Empa, Dübendorf, Switzerland}
 
 \begin{abstract}
-Machine learning (ML) is permeating scientific and engineering disciplines, and experimental fluid dynamics is no exception. Here, we describe \texttt{pykitPIV}, a Python library that provides rich and reproducible virtual environments for training ML algorithms in velocimetry. The generated synthetic datasets and environments mimic those coming from particle image velocimetry (PIV) and background-oriented Schlieren (BOS) experimental techniques in fluid dynamics. The library integrates with various ML algorithms, such as convolutional neural networks, variational approaches, active learning, and reinforcement learning. This library gives the user, or the ML agent, flexibility in selecting various parameters that would normally be available in an experimental setting, such as seeding density, properties of the laser plane, camera exposure, particle loss, or experimental noise. In that sense, \texttt{pykitPIV} acts as a ``virtual wind tunnel'', providing a playground for training and testing ML models. We also provide an atlas of challenging synthetic velocity fields from analytic formulations. The effects of particle drift and diffusion in stationary isotropic turbulence can also be added atop the velocity fields using the simplified Langevin model. The richness of experimental conditions and reproducibility of training data generation can help advance the growing development of ML applications in experimental fluid dynamics. With \texttt{pykitPIV}, ML agents have the freedom to interact with the virtual experiment, can assimilate data from real experiment, and can be trained to perform a variety of tasks using diverse custom-built sensory cues and rewards. Our goal is to support the current trends in the velocimetry community for faster and more accurate real-time experimental inference, moving the field towards autonomous experimentation and building robust models from experimental data.
+Machine learning (ML) is permeating scientific and engineering disciplines, and experimental fluid dynamics is no exception. 
+Here, we describe \texttt{pykitPIV}, a Python library that provides rich and reproducible virtual environments for training ML algorithms in velocimetry. The generated synthetic datasets and environments mimic those coming from particle image velocimetry (PIV) and background-oriented Schlieren (BOS) experimental techniques in fluid dynamics. The library integrates with various ML algorithms, such as convolutional neural networks, variational approaches, active learning, and reinforcement learning. This library gives the user, or the ML agent, flexibility in selecting various parameters that would normally be available in an experimental setting, such as seeding density, properties of the laser plane, camera exposure, particle loss, or experimental noise. In that sense, \texttt{pykitPIV} acts as a ``virtual wind tunnel'', providing a playground for training and testing ML models. We also provide an atlas of challenging synthetic velocity fields from analytic formulations. The effects of particle drift and diffusion in stationary isotropic turbulence can also be added atop the velocity fields using the simplified Langevin model. The richness of experimental conditions and reproducibility of training data generation can help advance the growing development of ML applications in experimental fluid dynamics. With \texttt{pykitPIV}, ML agents have the freedom to interact with the virtual experiment, can assimilate data from real experiment, and can be trained to perform a variety of tasks using diverse custom-built sensory cues and rewards. Our goal is to support the current trends in the velocimetry community for faster and more accurate real-time experimental inference, moving the field towards autonomous experimentation and building robust models from experimental data.
 \end{abstract}
 
 \begin{keywords}
@@ -147,7 +148,7 @@ ML algorithms for PIV are often trained using synthetic images generated with op
 \vspace{-0.4 in}
 \includegraphics[width=\textwidth]{pykitPIV-modules.pdf}
 \vspace{10 pt}
-\caption{\footnotesize Order of using the five main \texttt{pykitPIV} classes that act as a virtual experimental setup with which the ML module, \texttt{pykitPIV.ml}, interacts. At each stage of synthetic image generation, the user, or the ML agent, has freedom in selecting various parameters that would normally be available in an experimental setting such as the seeding density, properties of the laser plane, camera exposure, particle loss, or experimental noise. The various ML components can also communicate and enrich each other.}
+\caption{\footnotesize Order of using the five main \texttt{pykitPIV} classes that act as a virtual experimental setup with which the ML module, \texttt{pykitPIV.ml}, interacts. At each stage of synthetic virtual experimentation, the user, or the ML agent, has freedom in selecting various parameters that would normally be available in an experimental setting such as the seeding density, properties of the laser plane, camera exposure, particle loss, or experimental noise. The various ML components can also communicate and enrich each other.}
 \label{fig:pykitPIV-overview}
 \end{figure*}
 
@@ -199,9 +200,78 @@ Thanks to its targeted architecture and parameters, LIMA achieves high accuracy 
 
 \subsection{Reinforcement learning environments}
 
-The virtual wind tunnel is modeled as a subclass of a Gymnasium environment \cite{brockman2016openai}.
+Here, we present how \texttt{pykitPIV}'s functionalities can be used to train a RL agent to locate regions of high divergence in a radial flow by moving a virtual camera. The virtual wind tunnel is modeled as a subclass of the Gymnasium environment \cite{brockman2016openai}. A registered Gymnasium environment can be ported to RL libraries, such as TF-Agents \cite{TFAgents}. The basic structure of the PIV environment class is presented below:
+\lstset{language=Python}
+\begin{lstlisting}
+import gymnasium as gym
 
-\kamila{Here we can describe what can be achieved in terms of training an RL agent, e.g. in the context of autonomous experimentation. Maybe the agent will learn to augment the dataset in real time to account for changing experimental settings.}
+class PIVEnv(gym.Env):
+
+	def reset():
+	
+		...
+		
+	def step():
+	
+		...
+	
+	def render():
+	
+		...
+	
+	def record_particles():
+	
+		...
+	
+	def make_inference():
+
+		...
+
+\end{lstlisting}
+The functions \texttt{reset()}, \texttt{step()},  \texttt{render()} are commonly implemented in all reinforcement learning environments and allow to reset the environment to an initial state, make a step in the environment, and render the current state of the environment, respectively. \\
+The function \texttt{record\_particles()} performs a ``virtual PIV'' at each step in the environment. The function \texttt{make\_inference()} allows to use an inference model (such as a CNN model) to predict flow targets from PIV recordings. PIV parameters can be passed to the \texttt{PIVEnv} class through constructors: \texttt{ParticleSpecs}, \texttt{FlowFieldSpecs}, \texttt{MotionSpecs}, and \texttt{ImageSpecs}. An example constructor for particle properties can be:
+\lstset{language=Python}
+\begin{lstlisting}
+particle_spec = {'diameters': (1, 4),
+                 'densities': (0.05, 0.2),
+                 'diameter_std': (0.1, 0.5),
+                 'min_diameter': 0.1,
+                 'seeding_mode': 'random',
+                 'random_seed': 100}
+\end{lstlisting}
+The sensory cues that the agent has available at each training step are 32 sampled displacement vectors at each interrogation window. The reward is constructed as per the following equation:
+\begin{equation} \label{eq:max-abs-div-reward}
+R = \text{max} ( |\nabla \cdot d\vec{\mathbf{s}} | ) 
+\end{equation}
+The basic abstraction to use this reward in pykitPIV is to use the \texttt{Rewards} class to access one of the ready reward functions. Note that the rewards functions accept a custom transformation function that gives the user extra flexibility in how the final reward value is computed. The example for creating a reward as in Eq.~(\ref{eq:max-abs-div-reward}) is presented below.
+\lstset{language=Python}
+\begin{lstlisting}
+from pykitPIV import Rewards
+import numpy as np
+
+# Once we have the velocity field specified:
+velocity_field = ...
+
+# Instantiate an object of the Rewards class:
+rewards = Rewards(verbose=True,
+                  random_seed=None)
+                  
+# Design a custom transformation that looks for regions of high divergence (either positive or negative)
+# and computes the maximum absolute value of divergence in that region:
+def reward_transformation(div):
+    return np.max(np.abs(div))
+    
+reward = rewards.divergence(velocity_field=velocity_field,
+                            transformation=transformation)
+\end{lstlisting}
+
+
+Table~\ref{tab:rewards-and-cues} presents the available rewards and sensory cues functions.
+
+
+
+
+\kamila{Here we can describe what can be achieved in terms of training an RL agent, e.g. in the context of autonomous experimentation.}
 
 We import \texttt{pykitPIV}'s classes and specify the global parameters:
 \lstset{language=Python}
@@ -255,11 +325,9 @@ Notably, our library can integrate with the post-processing Python software deve
 
 \section{Conclusions}
 
+This paves the way towards autonomous experimentation.
 
-
-This has paves the way towards autonomous experimentation.
-
-We plan a continued development of this library.
+We plan a continued development of this library. The future functionalities will include: extension from 2D to 3D environments with the 3D PIV images generated using camera projections coming from the OpenCV library.
 
 Future application can also include the use variational approaches to inform training data collection, or train a RL agent to construct necessary support data in new environments.
 
