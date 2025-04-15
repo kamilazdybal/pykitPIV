@@ -121,18 +121,18 @@ Moreover, the advances made in optical flow architectures open up new avenues of
 % THERE' STILL WORK TO BE DONE...
 % TO IMPROVE CNNs
 % BUT ALSO NOW THAT THOSE AVENUES HAVE BEEN OPENED UP, WE CAN DO SO MUCH MORE...
-To advance the development and performance of ML algorithms for complex experimental fluid dynamics applications, a number of research questions will have to be addressed in the future. Answering these questions will help improve the CNN architectures but also will open new research avenues that were not possible thus far:
+To advance the performance and applications of CNN architectures in experimental fluid dynamics, a number of research questions will have to be addressed in the future:
 \begin{enumerate}
-\item How rich should the training dataset be for a given experimental setting?
+\item How rich should the training dataset be to remain applicable in a practical range of experimental settings?
 \item At which challenging experimental settings do the current CNNs fail and why?
-\item Can we generate new training data samples to accomplish transfer learning, \textit{i.e.}, to make a trained ML model applicable in the next experimental setting?
-\item Can we extend CNN's range of applicability within a single experimental setting with active learning?
-\item Can assimilate data collected on-the-fly with the experiment, \textit{e.g.}, using active learning procedure, so that its distribution belongs to the distribution of a given experimental setting?
+\item Can we assimilate data collected on-the-fly with the experiment, \textit{e.g.}, using active learning procedure?
+\item Can variational/generative approaches be used to create improved training datasets whose distribution more closely matches the distribution of a given experimental setting?
+\item Can we then accomplish transfer learning using a pre-trained inference model?
 \item As ML for PIV post-processing becomes widely used, how do we make sure that training settings are reproducible and can be easily shared between research groups?
 \end{enumerate}
 
 % OUR SOFTWARE HELPS TO DO THAT WORK.
-To help researchers answer those questions and move the field towards novel research directions, in this paper, we present \texttt{pykitPIV} (\textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}), a Python library that provides virtual velocimetry environments and ready-to-use ML integrations. In that sense, our library can serve as a ``virtual wind tunnel''. At its core, \texttt{pykitPIV} exploits the kinematic relationship between two consecutive image frames \cite{manickathan2022kinematic}. Given any velocity field, tracer particles are advected from one time frame to the next using a second-order accurate numerical scheme. Synthetic dataset used to train CNNs are scarce and often do not exploit challenging flow scenarios. \texttt{pykitPIV} addresses this gap and allows for rich experimental conditions to be generated and presented to ML algorithms as batches of training data. The associated post-processing targets (\textit{e.g.}, displacement fields) establish the ground truth for ML algorithms. This is in contrast to raw experimental data which lacks the ground truth. Finally, \texttt{pykitPIV} contains a standalone ML module which integrates with the virtual wind tunnel and gives the ML agents flexibility in interacting with the experimental settings. We also provide a variety of sensory cues and rewards for training RL agents. This paves the way towards development of autonomous experimentation in the future.
+To help researchers answer those questions and move the field towards unexplored research directions, in this paper, we present \texttt{pykitPIV} (\textbf{Py}thon \textbf{ki}nematic \textbf{t}raining for \textbf{PIV}), a Python library that provides virtual velocimetry environments and ready-to-use ML integrations. In that sense, our library can serve as a ``virtual wind tunnel''. At its core, \texttt{pykitPIV} exploits the kinematic relationship between two consecutive time frames in the wind tunnel \cite{manickathan2022kinematic}. Given any velocity field, tracer particles are advected from one time frame to the next using a second-order accurate numerical scheme. Synthetic dataset used to train CNNs are scarce and often do not exploit challenging flow scenarios. \texttt{pykitPIV} addresses this gap and allows for rich experimental conditions to be generated and presented to ML algorithms as batches of training data. The associated post-processing targets (\textit{e.g.}, displacement fields) establish the ground truth for ML algorithms. This is in contrast to raw experimental data which lacks the ground truth. Finally, \texttt{pykitPIV} contains a standalone ML module which integrates with the virtual wind tunnel and gives the ML agents flexibility in interacting with the experimental settings. We also provide a variety of sensory cues and rewards for training RL agents. This paves the way towards development of autonomous experimentation in the future.
 
 \begin{figure*}[t]
 \centering
@@ -195,7 +195,21 @@ Thanks to its targeted architecture and parameters, LIMA achieves high accuracy 
 
 \subsection{Reinforcement learning environments}
 
-Here, we present how \texttt{pykitPIV}'s functionalities can be used to train a RL agent to locate regions of high divergence in a radial flow by moving a virtual camera. The virtual wind tunnel is modeled as a subclass of the Gymnasium environment \cite{brockman2016openai}. A registered Gymnasium environment can be ported to RL libraries, such as TF-Agents \cite{TFAgents}. The basic structure of the PIV environment class is presented below:
+Here, we present how \texttt{pykitPIV}'s functionalities can be used to train a RL agent to locate regions of high divergence in a radial flow by moving a virtual camera. This RL setup is presented in Fig.~\ref{fig:RL}a. We assume that the camera only sees a portion of the virtual wind tunnel at a time, \textit{i.e.}, an interrogation window of 100 $\times$ 100 px$^2$. Underneath the interrogation window there is some ground truth displacement field, which results in characteristic PIV recordings. The RL agent then makes the inference of the ground truth using the LIMA model. The sensory cues that the agent has available at each training step are 32 sampled displacement vectors at each interrogation window. Based on those cues, a reward is computed.
+
+The virtual wind tunnel is modeled as a subclass of the Gymnasium environment \cite{brockman2016openai}. A registered Gymnasium environment can be ported to RL libraries, such as TF-Agents \cite{TFAgents}. 
+
+\begin{figure*}[t]
+\centering
+\vspace{-0.4 in}
+\includegraphics[width=\textwidth]{RL.pdf}
+\vspace{10 pt}
+\caption{\footnotesize (a) The setup used to training a reinforcement learning (RL) algorithm to move a virtual camera and locate regions of high divergence in radial flows. (b) Using the trained RL agent to change the camera position in a new environment.}
+\label{fig:RL}
+\end{figure*}
+
+
+The basic structure of the PIV environment class is presented below:
 \lstset{language=Python}
 \begin{lstlisting}
 import gymnasium as gym
@@ -223,7 +237,7 @@ class PIVEnv(gym.Env):
 		...
 
 \end{lstlisting}
-The functions \texttt{reset()}, \texttt{step()},  \texttt{render()} are commonly implemented in all reinforcement learning environments and allow to reset the environment to an initial state, make a step in the environment, and render the current state of the environment, respectively. \\
+The functions \texttt{reset()}, \texttt{step()}, and \texttt{render()} are standard in many RL environments and allow to reset the environment to an initial state, make a step in the environment, and render the current state of the environment, respectively.
 The function \texttt{record\_particles()} performs a ``virtual PIV'' at each step in the environment. The function \texttt{make\_inference()} allows to use an inference model (such as a CNN model) to predict flow targets from PIV recordings. PIV parameters can be passed to the \texttt{PIVEnv} class through constructors: \texttt{ParticleSpecs}, \texttt{FlowFieldSpecs}, \texttt{MotionSpecs}, and \texttt{ImageSpecs}. An example constructor for particle properties can be:
 \lstset{language=Python}
 \begin{lstlisting}
@@ -234,64 +248,30 @@ particle_spec = {'diameters': (1, 4),
                  'seeding_mode': 'random',
                  'random_seed': 100}
 \end{lstlisting}
-The sensory cues that the agent has available at each training step are 32 sampled displacement vectors at each interrogation window. The reward is constructed as per the following equation:
+ Next, the reward is constructed as per the following equation:
 \begin{equation} \label{eq:max-abs-div-reward}
 R = \text{max} ( |\nabla \cdot d\vec{\mathbf{s}} | ) 
 \end{equation}
-The basic abstraction to use this reward in pykitPIV is to use the \texttt{Rewards} class to access one of the ready reward functions. Note that the rewards functions accept a custom transformation function that gives the user extra flexibility in how the final reward value is computed. The example for creating a reward as in Eq.~(\ref{eq:max-abs-div-reward}) is presented below.
+To access this reward from \texttt{pykitPIV} the user can instantiate an object of the \texttt{Rewards} class and access one of the ready reward functions. Note that the rewards functions accept a custom transformation function that gives the user extra flexibility in how the final reward value is computed. The example for creating a reward as in Eq.~(\ref{eq:max-abs-div-reward}) is presented below.
 \lstset{language=Python}
 \begin{lstlisting}
 from pykitPIV import Rewards
 import numpy as np
 
-# Once we have the velocity field specified:
 velocity_field = ...
 
-# Instantiate an object of the Rewards class:
 rewards = Rewards(verbose=True,
                   random_seed=None)
                   
-# Design a custom transformation that looks for regions of high divergence (either positive or negative)
-# and computes the maximum absolute value of divergence in that region:
-def reward_transformation(div):
+def transformation(div):
     return np.max(np.abs(div))
     
-reward = rewards.divergence(velocity_field=velocity_field,
-                            transformation=transformation)
+R = rewards.divergence(velocity_field=velocity_field,
+transformation=transformation)
 \end{lstlisting}
 
 
 Table~\ref{tab:rewards-and-cues} presents the available rewards and sensory cues functions.
-
-
-
-
-\kamila{Here we can describe what can be achieved in terms of training an RL agent, e.g. in the context of autonomous experimentation.}
-
-We import \texttt{pykitPIV}'s classes and specify the global parameters:
-\lstset{language=Python}
-\begin{lstlisting}
-from pykitPIV import Particle, FlowField, Motion, Image
-
-n_images = 100
-image_size = (256, 256)
-size_buffer = 10
-random_seed = 100
-\end{lstlisting}
-We instantiate an object of the \texttt{Particle} class:
-\lstset{language=Python}
-\begin{lstlisting}
-particles = Particle(n_images,
-                     size=image_size,
-                     size_buffer=size_buffer,
-                     diameters=(4,4.1),
-                     distances=(1,2),
-                     densities=(0.05,0.1),
-                     diameter_std=0.2,
-                     seeding_mode='random',
-                     random_seed=random_seed)
-\end{lstlisting}
-
 
 \section{Impact} \label{sec:results}
 
