@@ -70,7 +70,7 @@
     showstringspaces=false,
     showtabs=false,                  
     tabsize=2,
-    emph={Particle, FlowField, Image, Motion, PIVEnv, gymnasium, gym, Env},
+    emph={pykitPIV, Particle, ParticleSpecs, FlowField, FlowFieldSpecs, Image, ImageSpecs, Motion, MotionSpecs, Postprocess, PIVDataset, PIVEnv, CameraAgent, Rewards, Cues, gymnasium, gym, Env},
     emphstyle=\bfseries\color{color-classes},
 }
 
@@ -98,10 +98,9 @@
 
 \begin{abstract}
 In recent years, machine learning (ML) has become an increasingly integral part of experimental fluid dynamics. 
-This calls for new tools that can emulate real experiments and generate high-quality training data and testbeds for ML model development.
-%orders of magnitude faster than an experimental campaign. 
+This calls for new tools that can emulate real wind tunnel experiments and generate high-quality training data and testbeds for ML model development.
 Here, we present \texttt{pykitPIV}, a Python library that provides rich and reproducible virtual environments for training ML algorithms in optical velocimetry. The generated synthetic datasets and environments mimic those coming from particle image velocimetry (PIV) and background-oriented Schlieren (BOS) experimental techniques. 
-The library integrates with various ML algorithms, such as convolutional neural networks, variational approaches, active learning, and reinforcement learning. This library gives the user, or the ML agent, flexibility in selecting various parameters that would normally be available in an experimental setting, such as seeding density, properties of the laser plane, camera exposure, particle loss, or experimental noise. We also provide an atlas of challenging synthetic velocity fields from analytic formulations where the effects of particle drift and diffusion in stationary isotropic turbulence can also be added using the simplified Langevin model. In that sense, \texttt{pykitPIV} acts as a ``virtual wind tunnel'', providing a playground for training and testing ML models. 
+The library integrates with various ML algorithms, such as convolutional neural networks, variational approaches, active learning, and reinforcement learning. This library gives the user, or the ML agent, flexibility in selecting various parameters that would normally be available in an experimental setting, such as seeding density, properties of the laser plane, camera exposure, particle loss, or experimental noise. We also provide an atlas of challenging synthetic velocity fields from analytic formulations (both compressible and incompressible) where the effects of particle drift and diffusion in stationary isotropic turbulence can also be added using the simplified Langevin model.
 With \texttt{pykitPIV}, ML agents have the freedom to interact with the virtual experiment, can assimilate data from real experiment, and can be trained to perform a variety of tasks using diverse sensory cues and rewards. Our goal is to support the current trends in the velocimetry community for faster and more accurate real-time experimental inference, moving the field towards autonomous experimentation and building robust models from experimental data.
 \end{abstract}
 
@@ -163,10 +162,10 @@ The functionalities of \texttt{pykitPIV} that provide the ``virtual wind tunnel'
 
 Synthetic PIV/BOS image generation can only be a crude approximation of the real experimental flow conditions. For this reason, our goal in creating \texttt{pykitPIV} is to capture various complexities of the real-world experimental settings. For example, the effect of particle drift and diffusion in stationary isotropic turbulence can be added atop any synthetic velocity field; this procedure is modeled with the simplified Langevin model. Moreover, experimental settings can be Monte-Carlo-generated and individual images within a training batch can span a range of conditions. At each stage of image generation, the user can fix random seeds to assure that data generation is fully reproducible. 
 
-In essence, the five main classes of \texttt{pykitPIV} (as per Fig.~\ref{fig:pykitPIV-overview}) generate paired image intensities, $I_1$ and $I_2$, separated by $\Delta t$ in time, and the corresponding displacement fields, $d\vec{\mathbf{s}} = [d \mathbf{x}, d\mathbf{y}]$ that have per-pixel resolution by construction. The user selects the number of image pairs to generate (batch size) and their dimensions (height and width). Below, we briefly describe what can be achieved in each class:
+In essence, the five main classes of \texttt{pykitPIV} (as per Fig.~\ref{fig:pykitPIV-overview}) provide a virtual optical velocimetry experimentation. They can generate paired image intensities, $I_1$ and $I_2$, separated by $\Delta t$ in time, and the corresponding displacement fields, $d\vec{\mathbf{s}} = [d \mathbf{x}, d\mathbf{y}]$ that have per-pixel resolution by construction. The user selects the number of image pairs to generate (batch size) and their dimensions (height and width). Below, we briefly describe what can be achieved in each class:
 \begin{itemize}
-\item The \texttt{Particle} class seeds the two-dimensional flow domain with tracer particles. The user can steer the range of particle diameters and their standard deviation, the seeding density, or the average distances between particles. The initial particle positions are those appearing on snapshots $I_1$.
-\item The \texttt{FlowField} class allows to generate the velocity field to be applied on the two-dimensional domain. We implemented several methods to generate velocity fields, such as constant, random smooth, sinusoidal, checkered, Chebyshev polynomials, spherical harmonics, radial flows, and potential flows. This variety of velocity fields span cases with smooth and sharp velocity gradients and can help put ML algorithms to test. Atop any synthetic velocity field, the user can model the effect of particle drift and diffusion in isotropic turbulence using the simplified Langevin model (see \S12.6 in \cite{pope2001turbulent} for more information). The user also has the option of uploading an external velocity field, \textit{e.g.}, coming from a numerical simulation of Navier-Stokes equations or coming from a synthetic turbulence generator \citep{saad2017scalable, richards2018fast}. A selection of available flow fields is illustrated in Fig.~\ref{fig:velocity-fields}.
+\item The \texttt{Particle} class seeds the 2D flow domain with tracer particles. The user can steer the range of particle diameters and their standard deviation, the seeding density, or the average distances between particles. The initial particle positions are those appearing on snapshots $I_1$.
+\item The \texttt{FlowField} class allows to generate the velocity field to be applied on the 2D domain. We implemented several methods to generate velocity fields, such as constant, random smooth, sinusoidal, checkered, Chebyshev polynomials, spherical harmonics, radial flows, and potential flows. This variety of velocity fields span cases with smooth and sharp velocity gradients and can help put ML algorithms to test. Atop any synthetic velocity field, the user can model the effect of particle drift and diffusion in isotropic turbulence using the simplified Langevin model (see \S12.6 in \cite{pope2001turbulent} for more information). The user also has the option of uploading an external velocity field, \textit{e.g.}, coming from a numerical simulation of Navier-Stokes equations or coming from a synthetic turbulence generator \citep{saad2017scalable, richards2018fast}. A selection of available flow fields is illustrated in Fig.~\ref{fig:velocity-fields}.
 \item The \texttt{Motion} class applies the flow field to the particles. It uses the forward Euler or the Runge-Kutta 4th order numeric scheme to advect particles by a user-specified time separation, $\Delta t$. Velocity components in-between the grid points are interpolated with a regular grid interpolation. The main output of this class are particle positions that will appear on snapshots $I_2$, each paired with a respective snapshot $I_1$.
 \item The \texttt{Image} class generates image intensities. It adds the reflected laser light to the generated PIV image pairs. The core functionality is to add a Gaussian intensity to each particle \citep{olsen2000out, rabault2017performing}. The user has a lot of flexibility in setting up the laser plane and camera properties. The user can also steer the amount of particles lost between frame $I_1$ and $I_2$ due to out-of-plane movement. The \texttt{Image} class contains convenient functions for saving images to \texttt{.h5} files and for plotting or animating image pairs.
 \item The \texttt{Postprocess} class contains functions that apply transformations to generated images, such as Gaussian noise, shot noise, and log-transformations.
@@ -175,77 +174,73 @@ In essence, the five main classes of \texttt{pykitPIV} (as per Fig.~\ref{fig:pyk
 \begin{figure}[t]
 \centering
 \includegraphics[width=8.5cm]{velocity-fields.pdf}
-\caption{The types of two-dimensional velocity fields that can be generated with the \texttt{FlowField} class. The user also has the option to upload an external velocity field, \textit{e.g.}, coming from synthetic turbulence \citep{saad2017scalable, richards2018fast} or turbulence databases \cite{perlman2007data}.}
+\caption{The types of 2D velocity fields that can be generated with the \texttt{FlowField} class. The user also has the option to upload an external velocity field, \textit{e.g.}, coming from synthetic turbulence \citep{saad2017scalable, richards2018fast} or turbulence databases \cite{perlman2007data}.}
 \label{fig:velocity-fields}
 \end{figure}
 
-The ML module provides a RL environment (\texttt{PIVEnv}), the associated RL agent (\texttt{CameraAgent}) that uses deep double Q-learning with memory replay \cite{}, and a selection of rewards (\texttt{Rewards}) and sensory cues (\texttt{Cues}) that are applicable to fluid dynamics problems--see Table~\ref{tab:rewards-and-cues} for an overview.
+The ML module provides classes and functionalities that integrate CNNs and RL with the ``virtual wind tunnel''. For example, we provide a RL environment (the \texttt{PIVEnv} class), the associated RL agent (the \texttt{CameraAgent} class) that uses deep double Q-learning \cite{van2016deep} with memory replay \cite{liu2018effects}, and a selection of rewards (the \texttt{Rewards} class) and sensory cues (the \texttt{Cues} class) that are applicable to fluid dynamics problems--see Table~\ref{tab:rewards-and-cues} for an overview.
+
+\begin{table}[htbp]
+  \centering
+  \begin{tabular}{ll} 
+    \toprule
+    \textbf{Sensory cues} & \textbf{Rewards} \\
+    \midrule[1.2pt]
+    Vector field & Q-criterion \cite{jeong1995identification} \\
+    Scalar field & Divergence \\
+    Sampled vectors & Vorticity \\
+    Divergence & Correlation \cite{lagemann2024challenges} \\
+    Vorticity & Charbonier loss \cite{charbonnier1994two} \\
+      & Structural similarity index measure \cite{wang2018occlusion} \\
+      & Ternary census loss  \cite{zabih1994non} \\
+      & Image frame consistency \cite{lagemann2024challenges} \\
+      & Smoothness \cite{lagemann2024challenges} \\
+    \bottomrule
+  \end{tabular}
+  \caption{A selection of sensory cues and rewards implemented in the ML module, \texttt{pykitPIV.ml} that can be readily used for RL agents using the \texttt{Cues} and the \texttt{Rewards} classes.}
+  \label{tab:rewards-and-cues}
+\end{table}
 
 \section{Illustrative examples} \label{sec:examples}
 
-\subsection{Porting with convolutional neural networks}
+\subsection{Porting with convolutional neural networks} \label{sec:example-CNN}
 
-Here, we show how a synthetic PIV dataset can be generated and used to train LIMA \cite{manickathan2023lightweight}. For this, we will use the class \texttt{PIVDataset} from the ML module which is a subclass of \texttt{torch.utils.data.Dataset} \cite{paszke2019pytorch}.
+Here, we show how a synthetic PIV dataset can be generated and used to train LIMA \cite{manickathan2023lightweight}. For this, we use the class \texttt{PIVDataset} from the ML module which is a subclass of \texttt{torch.utils.data.Dataset} \cite{paszke2019pytorch}. The full tutorial can be accessed from the \href{https://pykitpiv.readthedocs.com}{software documentation}.
 
-The PIV image pair tensor has shape $(N, 2, H, W)$, where $N$ is the batch size, $H$ is image height and $W$ is image width. The second dimension can be thought of as the number of channels and those correspond to $I_1$ and $I_2$, respectively. This is compatible with tensor shape accepted by convolutional layers implemented in PyTorch. Note that the whole batch of $N$ images can be generated all at once or can be optimized for memory and generated in batches. 
+To create a diversity of samples in the training dataset, the user can randomize PIV parameters through tuples that steer parameters such as particle diameters, seeding density, flow field features, camera exposure, or particle loss. The PIV image pair tensor has shape $(N, 2, H, W)$, where $N$ is the batch size, $H$ is image height and $W$ is image width. The second dimension can be thought of as the number of channels and those correspond to $I_1$ and $I_2$, respectively. This is compatible with tensor shape accepted by convolutional layers implemented in PyTorch. Note that the whole batch of $N$ images can be generated all at once or can be optimized for memory and generated in batches. Once the dataset has been saved, it can be loaded to the PyTorch data loader:
+\lstset{language=Python}
+\begin{lstlisting}
+from pykitPIV.ml import PIVDataset
 
-Thanks to its targeted architecture and parameters, LIMA achieves high accuracy and per-pixel spatial resolution. Our group already uses LIMA in real-time for 15Hz PIV, but further improvements to inference speed are needed for higher image acquisition frequencies.
+path = 'pykitPIV-dataset.h5'
 
-\subsection{Reinforcement learning environments}
+PIV_data = PIVDataset(dataset=path)
+\end{lstlisting}
+With this, the user can inspect the data sample at a given index:
+\lstset{language=Python}
+\begin{lstlisting}
+(I, target) = PIV_data[2]
+\end{lstlisting}
+or at multiple indices:
+\lstset{language=Python}
+\begin{lstlisting}
+(I, target) = PIV_data[2:7]
+\end{lstlisting}
+The training dataset is then used to train the LIMA model. Fig.~\ref{fig:LIMA} shows an example inference of the challenging displacement field with small feature sizes and sharp displacement gradients. We note that thanks to its targeted architecture and parameters, LIMA achieves high accuracy and per-pixel spatial resolution.
 
-Here, we present one example how \texttt{pykitPIV}'s functionalities can be used to train a RL agent to locate regions of high divergence in a radial flow by moving a virtual camera. This RL setup is presented in Fig.~\ref{fig:RL}a. We assume that the camera only sees a portion of the virtual wind tunnel at a time, \textit{i.e.}, an interrogation window of 100 $\times$ 100 px$^2$. Underneath the interrogation window there is some ground truth displacement field, which results in characteristic PIV recordings. The RL agent then makes the inference of the ground truth using the LIMA model. The sensory cues that the agent has available at each training step are 32 sampled displacement vectors at each interrogation window. Based on those cues, a reward is computed.
-
-The virtual wind tunnel is modeled as a subclass of the Gymnasium environment \cite{brockman2016openai}. A registered Gymnasium environment can be ported to RL libraries, such as TF-Agents \cite{TFAgents}. 
-
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\vspace{-0.4 in}
-\includegraphics[width=\textwidth]{RL.pdf}
-\vspace{10 pt}
-\caption{\footnotesize (\textbf{a}) The setup used to training a reinforcement learning (RL) algorithm move a virtual camera and locate regions of high divergence in radial flows. (\textbf{b}) Using the trained RL agent to change the camera position in a new environment.}
-\label{fig:RL}
-\end{figure*}
+\includegraphics[width=8.5cm]{LIMA-inference.pdf}
+\caption{Inference from the trained LIMA model on a challenging displacement field with small feature sizes. \kamila{This is my old training case, I will update it with the latest LIMA version after running new training on CSCS...}}
+\label{fig:LIMA}
+\end{figure}
 
-The basic structure of the PIV environment class is presented below:
-\lstset{language=Python}
-\begin{lstlisting}
-import gymnasium as gym
+\subsection{Reinforcement learning environments} \label{sec:example-RL}
 
-class PIVEnv(gym.Env):
+Here, we demonstrate how \texttt{pykitPIV}'s functionalities can be used to train a RL agent to locate the source/sink in a radial flow by moving a virtual camera over a 2D environment. 
+This RL setup is presented in Fig.~\ref{fig:RL}a. The full tutorial can be accessed from the \href{https://pykitpiv.readthedocs.com}{software documentation}.
 
-	def reset():
-	
-		...
-		
-	def step():
-	
-		...
-	
-	def render():
-	
-		...
-	
-	def record_particles():
-	
-		...
-	
-	def make_inference():
-
-		...
-
-\end{lstlisting}
-The functions \texttt{reset()}, \texttt{step()}, and \texttt{render()} are standard in many RL environments and allow to reset the environment to an initial state, make a step in the environment, and render the current state of the environment, respectively.
-The function \texttt{record\_particles()} performs a ``virtual PIV'' at each step in the environment. The function \texttt{make\_inference()} allows to use an inference model (such as a CNN model) to predict flow targets from PIV recordings. PIV parameters can be passed to the \texttt{PIVEnv} class through constructors: \texttt{ParticleSpecs}, \texttt{FlowFieldSpecs}, \texttt{MotionSpecs}, and \texttt{ImageSpecs}. An example constructor for particle properties can be:
-\lstset{language=Python}
-\begin{lstlisting}
-particle_spec = {'diameters': (1, 4),
-                 'densities': (0.05, 0.2),
-                 'diameter_std': (0.1, 0.5),
-                 'min_diameter': 0.1,
-                 'seeding_mode': 'random',
-                 'random_seed': 100}
-\end{lstlisting}
- Next, the reward is constructed as per the following equation:
+We assume that the camera only sees a portion of the virtual wind tunnel at a time, \textit{i.e.}, an interrogation window of 100px $\times$ 100px. Underneath each interrogation window are ground truth displacement fields, which result in respective PIV recordings. The RL agent then makes inference of the ground truth using the trained LIMA model from \S\ref{sec:example-CNN}. The sensory cues that the agent has available at each training step are 32 sampled displacement vectors at each interrogation window. Based on those cues, a divergence-based reward is computed as per the following equation:
 \begin{equation} \label{eq:max-abs-div-reward}
 R = \text{max} ( |\nabla \cdot d\vec{\mathbf{s}} | ) 
 \end{equation}
@@ -267,44 +262,72 @@ R = rewards.divergence(velocity_field=velocity_field,
 transformation=transformation)
 \end{lstlisting}
 
+\begin{figure*}[t]
+\centering
+\vspace{-0.4 in}
+\includegraphics[width=\textwidth]{RL.pdf}
+\vspace{10 pt}
+\caption{\footnotesize (\textbf{a}) The setup used to training a reinforcement learning (RL) algorithm move a virtual camera and locate regions of high divergence in radial flows. (\textbf{b}) Using the trained RL agent to change the camera position in a new environment.}
+\label{fig:RL}
+\end{figure*}
+
+The ``virtual wind tunnel'' is modeled as a subclass of the Gymnasium environment \cite{brockman2016openai} using the dedicated \texttt{PIVEnv} class. A registered Gymnasium environment can be ported to RL libraries, such as TF-Agents \cite{TFAgents}. The basic structure of the PIV environment class is presented below:
+\lstset{language=Python}
+\begin{lstlisting}
+import gymnasium as gym
+
+class PIVEnv(gym.Env):
+
+	def reset():
+
+	def step():
+
+	def render():
+
+	def record_particles():
+
+	def make_inference():
+
+\end{lstlisting}
+The functions \texttt{reset()}, \texttt{step()}, and \texttt{render()} are standard in most RL environments and allow to reset the environment to an initial state, make a step in the environment, and render the current state of the environment, respectively.
+The function \texttt{record\_particles()} performs a ``virtual PIV'' at each step in the environment. The function \texttt{make\_inference()} allows to use a custom inference model (such as a CNN model) to predict flow targets from PIV recordings. 
+Specific PIV parameters can be passed to the \texttt{PIVEnv} class through constructors: \\
+\texttt{ParticleSpecs}, \texttt{FlowFieldSpecs}, \texttt{MotionSpecs}, and \texttt{ImageSpecs}. An example constructor for particle properties can be:
+\lstset{language=Python}
+\begin{lstlisting}
+from pykitPIV import ParticleSpecs
+
+particle_spec = {'diameters': (1, 4),
+                 'densities': (0.05, 0.2),
+                 'diameter_std': (0.1, 0.5),
+                 'min_diameter': 0.1,
+                 'seeding_mode': 'random',
+                 'random_seed': 100}
+                 
+particle_spec = ParticleSpecs(particle_spec)
+\end{lstlisting}
 
 
 
 \section{Impact} \label{sec:results}
 
 The kinematic training methodology \cite{manickathan2022kinematic}, which is the core concept behind generating PIV image pairs with \texttt{pykitPIV}, has been used to train CNNs in optical flow estimation in the earlier works coming from our group \cite{manickathan2022kinematic, manickathan2023lightweight, mucignat2023lightweight}. 
-Parts of \texttt{pykitPIV} are translated from the earlier MATLAB code used in our group.
-The approach proved successful, which suggests that for small enough $\Delta t$, learning the kinematic relationship between two consecutive PIV snapshots, as opposed to knowing the full dynamic relationship, is sufficient to train CNNs.
+Therefore, the core functionalities of \texttt{pykitPIV} are translated from the earlier MATLAB\copyright \, code used in our group.
+The approach proved successful in training LIMA \cite{manickathan2022kinematic}, which suggests that for small enough $\Delta t$, learning the kinematic relationship between two consecutive PIV snapshots, as opposed to knowing the full dynamic relationship, is sufficient to train CNNs.
 
-Thus far, ML algorithms for PIV are often trained using synthetic images generated with open-source realistic flowfields, \textit{e.g.}, taken from the John Hopkins Turbulence Database (JHTD) \cite{perlman2007data}. While the JHTD database is openly available, the synthetic image generation is often performed by different groups using in-house codes. We have hopes that providing \texttt{pykitPIV} as an open-source Python library, researchers can easily share their image generation workflows, making the training of ML algorithms fully reproducible.
+To date, we have been able to identify four openly-available synthetic image generation (SIG) packages: one written in the ANSI C language coming from the EUROPIV project \cite{lecordier2004europiv}, two written in MATLAB \citep{ben2020openpiv, mendes2020piv}, and third package, implemented in both MATLAB and Python, with a limited scope in order to specifically track defocusing and tackle astigmatic PIV. These existing SIG implementations make integrating with Python interfaces more difficult. With the emerging ML applications, a package that readily ports to libraries such as PyTorch \cite{paszke2017automatic, paszke2019pytorch}, TensorFlow \cite{tensorflow2015}, or Keras \cite{chollet2015keras} is the ideal solution. Moreover, ML algorithms for PIV are often trained using synthetic images generated with open-source realistic flowfields, \textit{e.g.}, taken from the John Hopkins Turbulence Database (JHTD) \cite{perlman2007data}. While the JHTD database is openly available, the synthetic image generation is often performed by different groups using in-house codes. We have hopes that providing \texttt{pykitPIV} as an open-source Python library, researchers can easily share their image generation workflows, making the training of ML algorithms fully reproducible.
 
-\cite{mucignat2024respiratory}
+% WHERE pykitPIV CAN HAVE IMPACT
+We envision numerous areas where \texttt{pykitPIV} can have impact and can support the ongoing ML development for
+Another recent interesting application of CNNs is for learning location of particles for particle tracking velocimetry (PTV) \cite{godbersen2024peak}. There, \texttt{pykitPIV} could provide training datasets with known ground truth particle positions.
+Another interesting path where \texttt{pykitPIV} can provide virtual environments is exploring unsupervised training of CNNs that does not require flow targets but is based on modified loss functions that look at photometric loss, constistency between image frames, and smoothness in the intensity fields \cite{lagemann2024challenges}. Our library can also integrate with the post-processing Python software developed in \cite{aguilar2022dpivsoft}.
 
-To date, we have been able to identify four openly-available synthetic image generation (SIG) packages: one written in the ANSI C language coming from the EUROPIV project \cite{lecordier2004europiv}, two written in MATLAB \citep{ben2020openpiv, mendes2020piv}, and third package, implemented in both MATLAB and Python, with a limited scope in order to specifically track defocusing and tackle astigmatic PIV. These existing SIG implementations make integrating with Python interfaces more difficult. With the emerging ML applications, a package that readily ports to libraries such as PyTorch \cite{paszke2017automatic, paszke2019pytorch}, TensorFlow \cite{tensorflow2015}, or Keras \cite{chollet2015keras} is the ideal solution. Our library allows for porting with ML algorithms. This not only allows to generate training data for ML in a single Python workflow, but also allows the ML algorithm to interact with the image generation process. Specifically, the high flexibility in the types of created images can port very well with variational approaches (VA) or with reinforcement learning (RL) algorithms, where an agent may learn to augment the training dataset in real-time to account for changes in experimental settings. Within the tutorials provided with the software, we delineate interesting examples for each of these ML applications.
-
-Finally, the powerful novelty of this package, as compared to previous MATLAB-based packages, is the introduction of new adjustable parameters that mimic various aspects of the experimental settings. 
-
-
-% IMPACT ON PTV
-Another interesting application of CNNs is for learning location of particles for particle tracking velocimetry \cite{godbersen2024peak} 
-
-or exploring unsupervised training of CNNs that does not require flow targets \cite{lagemann2024challenges}. 
-
-
-Notably, our library can integrate with the post-processing Python software developed in \cite{aguilar2022dpivsoft}.
-
-%\kamila{It would be great if we could extend image generation to synthetic event-based camera datasets. This would make the software truly novel.}
-
-%\kamila{Perhaps a nice novelty would be to allow the user to add solid boundaries into the image?}
+Our library allows for porting with ML algorithms. This not only allows to generate training data for ML in a single Python workflow, but also allows the ML algorithm to interact with the image generation process. Specifically, the high flexibility in the types of created images can port very well with variational approaches or with RL algorithms, where an agent may learn to augment the training dataset in real-time to account for changes in experimental settings. Finally, the powerful novelty of this package, as compared to previous MATLAB-based packages, is the introduction of new adjustable parameters that mimic various aspects of the experimental settings. Finally, the reader is referred to software documentation, where we delineate many interesting examples for ML applications.
 
 \section{Conclusions}
 
-
-The richness of experimental conditions and reproducibility of training data generation can help advance the growing development of ML applications in experimental fluid dynamics.
-
-We plan a continued development of this library. The future functionalities will include: extension from 2D to 3D environments with the 3D PIV images generated using camera projections coming from the OpenCV library.
-
-Future application can also include the use variational approaches to inform training data collection, or train a RL agent to construct necessary support data in new environments.
+In this work, we present a Python library, \texttt{pykitPIV}, that acts as a ``virtual wind tunnel'', providing a playground for training and testing ML models for optical velocimetry. The richness of experimental conditions, reproducibility of training data generation, and ready-to-use integrations with PyTorch and TensorFlow can help advance the growing development of ML applications in experimental fluid dynamics. The main power lies in the specialized CNN architectures which can open avenues for real-time inference and interaction of trained ML models (such as RL) with the experiment. In fact, our group already uses LIMA in real-time for 15Hz PIV, but further improvements to inference speed are needed for higher image acquisition frequencies.
+We therefore plan a continued development of this library. The future versions will include extension from 2D to 3D environments with the 3D PIV images generated using 2D camera projections. Future application can also include the use variational approaches to inform training data collection, or train a RL agent to construct necessary support data in new environments.
 
 \section*{Declaration of competing interest}
 
