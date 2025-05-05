@@ -118,7 +118,7 @@ The last decade has seen advances in training convolutional neural networks (CNN
 % EXPERIMENTAL F. D. SPECIFICALLY CAN PROFIT FROM THOSE CNNs 
 Experimental fluid dynamics can especially profit from those architectures. Specifically, particle image velocimetry (PIV) and background-oriented Schlieren (BOS) are optical techniques used to visualize flow patterns with high precision. Their main goal is to predict flow targets, such as displacement fields, velocity components, or vorticity, either from paired snapshots of illuminated tracer particles injected into the flow (in PIV) or from recorded deformations of the dotted background image (in BOS). Recently, RAFT-PIV \cite{lagemann2021deep} and lightweight image-matching architecture (LIMA) \citep{manickathan2023lightweight} were proposed as versions of CNNs that are optimized for inference from velocimetry experiments. The successes of RAFT-PIV and LIMA have been demonstrated on a number of classic experimental fluid dynamics settings such as flow behind a cylinder, boundary layer flow, or convective flow of a hot air plume \cite{mucignat2023lightweight}. The advancements to these architectures are continually being made in the context of PIV \citep{yu2021lightpivnet, fan2023deep, choi2023deep, shan2024lightweight, elrefaie2024site} with the goal to replace and outperform state-of-the-art PIV post-processing in the future. Currently, the main precedence that has motivated the need for those networks is that they can be trained on GPUs within the matter of hours and then ported to laboratory hardware to make flow predictions in real-time, parallel to experimental measurements.
 % THE SUCCESS OF THOSE CNNs IN F. D. OPENS UP NEW AVENUES OF ML RESEARCH
-Moreover, the advances made in optical flow architectures open up new avenues of research and allow for new machine learning (ML) use-cases to emerge that have not been possible before. In that sense, CNNs can become a gateway to various other ML algorithms such as variational approaches, active learning, or reinforcement learning (RL). This can allow the experimental community to develop new applications such as autonomous experimentation, data assimilation and digital twinning, building models from experimental data, and enhanced flow control.
+Moreover, the advances made in optical flow architectures open up new avenues of research and allow for new machine learning (ML) use-cases to emerge that have not been possible before. In that sense, CNNs can become a gateway to various other ML algorithms such as variational approaches, active learning, or reinforcement learning (RL). This will allow the experimental community to develop new applications such as autonomous experimentation, data assimilation and digital twinning, building models from experimental data, and enhanced flow control.
 
 % THERE' STILL WORK TO BE DONE...
 % TO IMPROVE CNNs
@@ -207,17 +207,7 @@ path = 'pykitPIV-dataset.h5'
 
 PIV_data = PIVDataset(dataset=path)
 \end{lstlisting}
-With this, the user can inspect the data sample at a given index:
-\lstset{language=Python}
-\begin{lstlisting}
-(I, target) = PIV_data[2]
-\end{lstlisting}
-or at multiple indices:
-\lstset{language=Python}
-\begin{lstlisting}
-(I, target) = PIV_data[2:7]
-\end{lstlisting}
-The training dataset is then used to train the LIMA model. Fig.~\ref{fig:LIMA} shows an example inference of the challenging displacement field with small feature sizes and sharp displacement gradients. We note that thanks to its targeted architecture and parameters, LIMA achieves high accuracy and per-pixel spatial resolution.
+With this, the user can inspect the data sample at a given index or at multiple indices. The training dataset is then used to train the LIMA model. Fig.~\ref{fig:LIMA} shows an example inference of the challenging displacement field with small feature sizes and sharp displacement gradients. We note that thanks to its targeted architecture and parameters, LIMA achieves high accuracy and per-pixel spatial resolution.
 
 \begin{figure}[t]
 \centering
