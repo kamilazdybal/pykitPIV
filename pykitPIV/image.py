@@ -672,6 +672,7 @@ class Image:
                             laser_over_exposure=1,
                             laser_beam_shape=0.85,
                             alpha=1/8,
+                            extend_gaussian=1,
                             covariance_matrix=None,
                             clip_intensities=True,
                             normalize_intensities=False):
@@ -708,6 +709,7 @@ class Image:
                                       laser_over_exposure=1,
                                       laser_beam_shape=0.95,
                                       alpha=1/8,
+                                      extend_gaussian=1,
                                       covariance_matrix=None,
                                       clip_intensities=True,
                                       normalize_intensities=False)
@@ -729,6 +731,7 @@ class Image:
                                       laser_over_exposure=1,
                                       laser_beam_shape=0.95,
                                       alpha=1/8,
+                                      extend_gaussian=1,
                                       covariance_matrix=covariance_matrix,
                                       clip_intensities=True,
                                       normalize_intensities=False)
@@ -760,6 +763,10 @@ class Image:
             `Raffel et al. (2018) <https://link.springer.com/book/10.1007/978-3-319-68852-7>`_,
             `Rabault et al. (2017) <https://iopscience.iop.org/article/10.1088/1361-6501/aa8b87/meta>`_
             and `Manickathan et al. (2022) <https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae>`_.
+        :param extend_gaussian: (optional):
+            ``int`` specifying the multiple of the particle radius to be filled with the Gaussian blur. For BOS images,
+            it is recommended to increase this number to, say, 2. For PIV images, it can be equal to 1. Note that
+            a higher number will increase the computation time for adding light intensity to images.
         :param covariance_matrix: (optional):
             ``numpy.ndarray`` specifying the covariance matrix that has to be positive semi-definite.
             If set to ``None``, the particle images will be generated from a univariate distrubtion
@@ -799,6 +806,9 @@ class Image:
         if not(isinstance(alpha, float)):
             raise ValueError("Parameter `alpha` has to be of type `float`.")
 
+        if not(isinstance(extend_gaussian, int)):
+            raise ValueError("Parameter `extend_gaussian` has to be of type `int`.")
+
         if covariance_matrix is not None:
             if not (isinstance(covariance_matrix, np.ndarray)):
                 raise ValueError("Parameter `covariance_matrix` has to be of type `numpy.ndarray`.")
@@ -835,7 +845,8 @@ class Image:
         def __gaussian_light(idx,
                              particle_height_coordinate,
                              particle_width_coordinate,
-                             image_instance):
+                             image_instance,
+                             extend_gaussian=1):
 
             # Note, that this number can be different between image I1 and I2 due to removal of particles from image area.
             # That's why we do not set number_of_particles = self.__particles.n_of_particles[idx] -- this would only work for I1.
@@ -863,8 +874,8 @@ class Image:
                 px_c_width = np.floor(particle_width_coordinate[p]).astype(int)
 
                 # We only apply the Gaussian blur in the square neighborhood of the particle center:
-                for h in range(px_c_height - ceil_of_particle_radius, px_c_height + ceil_of_particle_radius + 1):
-                    for w in range(px_c_width - ceil_of_particle_radius, px_c_width + ceil_of_particle_radius + 1):
+                for h in range(px_c_height - extend_gaussian * ceil_of_particle_radius, px_c_height + extend_gaussian * ceil_of_particle_radius + 1):
+                    for w in range(px_c_width - extend_gaussian * ceil_of_particle_radius, px_c_width + extend_gaussian * ceil_of_particle_radius + 1):
 
                         # Only change the value of pixels that are within the image area:
                         if (h >= 0 and h < self.__particles.size_with_buffer[0]) and (w >= 0 and w < self.__particles.size_with_buffer[1]):
@@ -902,7 +913,8 @@ class Image:
                 particles_with_gaussian_light = __gaussian_light(i,
                                                                  self.__particles.particle_coordinates[i][0],
                                                                  self.__particles.particle_coordinates[i][1],
-                                                                 image_instance=1)
+                                                                 image_instance=1,
+                                                                 extend_gaussian=extend_gaussian)
 
                 if clip_intensities:
                     images_I1[i, 0, :, :] = __clip_intensities(particles_with_gaussian_light, maximum_intensity)
