@@ -671,6 +671,7 @@ class Image:
                             laser_beam_thickness=2,
                             laser_over_exposure=1,
                             laser_beam_shape=0.85,
+                            no_laser_plane=False,
                             alpha=1/8,
                             extend_gaussian=1,
                             covariance_matrix=None,
@@ -708,6 +709,7 @@ class Image:
                                       laser_beam_thickness=1,
                                       laser_over_exposure=1,
                                       laser_beam_shape=0.95,
+                                      no_laser_plane=False,
                                       alpha=1/8,
                                       extend_gaussian=1,
                                       covariance_matrix=None,
@@ -730,6 +732,7 @@ class Image:
                                       laser_beam_thickness=1,
                                       laser_over_exposure=1,
                                       laser_beam_shape=0.95,
+                                      no_laser_plane=False,
                                       alpha=1/8,
                                       extend_gaussian=1,
                                       covariance_matrix=covariance_matrix,
@@ -756,6 +759,9 @@ class Image:
         :param laser_beam_shape: (optional)
             ``int`` or ``float`` specifying the spread of the Gaussian shape of the laser beam. The larger this number
             is, the wider the Gaussian light distribution from the laser and more particles will be illuminated.
+        :param no_laser_plane: (optional)
+            ``bool`` specifying whether the laser plane is used to illuminate particles. For PIV images, set to ``False``.
+            For BOS images set to ``True``.
         :param alpha: (optional):
             ``float`` specifying the custom multiplier, :math:`\\alpha`, for the squared particle radius as per the
             ``Particle.compute_light_intensity_at_pixel()`` method.
@@ -803,6 +809,9 @@ class Image:
         if not(isinstance(laser_beam_shape, int)) and not(isinstance(laser_beam_shape, float)):
             raise ValueError("Parameter `laser_beam_shape` has to be of type `int` or `float`.")
 
+        if not(isinstance(no_laser_plane, bool)):
+            raise ValueError("Parameter `no_laser_plane` has to be of type `bool`.")
+
         if not(isinstance(alpha, float)):
             raise ValueError("Parameter `alpha` has to be of type `float`.")
 
@@ -846,7 +855,8 @@ class Image:
                              particle_height_coordinate,
                              particle_width_coordinate,
                              image_instance,
-                             extend_gaussian=1):
+                             extend_gaussian=1,
+                             no_laser_plane=False):
 
             # Note, that this number can be different between image I1 and I2 due to removal of particles from image area.
             # That's why we do not set number_of_particles = self.__particles.n_of_particles[idx] -- this would only work for I1.
@@ -856,8 +866,12 @@ class Image:
             particles_with_gaussian_light = np.zeros((self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
 
             # Establish the peak intensity for each particle depending on its position with respect to the laser beam plane:
-            particle_positions_off_laser_plane = laser_beam_thickness * np.random.rand(number_of_particles) - laser_beam_thickness / 2
-            particle_position_relative_to_laser_centerline = np.abs(particle_positions_off_laser_plane) / (laser_beam_thickness / 2)
+            if no_laser_plane:
+                particle_position_relative_to_laser_centerline = np.ones((number_of_particles,))
+            else:
+                particle_positions_off_laser_plane = laser_beam_thickness * np.random.rand(number_of_particles) - laser_beam_thickness / 2
+                particle_position_relative_to_laser_centerline = np.abs(particle_positions_off_laser_plane) / (laser_beam_thickness / 2)
+
             particle_peak_intensities = self.exposures_per_image[idx] * maximum_intensity * np.exp(-0.5 * (particle_position_relative_to_laser_centerline ** 2 / laser_beam_shape ** 2))
 
             # Add Gaussian blur to each particle location that mimics the light reflect from a particle of a given size:
@@ -914,7 +928,8 @@ class Image:
                                                                  self.__particles.particle_coordinates[i][0],
                                                                  self.__particles.particle_coordinates[i][1],
                                                                  image_instance=1,
-                                                                 extend_gaussian=extend_gaussian)
+                                                                 extend_gaussian=extend_gaussian,
+                                                                 no_laser_plane=no_laser_plane)
 
                 if clip_intensities:
                     images_I1[i, 0, :, :] = __clip_intensities(particles_with_gaussian_light, maximum_intensity)
@@ -945,7 +960,9 @@ class Image:
                 particles_with_gaussian_light = __gaussian_light(i,
                                                                  self.__motion.particle_coordinates_I2[i][0],
                                                                  self.__motion.particle_coordinates_I2[i][1],
-                                                                 image_instance=2)
+                                                                 image_instance=2,
+                                                                 extend_gaussian=extend_gaussian,
+                                                                 no_laser_plane=no_laser_plane)
 
                 if clip_intensities:
                     images_I2[i, 0, :, :] = __clip_intensities(particles_with_gaussian_light, maximum_intensity)
