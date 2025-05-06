@@ -6,6 +6,7 @@ from pykitPIV.checks import *
 from pykitPIV.flowfield import FlowField
 from pykitPIV.motion import Motion
 from pykitPIV.particle import Particle
+from scipy.ndimage import map_coordinates
 
 ########################################################################################################################
 ########################################################################################################################
@@ -982,6 +983,46 @@ class Image:
                 self.__images_I2 = images_I2
 
             if self.__verbose: print('Reflected light added to images I2.')
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def warp_images(self,
+                    timescale=1,
+                    order=1,
+                    mode='constant'):
+        """
+        Warps images according to the velocity field.
+        This function can be used to produce :math:`I_2` in Background-oriented Schlieren (BOS).
+
+
+
+
+        """
+
+        if self.__flowfield is not None:
+
+            images_I2 = np.zeros((self.__particles.n_images, 1, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
+
+            for i in range(0,self.__particles.n_images):
+
+                yy, xx = np.meshgrid(np.arange(0, self.__particles.size_with_buffer[0]), np.arange(0, self.__particles.size_with_buffer[1]), indexing="ij")
+                x_src = xx - timescale * self.__flowfield.velocity_field[i, 0, :, :]
+                y_src = yy - timescale * self.__flowfield.velocity_field[i, 1, :, :]
+
+                coords = np.zeros((2, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
+                coords[0, :, :] = y_src
+                coords[1, :, :] = x_src
+
+                warped_I1 = map_coordinates(self.images_I1[i,0,:,:],
+                                            coords,
+                                            order=order,
+                                            mode=mode).reshape(self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1])
+
+                images_I2[i, 0, :, :] = warped_I1
+
+            self.__images_I2 = images_I2
+
+            if self.__verbose: print('Images have been warped to produce I2.')
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
