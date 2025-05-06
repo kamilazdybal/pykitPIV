@@ -868,7 +868,7 @@ class Image:
 
             # Establish the peak intensity for each particle depending on its position with respect to the laser beam plane:
             if no_laser_plane:
-                particle_position_relative_to_laser_centerline = np.ones((number_of_particles,))
+                particle_position_relative_to_laser_centerline = np.zeros((number_of_particles,))
             else:
                 particle_positions_off_laser_plane = laser_beam_thickness * np.random.rand(number_of_particles) - laser_beam_thickness / 2
                 particle_position_relative_to_laser_centerline = np.abs(particle_positions_off_laser_plane) / (laser_beam_thickness / 2)
