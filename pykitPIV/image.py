@@ -987,17 +987,92 @@ class Image:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def warp_images(self,
-                    timescale=1,
+                    time_separation=1,
                     order=1,
                     mode='constant'):
         """
         Warps images according to the velocity field.
-        This function can be used to produce :math:`I_2` in Background-oriented Schlieren (BOS).
+        This function can be used to produce :math:`I_2` in Background-oriented Schlieren (BOS) by warping :math:`I_1`.
+
+        .. note::
+
+            This function uses ``scipy.ndimage.map_coordinates`` to warp images.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import Particle, FlowField, Image
+
+            # We are going to generate 10 BOS image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (512, 512)
+
+            # Initialize a particle object:
+            particles = Particle(n_images,
+                                 size=image_size,
+                                 size_buffer=10,
+                                 diameters=10,
+                                 distances=1,
+                                 densities=1.2,
+                                 diameter_std=0,
+                                 seeding_mode='poisson',
+                                 random_seed=100)
+
+            # Initialize an image object:
+            image = Image(random_seed=100)
+            image.add_particles(particles)
+
+            image.add_reflected_light(exposures=0.99,
+                                      maximum_intensity=2**16-1,
+                                      no_laser_plane=True,
+                                      alpha=1/8,
+                                      extend_gaussian=2)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images,
+                                  size=image_size,
+                                  size_buffer=10,
+                                  random_seed=100)
+
+            flowfield.generate_potential_velocity_field(imposed_origin=None,
+                                                        displacement=(2, 2))
 
 
+            image.add_flowfield(flowfield)
 
+            # Warp images:
+            image.warp_images(time_separation=10)
 
+        :param time_separation:
+            ``float`` or ``int`` specifying the timescale that will scale the velocity field to obtain a displacement field.
+        :param order:
+            ``int`` specifying the order of the spline interpolation as per ``scipy.ndimage.map_coordinates``.
+            It has to be a number between 0 and 5.
+        :param mode:
+            ``str`` specifying how the input array is extended beyond its boundaries.
+            With sufficient buffer size this should not affect the proper image area.
         """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not(isinstance(time_separation, int)) and not(isinstance(time_separation, float)):
+            raise ValueError("Parameter `time_separation` has to be of type `float` or `int`.")
+
+        if not(isinstance(order, int)):
+            raise ValueError("Parameter `order` has to be of type `int`.")
+
+        if order < 0 or order > 5:
+            raise ValueError("Parameter `order` has to be a number between 0 and 5.")
+
+        if not(isinstance(mode, str)):
+            raise ValueError("Parameter `mode` has to be of type `str`.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         if self.__flowfield is not None:
 
@@ -1006,8 +1081,8 @@ class Image:
             for i in range(0,self.__particles.n_images):
 
                 yy, xx = np.meshgrid(np.arange(0, self.__particles.size_with_buffer[0]), np.arange(0, self.__particles.size_with_buffer[1]), indexing="ij")
-                x_src = xx - timescale * self.__flowfield.velocity_field[i, 0, :, :]
-                y_src = yy - timescale * self.__flowfield.velocity_field[i, 1, :, :]
+                x_src = xx - time_separation * self.__flowfield.velocity_field[i, 0, :, :]
+                y_src = yy - time_separation * self.__flowfield.velocity_field[i, 1, :, :]
 
                 coords = np.zeros((2, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
                 coords[0, :, :] = y_src
