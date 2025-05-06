@@ -26,6 +26,8 @@ Class: ``Image``
 
 .. autofunction:: pykitPIV.image.Image.add_reflected_light
 
+.. autofunction:: pykitPIV.image.Image.warp_images
+
 .. autofunction:: pykitPIV.image.Image.remove_buffers
 
 .. autofunction:: pykitPIV.image.Image.measure_counts
