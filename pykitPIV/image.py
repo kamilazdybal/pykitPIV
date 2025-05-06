@@ -992,7 +992,7 @@ class Image:
                     mode='constant'):
         """
         Warps images according to the velocity field.
-        This function can be used to produce :math:`I_2` in Background-oriented Schlieren (BOS) by warping :math:`I_1`.
+        This function can be used to produce :math:`I_2` in background-oriented Schlieren (BOS) by warping :math:`I_1`.
 
         .. note::
 

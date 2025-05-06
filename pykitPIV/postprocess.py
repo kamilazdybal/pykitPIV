@@ -445,6 +445,8 @@ class Postprocess:
             ``str`` specifying figure title.
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param cbar: (optional)
+            ``bool`` specifying whether colorbar should be plotted.
         :param figsize: (optional)
             ``tuple`` of two numerical elements specifying the figure size as per ``matplotlib.pyplot``.
         :param dpi: (optional)
@@ -487,6 +489,9 @@ class Postprocess:
 
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        if not isinstance(cbar, bool):
+            raise ValueError("Parameter `cbar` has to be of type 'bool'.")
 
         if (vmin is not None) and (not isinstance(vmin, int)) and (not isinstance(vmin, float)):
             raise ValueError("Parameter `vmin` has to be of type 'int' or 'float'.")
@@ -537,9 +542,6 @@ class Postprocess:
                     if vmax is None: vmax = np.max(self.processed_image_tensor[idx, :, :])
                     plt.imshow(self.processed_image_tensor[idx, :, :], cmap=cmap, origin='lower', vmin=vmin, vmax=vmax)
 
-        if cbar:
-            plt.colorbar()
-
         if xlabel is not None:
             plt.xlabel(xlabel)
 
@@ -554,6 +556,9 @@ class Postprocess:
 
         if title is not None:
             plt.title(title)
+
+        if cbar:
+            plt.colorbar()
 
         if filename is not None:
             plt.savefig(filename, dpi=dpi, bbox_inches='tight')
