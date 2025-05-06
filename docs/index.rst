@@ -28,7 +28,7 @@ with algorithms such as **convolutional neural networks**, **reinforcement learn
 **variational and generative approaches**, and **active learning**.
 ML agents have freedom in interacting with the virtual experiment,
 can assimilate data from a real experiment, and can be trained to perform a variety of
-tasks using diverse custom-built rewards and state representations.
+tasks using diverse custom-built rewards and sensory cues.
 
 .. image:: images/pykitPIV-modules.svg
     :width: 900
