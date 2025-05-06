@@ -1526,6 +1526,7 @@ class Image:
              yticks=True,
              title=None,
              cmap='Greys_r',
+             cbar=False,
              origin='lower',
              figsize=(5, 5),
              dpi=300,
@@ -1551,6 +1552,8 @@ class Image:
             ``str`` specifying figure title.
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param cbar: (optional)
+            ``bool`` specifying whether colorbar should be plotted.
         :param origin: (optional)
             ``str`` specifying the origin location. It can be ``'upper'`` or ``'lower'``.
         :param figsize: (optional)
@@ -1595,6 +1598,9 @@ class Image:
 
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        if not isinstance(cbar, bool):
+            raise ValueError("Parameter `cbar` has to be of type 'bool'.")
 
         if not isinstance(origin, str):
             raise ValueError("Parameter `origin` has to be of type 'str'.")
@@ -1668,6 +1674,9 @@ class Image:
         if title is not None:
             plt.title(title)
 
+        if cbar:
+            plt.colorbar()
+
         if filename is not None:
             plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
@@ -1684,6 +1693,7 @@ class Image:
                         yticks=True,
                         title=None,
                         cmap='Greys_r',
+                        cbar=False,
                         origin='lower',
                         figsize=(5, 5),
                         dpi=300,
@@ -1719,6 +1729,8 @@ class Image:
             ``str`` specifying figure title.
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param cbar: (optional)
+            ``bool`` specifying whether colorbar should be plotted.
         :param origin: (optional)
             ``str`` specifying the origin location. It can be ``'upper'`` or ``'lower'``.
         :param figsize: (optional)
@@ -1758,6 +1770,9 @@ class Image:
 
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        if not isinstance(cbar, bool):
+            raise ValueError("Parameter `cbar` has to be of type 'bool'.")
 
         if not isinstance(origin, str):
             raise ValueError("Parameter `origin` has to be of type 'str'.")
@@ -1824,6 +1839,9 @@ class Image:
         if title is not None:
             plt.title(title)
 
+        if cbar:
+            plt.colorbar()
+
         if filename is not None:
             plt.savefig(filename, dpi=dpi, bbox_inches='tight')
 
@@ -1838,6 +1856,7 @@ class Image:
                            ylabel=None,
                            title=None,
                            cmap='Greys_r',
+                           cbar=False,
                            origin='lower',
                            figsize=(5, 5),
                            dpi=300,
@@ -1858,6 +1877,8 @@ class Image:
             ``str`` specifying figure title.
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param cbar: (optional)
+            ``bool`` specifying whether colorbar should be plotted.
         :param origin: (optional)
             ``str`` specifying the origin location. It can be ``'upper'`` or ``'lower'``.
         :param figsize: (optional)
@@ -1891,6 +1912,9 @@ class Image:
 
         if (title is not None) and (not isinstance(title, str)):
             raise ValueError("Parameter `title` has to be of type 'str'.")
+
+        if not isinstance(cbar, bool):
+            raise ValueError("Parameter `cbar` has to be of type 'bool'.")
 
         if not isinstance(origin, str):
             raise ValueError("Parameter `origin` has to be of type 'str'.")
@@ -1948,6 +1972,9 @@ class Image:
         if title is not None:
             plt.title(title)
 
+        if cbar:
+            plt.colorbar()
+
         def updatefig(j):
 
             if self.__particles.size_buffer == 0:
@@ -1977,6 +2004,7 @@ class Image:
                    ylabel=None,
                    title=None,
                    cmap='viridis',
+                   cbar=False,
                    vmin_vmax=None,
                    origin='lower',
                    figsize=(5, 5),
@@ -1999,6 +2027,8 @@ class Image:
             ``tuple`` of two ``str`` elements specifying figure titles for each velocity field component.
         :param cmap: (optional)
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
+        :param cbar: (optional)
+            ``bool`` specifying whether colorbar should be plotted.
         :param vmin_vmax: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) fixed bounds for the colorbar.
         :param origin: (optional)
@@ -2040,6 +2070,9 @@ class Image:
 
         if (title is not None) and (not isinstance(title, tuple)):
             raise ValueError("Parameter `title` has to be of type 'tuple'.")
+
+        if not isinstance(cbar, bool):
+            raise ValueError("Parameter `cbar` has to be of type 'bool'.")
 
         if vmin_vmax is not None:
             check_two_element_tuple(vmin_vmax, 'vmin_vmax')
@@ -2119,7 +2152,8 @@ class Image:
         if title is not None:
             plt.title(title[0])
 
-        plt.colorbar()
+        if cbar:
+            plt.colorbar()
 
         if filename is not None:
 
@@ -2197,7 +2231,8 @@ class Image:
         if title is not None:
             plt.title(title[1])
 
-        plt.colorbar()
+        if cbar:
+            plt.colorbar()
 
         if filename is not None:
             plt.savefig(filename.split('.')[0] + '-v.' + filename.split('.')[1], dpi=dpi, bbox_inches='tight')
@@ -2253,6 +2288,10 @@ class Image:
             ``str`` or an object of `matplotlib.colors.ListedColormap <https://matplotlib.org/stable/api/_as_gen/matplotlib.colors.ListedColormap.html>`_ specifying the color map to use.
         :param vmin_vmax: (optional)
             ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element) fixed bounds for the colorbar.
+        :param cbar: (optional)
+            ``bool`` specifying whether colorbar should be plotted.
+        :param cbar_fontsize: (optional)
+            ``int`` specifying the fontsize for the colorbar.
         :param add_quiver: (optional)
             ``bool`` specifying if vector field should be plotted on top of the scalar magnitude field.
         :param quiver_step: (optional)
@@ -2312,6 +2351,12 @@ class Image:
         if vmin_vmax is not None:
             check_two_element_tuple(vmin_vmax, 'vmin_vmax')
             check_min_max_tuple(vmin_vmax)
+
+        if not isinstance(cbar, bool):
+            raise ValueError("Parameter `cbar` has to be of type 'bool'.")
+
+        if not isinstance(cbar_fontsize, int):
+            raise ValueError("Parameter `cbar_fontsize` has to be of type 'int'.")
 
         if not isinstance(add_quiver, bool):
             raise ValueError("Parameter `add_quiver` has to be of type 'bool'.")
