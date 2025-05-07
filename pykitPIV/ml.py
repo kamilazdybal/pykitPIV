@@ -2186,7 +2186,10 @@ class Cues:
         from pykitPIV.ml import Cues
 
         # Instantiate an object of the Cues class:
-        cues_obj = Cues()
+        cues_obj = Cues(verbose=False,
+                        random_seed=None,
+                        sample_every_n=10,
+                        normalize_displacement_vectors=False)
 
     :param verbose: (optional)
         ``bool`` specifying if the verbose print statements should be displayed.
@@ -2217,6 +2220,12 @@ class Cues:
             else:
                 np.random.seed(seed=random_seed)
 
+        if not isinstance(sample_every_n, int):
+            raise ValueError("Parameter `sample_every_n` has to be of type 'int'.")
+
+        if not isinstance(normalize_displacement_vectors, bool):
+            raise ValueError("Parameter `normalize_displacement_vectors` has to be of type 'bool'.")
+
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Class init:
@@ -2229,8 +2238,20 @@ class Cues:
 
     # Properties coming from user inputs:
     @property
+    def verbose(self):
+        return self.__verbose
+
+    @property
     def random_seed(self):
         return self.__random_seed
+
+    @property
+    def sample_every_n(self):
+        return self.__sample_every_n
+
+    @property
+    def normalize_displacement_vectors(self):
+        return self.__normalize_displacement_vectors
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -2243,6 +2264,14 @@ class Cues:
         .. math::
 
             \\mathbf{c} = [\\vec{d\\mathbf{s}}_1, \\vec{d\\mathbf{s}}_2, \\dots, \\vec{d\\mathbf{s}}_n]
+
+        These are further organized as:
+
+        .. math::
+
+            \\mathbf{c} = [dx_1, dx_2, \\dots, dx_n, dy_1, dy_2, \\dots, dy_n]
+
+        hence :math:`N = 2n`.
 
         **Example:**
 
@@ -2272,7 +2301,7 @@ class Cues:
             :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
 
         :return:
-            - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,n)`.
+            - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,N)`.
         """
 
         # Sample on a uniform grid:
@@ -2295,6 +2324,7 @@ class Cues:
             cues = np.hstack((normalized_dx.ravel()[None,:], normalized_dy.ravel()[None,:]))
 
         else:
+
             cues = np.hstack((dx_sample.ravel()[None, :], dy_sample.ravel()[None, :]))
 
         return cues
@@ -2339,7 +2369,7 @@ class Cues:
             :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
 
         :return:
-            - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,n)`.
+            - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,N)`.
         """
 
         # Sample on a uniform grid:
