@@ -20,12 +20,12 @@ from pykitPIV.flowfield import _available_velocity_fields
 ########################################################################################################################
 ########################################################################################################################
 ####
-####    Class: PIVDataset
+####    Class: PIVDatasetPyTorch
 ####
 ########################################################################################################################
 ########################################################################################################################
 
-class PIVDataset(Dataset):
+class PIVDatasetPyTorch(Dataset):
     """
     Loads and stores the **pykitPIV**-generated dataset for **PyTorch**.
 
@@ -35,13 +35,171 @@ class PIVDataset(Dataset):
 
     .. code:: python
 
-        from pykitPIV import PIVDataset
+        from pykitPIV import PIVDatasetPyTorch
 
         # Specify the path to the saved dataset:
         path = 'docs/data/pykitPIV-dataset-10-PIV-pairs-256-by-256.h5'
 
         # Load and store the dataset:
-        PIV_data = PIVDataset(dataset=path)
+        PIV_data = PIVDatasetPyTorch(dataset=path)
+
+    :param dataset:
+        ``str`` specifying the path to the saved dataset.
+        ``str`` specifying the path to the saved dataset.
+        It can also be directly passed as a ``dict`` defining the **pykitPIV** dataset.
+    :param transform: (optional)
+        ``torchvision.transform`` specifying vision transformations to augment the training dataset.
+    """
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def __init__(self, dataset, transform=None):
+
+        if isinstance(dataset, str):
+
+            # Upload the dataset:
+            f = h5py.File(dataset, "r")
+
+            # Access image intensities:
+            self.data = np.array(f["I"]).astype("float32")
+
+            # Access flow targets:
+            self.target = np.array(f["targets"]).astype("float32")
+
+        elif isinstance(dataset, dict):
+
+            # Access image intensities:
+            self.data = np.array(dataset["I"]).astype("float32")
+
+            # Access flow targets:
+            self.target = np.array(dataset["targets"]).astype("float32")
+
+        # Multiply the v-component of velocity by -1:
+        self.target[:,1,:,:] = -self.target[:,1,:,:]
+
+        if isinstance(dataset, str): f.close()
+
+        # Allow for any custom data transforms to be used later:
+        self.transform = transform
+
+    def __len__(self):
+
+        return len(self.data)
+
+    def __getitem__(self, idx):
+
+        # Get the sample:
+        sample = self.data[idx], self.target[idx]
+
+        # Apply any custom data transforms on this sample:
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample
+
+########################################################################################################################
+########################################################################################################################
+####
+####    Class: PIVDatasetTF
+####
+########################################################################################################################
+########################################################################################################################
+
+class PIVDatasetTF(Dataset):
+    """
+    Loads and stores the **pykitPIV**-generated dataset for **TensorFlow**.
+
+    This is a subclass of ``tf.data.Dataset``.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import PIVDatasetTF
+
+        # Specify the path to the saved dataset:
+        path = 'docs/data/pykitPIV-dataset-10-PIV-pairs-256-by-256.h5'
+
+        # Load and store the dataset:
+        PIV_data = PIVDatasetTF(dataset=path)
+
+    :param dataset:
+        ``str`` specifying the path to the saved dataset.
+        ``str`` specifying the path to the saved dataset.
+        It can also be directly passed as a ``dict`` defining the **pykitPIV** dataset.
+    :param transform: (optional)
+        ``torchvision.transform`` specifying vision transformations to augment the training dataset.
+    """
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def __init__(self, dataset, transform=None):
+
+        if isinstance(dataset, str):
+
+            # Upload the dataset:
+            f = h5py.File(dataset, "r")
+
+            # Access image intensities:
+            self.data = np.array(f["I"]).astype("float32")
+
+            # Access flow targets:
+            self.target = np.array(f["targets"]).astype("float32")
+
+        elif isinstance(dataset, dict):
+
+            # Access image intensities:
+            self.data = np.array(dataset["I"]).astype("float32")
+
+            # Access flow targets:
+            self.target = np.array(dataset["targets"]).astype("float32")
+
+        # Multiply the v-component of velocity by -1:
+        self.target[:,1,:,:] = -self.target[:,1,:,:]
+
+        if isinstance(dataset, str): f.close()
+
+        # Allow for any custom data transforms to be used later:
+        self.transform = transform
+
+    def __len__(self):
+
+        return len(self.data)
+
+    def __getitem__(self, idx):
+
+        # Get the sample:
+        sample = self.data[idx], self.target[idx]
+
+        # Apply any custom data transforms on this sample:
+        if self.transform:
+            sample = self.transform(sample)
+
+        return sample
+
+########################################################################################################################
+########################################################################################################################
+####
+####    Class: PIVDatasetKeras
+####
+########################################################################################################################
+########################################################################################################################
+
+class PIVDatasetKeras(Dataset):
+    """
+    Loads and stores the **pykitPIV**-generated dataset for **Keras**.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import PIVDatasetKeras
+
+        # Specify the path to the saved dataset:
+        path = 'docs/data/pykitPIV-dataset-10-PIV-pairs-256-by-256.h5'
+
+        # Load and store the dataset:
+        PIV_data = PIVDatasetKeras(dataset=path)
 
     :param dataset:
         ``str`` specifying the path to the saved dataset.
@@ -190,6 +348,42 @@ class PIVEnv(gym.Env):
                      image_spec=image_spec,
                      flowfield_spec=flowfield_spec,
                      user_flowfield=None,
+                     inference_model=None,
+                     random_seed=100)
+
+    Below is an example of importing a user-defined flow field and using it as the flow in the virtual wind tunnel.
+    This can be done by uploading an external velocity field tensor to a ``FlowField`` class object. Below, we demonstrate
+    this on a velocity field generated using the ``FlowField`` class, but the methodology is such that the user can
+    replace the ``velocity_field`` tensor with a custom tensor that can be upladed externally, say, from a Johns Hopkins
+    Turbulence Database (JHTD).
+
+    .. code:: python
+
+        from pykitPIV import FlowField
+
+        # Initialize an object of the FlowField class that will store the user-specified flow field:
+        user_flowfield = FlowField(1,
+                              size=(500, 1000),
+                              size_buffer=0)
+
+        # Create a dummy velocity field:
+        user_flowfield.generate_random_velocity_field(displacement=(10, 10),
+                                                 gaussian_filters=(30, 30),
+                                                 n_gaussian_filter_iter=6)
+        velocity_field = flowfield.velocity_field
+
+        # Uplad a user-specified velocity field tensor:
+        user_flowfield.upload_velocity_field(velocity_field)
+
+        # Initialize the Gymnasium environment:
+        env = PIVEnv(interrogation_window_size=(100, 200),
+                     interrogation_window_size_buffer=10,
+                     cues_function=cues_function,
+                     particle_spec=particle_spec,
+                     motion_spec=motion_spec,
+                     image_spec=image_spec,
+                     flowfield_spec=None,
+                     user_flowfield=user_flowfield,
                      inference_model=None,
                      random_seed=100)
 

@@ -11,7 +11,23 @@ Data primitives and data loaders
 **PyTorch**-based
 ====================================
 
-.. autoclass:: pykitPIV.ml.PIVDataset
+For more information on **PyTorch** data primitives visit this `PyTorch documentation website <https://docs.pytorch.org/tutorials/beginner/basics/data_tutorial.html>`_.
+
+.. autoclass:: pykitPIV.ml.PIVDatasetPyTorch
+
+**TensorFlow**-based
+====================================
+
+For more information on **TensorFlow** data primitives visit this `TensorFlow documentation website <https://www.tensorflow.org/guide/data>`_.
+
+.. autoclass:: pykitPIV.ml.PIVDatasetTF
+
+**Keras**-based
+====================================
+
+For more information on **Keras** data primitives visit this `Keras documentation website <https://keras.io/api/data_loading/>`_.
+
+.. autoclass:: pykitPIV.ml.PIVDatasetKeras
 
 *********************************************
 Reinforcement learning environments
