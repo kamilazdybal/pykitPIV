@@ -93,3 +93,4 @@ Custom reinforcement learning sensory cues
 
 .. autofunction:: pykitPIV.ml.Cues.sampled_magnitude
 
+.. autofunction:: pykitPIV.ml.Cues.sampled_divergence

@@ -10,7 +10,7 @@ import pygame
 import random
 import tensorflow as tf
 from pykitPIV.checks import *
-from pykitPIV.flowfield import FlowField, FlowFieldSpecs
+from pykitPIV.flowfield import FlowField, FlowFieldSpecs, compute_divergence, compute_vorticity, compute_q_criterion
 from pykitPIV.motion import Motion, MotionSpecs
 from pykitPIV.particle import Particle, ParticleSpecs
 from pykitPIV.image import Image, ImageSpecs
@@ -2199,7 +2199,7 @@ class Cues:
     :param sample_every_n: (optional)
         ``int`` specifying the step in sampling the displacement vectors over a uniform grid.
     :param normalize_displacement_vectors: (optional)
-        ``bool`` specifying whether the sampled displacement vectors should be normalized to unit length.
+        ``bool`` specifying whether the (sampled) displacement vectors should be normalized to unit length.
     """
 
     def __init__(self,
@@ -2334,12 +2334,12 @@ class Cues:
     def sampled_magnitude(self,
                           displacement_field):
         """
-        Computes the cues vector that contains :math:`n` displacement magnitudes sampled on a uniform grid from
+        Computes the cues vector that contains :math:`N` displacement magnitudes sampled on a uniform grid from
         the displacement field magnitude, :math:`|\\vec{d\\mathbf{s}}|`:
 
         .. math::
 
-            \\mathbf{c} = [|\\vec{d\\mathbf{s}}_1|, |\\vec{d\\mathbf{s}}_2|, \\dots, |\\vec{d\\mathbf{s}}_n|]
+            \\mathbf{c} = [|\\vec{d\\mathbf{s}}_1|, |\\vec{d\\mathbf{s}}_2|, \\dots, |\\vec{d\\mathbf{s}}_N|]
 
         **Example:**
 
@@ -2396,6 +2396,72 @@ class Cues:
         else:
 
             cues = magnitude.ravel()[None,:]
+
+        return cues
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def sampled_divergence(self,
+                           displacement_field):
+        """
+        Computes the cues vector that contains :math:`N` values for the divergence sampled on a uniform grid from
+        the divergence of the displacement field, :math:`d = \\nabla \cdot \\vec{d\\mathbf{s}}`:
+
+        .. math::
+
+            \\mathbf{c} = [d_1, d_2, \cdot, d_N]
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV.ml import Cues
+            import numpy as np
+
+            # Once we have the displacement field specified:
+            displacement_field = ...
+
+            # Instantiate an object of the Cues class:
+            cues_obj = Cues(verbose=True,
+                            random_seed=None,
+                            sample_every_n=10,
+                            normalize_displacement_vectors=False)
+
+            # Compute the cues vector:
+            cues = cues_obj.sampled_divergence(displacement_field=displacement_field)
+
+        :param displacement_field:
+            ``numpy.ndarray`` specifying the velocity components under the interrogation window.
+            It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
+            where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
+            :math:`u` and :math:`v` respectively,
+            :math:`H_{\\text{i}}+2b` is the height and
+            :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
+
+        :return:
+            - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,N)`.
+        """
+
+        # Sample on a uniform grid:
+        (_, _, H, W) = displacement_field.shape
+        idx_H = [i for i in range(0, H) if i % self.__sample_every_n == 0]
+        idx_W = [i for i in range(0, W) if i % self.__sample_every_n == 0]
+
+        idx_W, idx_H = np.meshgrid(idx_W, idx_H)
+
+        if self.__normalize_displacement_vectors:
+
+            magnitude = np.sqrt(displacement_field[0, 0, :, :] ** 2 + displacement_field[0, 1, :, :] ** 2)
+
+            divergence = compute_divergence(displacement_field / magnitude)
+
+        else:
+
+            divergence = compute_divergence(displacement_field)
+
+        divergence_sample = divergence[0, idx_H, idx_W]
+
+        cues = divergence_sample.ravel()[None,:]
 
         return cues
 
