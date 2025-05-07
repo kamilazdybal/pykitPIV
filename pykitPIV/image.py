@@ -46,7 +46,10 @@ class ImageSpecs:
                  laser_beam_thickness=1,
                  laser_over_exposure=1,
                  laser_beam_shape=0.95,
+                 no_laser_plane=False,
                  alpha=1/8,
+                 extend_gaussian=1,
+                 covariance_matrix=None,
                  clip_intensities=True,
                  normalize_intensities=False,
                  ):
@@ -60,7 +63,10 @@ class ImageSpecs:
         self.laser_beam_thickness = laser_beam_thickness
         self.laser_over_exposure = laser_over_exposure
         self.laser_beam_shape = laser_beam_shape
+        self.no_laser_plane = no_laser_plane
         self.alpha = alpha
+        self.extend_gaussian = extend_gaussian
+        self.covariance_matrix = covariance_matrix
         self.clip_intensities = clip_intensities
         self.normalize_intensities = normalize_intensities
 
@@ -75,7 +81,10 @@ class ImageSpecs:
                 f"laser_beam_thickness={self.laser_beam_thickness},\n"
                 f"laser_over_exposure={self.laser_over_exposure},\n"
                 f"laser_beam_shape={self.laser_beam_shape},\n"
+                f"no_laser_plane={self.no_laser_plane},\n"
                 f"alpha={self.alpha},\n"
+                f"extend_gaussian={self.extend_gaussian},\n"
+                f"covariance_matrix={self.covariance_matrix},\n"
                 f"clip_intensities={self.clip_intensities},\n"
                 f"normalize_intensities={self.normalize_intensities})"
                 )
