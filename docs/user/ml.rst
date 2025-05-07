@@ -84,10 +84,12 @@ Custom reinforcement learning rewards
 .. autofunction:: pykitPIV.ml.Rewards.divergence
 
 *********************************************
-Custom reinforcement learning cues
+Custom reinforcement learning sensory cues
 *********************************************
 
 .. autoclass:: pykitPIV.ml.Cues
 
 .. autofunction:: pykitPIV.ml.Cues.sampled_vectors
+
+.. autofunction:: pykitPIV.ml.Cues.sampled_magnitude
 

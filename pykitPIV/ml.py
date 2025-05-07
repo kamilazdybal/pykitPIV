@@ -2167,13 +2167,15 @@ class Rewards:
 
 class Cues:
     """
-    Provides custom cues functions that are applicable to various tasks related to navigating a virtual wind tunnel
-    and a virtual PIV experiment. The cue vector, :math:`\\mathbf{c}`,
+    Provides custom sensory cues functions that are applicable to various tasks related to navigating
+    a virtual wind tunnel and a virtual PIV experiment. The cue vector, :math:`\\mathbf{c}`,
     is computed only based on the reconstructed displacement field, :math:`\\vec{d\\mathbf{s}}`,
     in the interrogation window.
 
     Each function returns a vector of cues, :math:`\\mathbf{c}`, that is a ``numpy.ndarray`` of :math:`N` cues and
     of size :math:`(1,N)`.
+
+    The sensory cues can become the inputs to Q-networks when training RL agents.
 
     Functions of this class can be directly used as the ``cues_function`` parameter in ``pykitPIV.ml.PIVEnv``.
 
@@ -2254,7 +2256,9 @@ class Cues:
 
             # Instantiate an object of the Cues class:
             cues_obj = Cues(verbose=True,
-                            random_seed=None)
+                            random_seed=None,
+                            sample_every_n=10,
+                            normalize_displacement_vectors=False)
 
             # Compute the cues vector:
             cues = cues_obj.sampled_vectors(displacement_field=displacement_field)
@@ -2266,9 +2270,6 @@ class Cues:
             :math:`u` and :math:`v` respectively,
             :math:`H_{\\text{i}}+2b` is the height and
             :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
-        :param transformation:
-            ``function`` specifying an arbitrary transformation of the Q-criterion
-            and an arbitrary compression of the Q-criterion field to a single value.
 
         :return:
             - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,n)`.
@@ -2295,6 +2296,76 @@ class Cues:
 
         else:
             cues = np.hstack((dx_sample.ravel()[None, :], dy_sample.ravel()[None, :]))
+
+        return cues
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def sampled_magnitude(self,
+                          displacement_field):
+        """
+        Computes the cues vector that contains :math:`n` displacement magnitudes sampled on a uniform grid from
+        the displacement field magnitude, :math:`|\\vec{d\\mathbf{s}}|`:
+
+        .. math::
+
+            \\mathbf{c} = [|\\vec{d\\mathbf{s}}_1|, |\\vec{d\\mathbf{s}}_2|, \\dots, |\\vec{d\\mathbf{s}}_n|]
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV.ml import Cues
+            import numpy as np
+
+            # Once we have the displacement field specified:
+            displacement_field = ...
+
+            # Instantiate an object of the Cues class:
+            cues_obj = Cues(verbose=True,
+                            random_seed=None,
+                            sample_every_n=10,
+                            normalize_displacement_vectors=False)
+
+            # Compute the cues vector:
+            cues = cues_obj.sampled_magnitude(displacement_field=displacement_field)
+
+        :param displacement_field:
+            ``numpy.ndarray`` specifying the velocity components under the interrogation window.
+            It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
+            where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
+            :math:`u` and :math:`v` respectively,
+            :math:`H_{\\text{i}}+2b` is the height and
+            :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
+
+        :return:
+            - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,n)`.
+        """
+
+        # Sample on a uniform grid:
+        (_, _, H, W) = displacement_field.shape
+        idx_H = [i for i in range(0, H) if i % self.__sample_every_n == 0]
+        idx_W = [i for i in range(0, W) if i % self.__sample_every_n == 0]
+
+        idx_W, idx_H = np.meshgrid(idx_W, idx_H)
+
+        dx_sample = displacement_field[0, 0, idx_H, idx_W]
+        dy_sample = displacement_field[0, 1, idx_H, idx_W]
+
+        magnitude = np.sqrt(dx_sample ** 2 + dy_sample ** 2)
+
+        if self.__normalize_displacement_vectors:
+
+            normalized_dx = dx_sample / magnitude
+            normalized_dy = dy_sample / magnitude
+
+            normalized_magnitude = np.sqrt(normalized_dx ** 2 + normalized_dy ** 2)
+
+            cues = normalized_magnitude.ravel()[None,:]
+
+        else:
+
+            cues = magnitude.ravel()[None,:]
 
         return cues
 
