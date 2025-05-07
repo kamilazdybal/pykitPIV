@@ -1610,7 +1610,7 @@ def compute_vorticity(velocity_field,
 
     .. math::
 
-        \\omega = \\frac{\\partial v }{\\partial x} - \\frac{\\partial u}{\\partial y}
+        \\nabla \\times \\vec{V} = \\frac{\\partial v }{\\partial x} - \\frac{\\partial u}{\\partial y}
 
     .. note::
 
@@ -1650,7 +1650,7 @@ def compute_vorticity(velocity_field,
         as per `numpy.gradient <https://numpy.org/doc/stable/reference/generated/numpy.gradient.html>`_.
 
     :return:
-        - **vorticity** - vorticity of the velocity field, :math:`\omega`.
+        - **vorticity** - vorticity of the velocity field, :math:`\\nabla \\times \\vec{V}`.
           It has size :math:`(N, H, W)`.
     """
 

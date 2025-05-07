@@ -2405,11 +2405,11 @@ class Cues:
                            displacement_field):
         """
         Computes the cues vector that contains :math:`N` values for the divergence sampled on a uniform grid from
-        the divergence of the displacement field, :math:`d = \\nabla \cdot \\vec{d\\mathbf{s}}`:
+        the divergence of the displacement field, :math:`d = \\nabla \\cdot \\vec{d\\mathbf{s}}`:
 
         .. math::
 
-            \\mathbf{c} = [d_1, d_2, \cdot, d_N]
+            \\mathbf{c} = [d_1, d_2, \\dots, d_N]
 
         **Example:**
 
@@ -2462,6 +2462,138 @@ class Cues:
         divergence_sample = divergence[0, idx_H, idx_W]
 
         cues = divergence_sample.ravel()[None,:]
+
+        return cues
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def sampled_vorticity(self,
+                          displacement_field):
+        """
+        Computes the cues vector that contains :math:`N` values for the vorticity sampled on a uniform grid from
+        the vorticity of the displacement field, :math:`\\omega = \\nabla \\times \\vec{d\\mathbf{s}}`:
+
+        .. math::
+
+            \\mathbf{c} = [\\omega_1, \\omega_2, \\dots, \\omega_N]
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV.ml import Cues
+            import numpy as np
+
+            # Once we have the displacement field specified:
+            displacement_field = ...
+
+            # Instantiate an object of the Cues class:
+            cues_obj = Cues(verbose=True,
+                            random_seed=None,
+                            sample_every_n=10,
+                            normalize_displacement_vectors=False)
+
+            # Compute the cues vector:
+            cues = cues_obj.sampled_vorticity(displacement_field=displacement_field)
+
+        :param displacement_field:
+            ``numpy.ndarray`` specifying the velocity components under the interrogation window.
+            It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
+            where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
+            :math:`u` and :math:`v` respectively,
+            :math:`H_{\\text{i}}+2b` is the height and
+            :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
+
+        :return:
+            - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,N)`.
+        """
+
+        # Sample on a uniform grid:
+        (_, _, H, W) = displacement_field.shape
+        idx_H = [i for i in range(0, H) if i % self.__sample_every_n == 0]
+        idx_W = [i for i in range(0, W) if i % self.__sample_every_n == 0]
+
+        idx_W, idx_H = np.meshgrid(idx_W, idx_H)
+
+        if self.__normalize_displacement_vectors:
+
+            magnitude = np.sqrt(displacement_field[0, 0, :, :] ** 2 + displacement_field[0, 1, :, :] ** 2)
+
+            vorticity = compute_vorticity(displacement_field / magnitude)
+
+        else:
+
+            vorticity = compute_vorticity(displacement_field)
+
+        vorticity_sample = vorticity[0, idx_H, idx_W]
+
+        cues = vorticity_sample.ravel()[None,:]
+
+        return cues
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def sampled_q_criterion(self,
+                            displacement_field):
+        """
+        Computes the cues vector that contains :math:`N` values for the Q-criterion sampled on a uniform grid from
+        the Q-criterion of the displacement field, :math:`Q`:
+
+        .. math::
+
+            \\mathbf{c} = [Q_1, Q_2, \\dots, Q_N]
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV.ml import Cues
+            import numpy as np
+
+            # Once we have the displacement field specified:
+            displacement_field = ...
+
+            # Instantiate an object of the Cues class:
+            cues_obj = Cues(verbose=True,
+                            random_seed=None,
+                            sample_every_n=10,
+                            normalize_displacement_vectors=False)
+
+            # Compute the cues vector:
+            cues = cues_obj.sampled_q_criterion(displacement_field=displacement_field)
+
+        :param displacement_field:
+            ``numpy.ndarray`` specifying the velocity components under the interrogation window.
+            It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
+            where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
+            :math:`u` and :math:`v` respectively,
+            :math:`H_{\\text{i}}+2b` is the height and
+            :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
+
+        :return:
+            - **cues** - ``numpy.ndarray`` specifying the cues vector, :math:`\mathbf{c}`. It has shape :math:`(1,N)`.
+        """
+
+        # Sample on a uniform grid:
+        (_, _, H, W) = displacement_field.shape
+        idx_H = [i for i in range(0, H) if i % self.__sample_every_n == 0]
+        idx_W = [i for i in range(0, W) if i % self.__sample_every_n == 0]
+
+        idx_W, idx_H = np.meshgrid(idx_W, idx_H)
+
+        if self.__normalize_displacement_vectors:
+
+            magnitude = np.sqrt(displacement_field[0, 0, :, :] ** 2 + displacement_field[0, 1, :, :] ** 2)
+
+            Q = compute_q_criterion(displacement_field / magnitude)
+
+        else:
+
+            Q = compute_q_criterion(displacement_field)
+
+        Q_sample = Q[0, idx_H, idx_W]
+
+        cues = Q_sample.ravel()[None,:]
 
         return cues
 
