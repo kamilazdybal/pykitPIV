@@ -53,6 +53,20 @@ structure for any RL environment.
 
 .. autofunction:: pykitPIV.ml.PIVEnv.make_inference
 
+**TF-Agents**-based
+====================================
+
+.. note::
+
+    The future version will include environments that can be directly used with `TF-Agents <https://www.tensorflow.org/agents>`_.
+
+*********************************************
+Reinforcement learning agents
+*********************************************
+
+Single deep Q-network training
+====================================
+
 .. autoclass:: pykitPIV.ml.CameraAgentSingleDQN
 
 .. autofunction:: pykitPIV.ml.CameraAgentSingleDQN.choose_action
@@ -60,6 +74,9 @@ structure for any RL environment.
 .. autofunction:: pykitPIV.ml.CameraAgentSingleDQN.train
 
 .. autofunction:: pykitPIV.ml.CameraAgentSingleDQN.view_weights
+
+Double deep Q-network training with memory replay
+==========================================================
 
 .. autoclass:: pykitPIV.ml.CameraAgentDoubleDQN
 
@@ -73,17 +90,8 @@ structure for any RL environment.
 
 .. autofunction:: pykitPIV.ml.CameraAgentDoubleDQN.view_weights
 
-.. autofunction:: pykitPIV.ml.plot_trajectory
-
-**TF-Agents**-based
-====================================
-
-.. note::
-
-    The future version will include environments that can be directly used with `TF-Agents <https://www.tensorflow.org/agents>`_.
-
 *********************************************
-Custom reinforcement learning rewards
+Reinforcement learning rewards
 *********************************************
 
 .. note::
@@ -98,7 +106,7 @@ Custom reinforcement learning rewards
 .. autofunction:: pykitPIV.ml.Rewards.divergence
 
 *********************************************
-Custom reinforcement learning sensory cues
+Reinforcement learning sensory cues
 *********************************************
 
 .. note::
@@ -117,3 +125,9 @@ Custom reinforcement learning sensory cues
 .. autofunction:: pykitPIV.ml.Cues.sampled_vorticity
 
 .. autofunction:: pykitPIV.ml.Cues.sampled_q_criterion
+
+*********************************************
+Reinforcement learning utilities
+*********************************************
+
+.. autofunction:: pykitPIV.ml.plot_trajectory

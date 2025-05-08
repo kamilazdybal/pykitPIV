@@ -1538,6 +1538,7 @@ class CameraAgentSingleDQN:
             # Compute the loss based on the difference between what the Q-value should be and what it actually is:
             loss = tf.reduce_mean(tf.square(target_q_value - q_value_for_action))
 
+        # Compute and apply the gradients to the trainable variables of the deep Q-network:
         grads = tape.gradient(loss, self.q_network.trainable_variables)
         self.optimizer.apply_gradients(zip(grads, self.q_network.trainable_variables))
 
