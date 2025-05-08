@@ -1438,7 +1438,7 @@ class CameraAgent:
         ``float`` specifying the initial learning rate. The learning rate can be updated on the fly by passing a new
         value to the ``train()`` function.
     :param optimizer:  (optional)
-        ``str`` specifying the gradient descent optimizer to use.
+        ``str`` specifying the gradient descent optimizer to use. It can be ``'Adam'`` or ``'RMSprop'``.
     :param discount_factor:  (optional)
         ``float`` specifying the discount factor, :math:`\gamma`.
     """
@@ -1480,6 +1480,10 @@ class CameraAgent:
         self.learning_rate = learning_rate
         if optimizer == 'RMSprop':
             self.optimizer = tf.keras.optimizers.RMSprop(learning_rate=self.learning_rate)
+        elif optimizer == 'Adam':
+            self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
+        else:
+            raise ValueError("Optimizer has to be 'RMSprop' or 'Adam'. Other optimizers will be implemented in future versions.")
 
         self.target_q_network.compile(self.optimizer, loss=tf.keras.losses.MeanSquaredError())
         self.online_q_network.compile(self.optimizer, loss=tf.keras.losses.MeanSquaredError())
