@@ -1360,7 +1360,7 @@ class PIVEnv(gym.Env):
 class CameraAgentSingleDQN:
     """
     Creates a reinforcement learning (RL) agent that operates a virtual camera in a PIV experimental setting
-    and provides a training loop for Q-learning. We use a single Q-learning with a deep neural network (DNN) model.
+    and provides a training loop for Q-learning. Here, we use Q-learning with a single deep neural network (DNN) model.
 
     The goal of the RL agent is to learn the mapping function, :math:`f`,
     from :math:`\\text{cues} \\rightarrow \\text{actions}`:
@@ -1379,14 +1379,41 @@ class CameraAgentSingleDQN:
         from pykitPIV.ml import CameraAgentSingleDQN
         import tensorflow as tf
 
+        # Initialize the environment:
+        env = PIVEnv(...)
+
+        # Example single deep Q-network model:
+        class QNetwork(tf.keras.Model):
+
+            def __init__(self, n_actions, kernel_initializer):
+
+                super(QNetwork, self).__init__()
+
+                self.dense1 = tf.keras.layers.Dense(env.n_cues, activation='relu', kernel_initializer=kernel_initializer)
+                self.dense2 = tf.keras.layers.Dense(size_of_hidden_unit, activation='relu', kernel_initializer=kernel_initializer)
+                self.dense3 = tf.keras.layers.Dense(size_of_hidden_unit, activation='relu', kernel_initializer=kernel_initializer)
+                self.output_layer = tf.keras.layers.Dense(n_actions, activation='relu', kernel_initializer=kernel_initializer)
+
+            def call(self, state):
+
+                x = self.dense1(state)
+                x = self.dense2(x)
+                x = self.dense3(x)
+
+                return self.output_layer(x)
+
+        # Initialize the camera agent for single deep Q-network training:
+        ca = CameraAgentSingleDQN(env=env,
+                                  q_network=QNetwork(env.n_actions, tf.keras.initializers.RandomUniform),
+                                  learning_rate=0.0001,
+                                  optimizer='Adam',
+                                  discount_factor=0.95)
 
     :param env:
         object of a custom environment class that is a subclass of ``gym.Env`` specifying the virtual environment.
         This can for instance be an object of the ``pykitPIV.ml.PIVEnv`` class.
     :param q_network:
         ``tf.keras.Model`` specifying the single deep neural network that will be trained for Q-learning.
-    :param n_epochs:  (optional)
-        ``int`` specifying the number of epochs to train the Q-network for after each step in the environment.
     :param learning_rate:  (optional)
         ``float`` specifying the initial learning rate. The learning rate can be updated on the fly by passing a new
         value to the ``train()`` function.
@@ -1442,7 +1469,7 @@ class CameraAgentSingleDQN:
         If the probability is less than :math:`\\varepsilon`, action is selected at random.
 
         If the probability is higher than or equal to :math:`\\varepsilon`, action is selected based on the cues that
-        are the characteristic of the flow field inside the current interrogation window at location defined by
+        are the current characteristics of the flow field inside the current interrogation window at location defined by
         the camera position (``camera_position``).
 
         **Example:**
@@ -1450,7 +1477,7 @@ class CameraAgentSingleDQN:
         .. code:: python
 
             # Once the camera agent has been initialized:
-            ca = CameraAgent(...)
+            ca = CameraAgentSingleDQN(...)
 
             # And we have the set of cues computed, e.g., from the initial interrogation window:
             camera_position, cues = ca.env.reset()
@@ -1464,6 +1491,9 @@ class CameraAgentSingleDQN:
             to the Q-network. It has to have size ``(1, N)``.
         :param epsilon:
             ``float`` specifying the exploration probability, :math:`\\varepsilon`. It has to be between 0 and 1.
+
+        :return:
+            - **action** - ``int`` specifying the action selected.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -1498,17 +1528,37 @@ class CameraAgentSingleDQN:
               next_cues,
               new_learning_rate=0.001):
         """
-        Trains the temporary Q-network (``online_q_network``) with the outcome of a single step in the environment.
+        Trains the deep Q-network (``q_network``) with the outcome of a single step in the environment.
+
+        .. note::
+
+            This function uses `tf.GradientTape() <https://www.tensorflow.org/api_docs/python/tf/GradientTape>`_
+            to record operations done on Q-network's trainable parameters
+            and to apply gradients.
 
         **Example:**
 
         .. code:: python
 
             # Once the camera agent has been initialized:
-            ca = CameraAgent(...)
+            ca = CameraAgentSingleDQN(...)
 
-            # We can train the agent with a single pass over a batch of training data:
-            ca.train(new_learning_rate=0.001)
+            # And we have access to cues, action, reward, and next_cues
+            # coming from the current step in the environment:
+            cues, action, reward, next_cues = ...
+
+            # We can train the agent with information about the current step in the environment:
+            ca.train(cues=cues,
+                     action=action,
+                     reward=reward,
+                     next_cues=next_cues,
+                     new_learning_rate=0.001)
+
+        To save the trained Q-network, you can run:
+
+        .. code:: python
+
+            ca.q_network.save('SingleDQN.keras')
 
         :param cues:
             ``numpy.ndarray`` specifying the current cues.
@@ -1554,10 +1604,14 @@ class CameraAgentSingleDQN:
         .. code:: python
 
             # Once the camera agent has been initialized:
-            ca = CameraAgent(...)
+            ca = CameraAgentSingleDQN(...)
 
             # View the current target Q-network weights:
             ca.view_weights()
+
+        :return:
+            - **weights_and_biases** - ``list`` of ``numpy.ndarray`` specifying the current trainable parameters
+              (weights and biases) of the deep Q-network.
         """
 
         return self.q_network.get_weights()
