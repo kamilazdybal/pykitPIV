@@ -59,7 +59,6 @@ class FlowFieldSpecs:
                  n_gaussian_filter_iter=10,
                  displacement=(2, 2),
                  radial_source=True,
-                 radial_source_strength=1.0,
                  radial_imposed_source_location=None,
                  radial_sigma=20,
                  radial_epsilon=1e-6,
@@ -79,7 +78,6 @@ class FlowFieldSpecs:
         self.n_gaussian_filter_iter = n_gaussian_filter_iter
         self.displacement = displacement
         self.radial_source = radial_source
-        self.radial_source_strength = radial_source_strength
         self.radial_imposed_source_location = radial_imposed_source_location
         self.radial_sigma = radial_sigma
         self.radial_epsilon = radial_epsilon
@@ -100,7 +98,6 @@ class FlowFieldSpecs:
                 f"n_gaussian_filter_iter={self.n_gaussian_filter_iter},\n"
                 f"displacement={self.displacement},\n"
                 f"radial_source={self.radial_source},\n"
-                f"radial_source_strength={self.radial_source_strength},\n"
                 f"radial_imposed_source_location={self.radial_imposed_source_location},\n"
                 f"radial_sigma={self.radial_sigma},\n"
                 f"radial_epsilon={self.radial_epsilon},\n"

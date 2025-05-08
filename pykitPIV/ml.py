@@ -568,7 +568,6 @@ class PIVEnv(gym.Env):
 
                 flowfield.generate_radial_velocity_field(source=self.__flowfield_spec.radial_source,
                                                          displacement=self.__flowfield_spec.displacement,
-                                                         source_strength=self.__flowfield_spec.radial_source_strength,
                                                          imposed_source_location=self.__flowfield_spec.radial_imposed_source_location,
                                                          sigma=self.__flowfield_spec.radial_sigma,
                                                          epsilon=self.__flowfield_spec.radial_epsilon)
@@ -869,7 +868,6 @@ class PIVEnv(gym.Env):
 
                     flowfield.generate_radial_velocity_field(source=self.__flowfield_spec.radial_source,
                                                              displacement=self.__flowfield_spec.displacement,
-                                                             source_strength=self.__flowfield_spec.radial_source_strength,
                                                              imposed_source_location=self.__flowfield_spec.radial_imposed_source_location,
                                                              sigma=self.__flowfield_spec.radial_sigma,
                                                              epsilon=self.__flowfield_spec.radial_epsilon)
