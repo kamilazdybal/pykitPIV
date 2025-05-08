@@ -1384,7 +1384,7 @@ class CameraAgentSingleDQN:
         object of a custom environment class that is a subclass of ``gym.Env`` specifying the virtual environment.
         This can for instance be an object of the ``pykitPIV.ml.PIVEnv`` class.
     :param q_network:
-        ``tf.keras.Model`` specifying the deep neural network that will be trained for Q-learning.
+        ``tf.keras.Model`` specifying the single deep neural network that will be trained for Q-learning.
     :param n_epochs:  (optional)
         ``int`` specifying the number of epochs to train the Q-network for after each step in the environment.
     :param learning_rate:  (optional)
@@ -1414,8 +1414,8 @@ class CameraAgentSingleDQN:
 
         print('The uploaded environment has ' + str(self.n_actions) + ' actions.')
 
-        # We define the deep Q-network:
-        self.q_network = target_q_network
+        # We define the single deep Q-network:
+        self.q_network = q_network
 
         # Parameters of training the DNN:
         self.n_epochs = n_epochs

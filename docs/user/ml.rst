@@ -53,17 +53,19 @@ structure for any RL environment.
 
 .. autofunction:: pykitPIV.ml.PIVEnv.make_inference
 
-.. autoclass:: pykitPIV.ml.CameraAgent
+.. autoclass:: pykitPIV.ml.CameraAgentSingleDQN
 
-.. autofunction:: pykitPIV.ml.CameraAgent.choose_action
+.. autoclass:: pykitPIV.ml.CameraAgentDoubleDQN
 
-.. autofunction:: pykitPIV.ml.CameraAgent.remember
+.. autofunction:: pykitPIV.ml.CameraAgentDoubleDQN.choose_action
 
-.. autofunction:: pykitPIV.ml.CameraAgent.train
+.. autofunction:: pykitPIV.ml.CameraAgentDoubleDQN.remember
 
-.. autofunction:: pykitPIV.ml.CameraAgent.update_target_network
+.. autofunction:: pykitPIV.ml.CameraAgentDoubleDQN.train
 
-.. autofunction:: pykitPIV.ml.CameraAgent.view_weights
+.. autofunction:: pykitPIV.ml.CameraAgentDoubleDQN.update_target_network
+
+.. autofunction:: pykitPIV.ml.CameraAgentDoubleDQN.view_weights
 
 .. autofunction:: pykitPIV.ml.plot_trajectory
 
