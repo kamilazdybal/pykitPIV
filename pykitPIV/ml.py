@@ -1352,12 +1352,399 @@ class PIVEnv(gym.Env):
 ########################################################################################################################
 ########################################################################################################################
 ####
-####    Class: CameraAgent
+####    Class: CameraAgentSingleDQN
 ####
 ########################################################################################################################
 ########################################################################################################################
 
-class CameraAgent:
+class CameraAgentSingleDQN:
+    """
+    Creates a reinforcement learning (RL) agent that operates a virtual camera in a PIV experimental setting
+    and provides a training loop for Q-learning. We use double Q-learning
+    (see `Hasselt et al. <https://arxiv.org/abs/1509.06461>`_ for more info) and use
+    two deep neural network (DNN) models with memory replay.
+    Having two Q-networks separates the process of finding which action has the maximum Q-value from
+    the process of learning precisely what that maximum Q-value should be.
+
+    The goal of the RL agent is to learn the mapping function, :math:`f`,
+    from :math:`\\text{cues} \\rightarrow \\text{actions}`:
+
+    .. math::
+
+        \\text{action} = f(\\text{cues} )
+
+    where :math:`f` is the trained DNN model.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV.ml import PIVEnv
+        from pykitPIV.ml import CameraAgent
+        import tensorflow as tf
+
+        # Initialize the environment:
+        env = PIVEnv(...)
+
+        # Create a simple neural network model for the Q-network:
+        class QNetwork(tf.keras.Model):
+
+            def __init__(self, n_actions):
+
+                super(QNetwork, self).__init__()
+
+                self.dense1 = tf.keras.layers.Dense(10,
+                                                    activation='linear',
+                                                    kernel_initializer=tf.keras.initializers.Ones)
+                self.dense2 = tf.keras.layers.Dense(10,
+                                                    activation='linear',
+                                                    kernel_initializer=tf.keras.initializers.Ones)
+                self.output = tf.keras.layers.Dense(n_actions,
+                                                    activation='linear',
+                                                    kernel_initializer=tf.keras.initializers.Ones)
+
+            def call(self, state):
+
+                x = self.dense1(state)
+                x = self.dense2(x)
+
+                return self.output(x)
+
+        # Initialize the camera agent:
+        ca = CameraAgent(env=env,
+                         target_q_network=QNetwork(env.n_actions),
+                         online_q_network=QNetwork(env.n_actions),
+                         memory_size=10000,
+                         batch_size=256,
+                         n_epochs=100,
+                         learning_rate=0.0001,
+                         optimizer='RMSprop',
+                         discount_factor=0.95)
+
+    :param env:
+        object of a custom environment class that is a subclass of ``gym.Env`` specifying the virtual environment.
+        This can for instance be an object of the ``pykitPIV.ml.PIVEnv`` class.
+    :param target_q_network:
+        ``tf.keras.Model`` specifying the deep neural network that will be the target (stable) network for Q-learning.
+    :param online_q_network:
+        ``tf.keras.Model`` specifying the deep neural network that will be the online (temporary) network for Q-learning.
+    :param memory_size:  (optional)
+        ``int`` specifying the size of the memory bank.
+    :param batch_size:  (optional)
+        ``int`` specifying the batch size for training the Q-network for after each step in the environment.
+    :param n_epochs:  (optional)
+        ``int`` specifying the number of epochs to train the Q-network for after each step in the environment.
+    :param learning_rate:  (optional)
+        ``float`` specifying the initial learning rate. The learning rate can be updated on the fly by passing a new
+        value to the ``train()`` function.
+    :param optimizer:  (optional)
+        ``str`` specifying the gradient descent optimizer to use. It can be ``'Adam'`` or ``'RMSprop'``.
+    :param discount_factor:  (optional)
+        ``float`` specifying the discount factor, :math:`\gamma`.
+    """
+
+    def __init__(self,
+                 env,
+                 target_q_network,
+                 online_q_network,
+                 memory_size=10000,
+                 batch_size=256,
+                 n_epochs=100,
+                 learning_rate=0.0001,
+                 optimizer='RMSprop',
+                 discount_factor=0.95):
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Class init:
+
+        # Define the environment for the camera agent:
+        self.env = env
+        self.n_actions = self.env.n_actions
+
+        print('The uploaded environment has ' + str(self.n_actions) + ' actions.')
+
+        # We have two Q-networks, the target Q-network, which is the "stable" network:
+        self.target_q_network = target_q_network
+
+        # But the target network will be synchronized with the online Q-network only once every few episodes:
+        self.online_q_network = online_q_network
+
+        # ^ This prevents overshoots in learning the Q-value as shown by Hasselt et al. (2015)
+        # These two Q-networks will separate the process of finding which action has the maximum Q-value from
+        # the process of learning precisely what that maximum Q-value should be.
+
+        # Parameters of training the DNN:
+        self.batch_size = batch_size
+        self.n_epochs = n_epochs
+        self.learning_rate = learning_rate
+        if optimizer == 'RMSprop':
+            self.optimizer = tf.keras.optimizers.RMSprop(learning_rate=self.learning_rate)
+        elif optimizer == 'Adam':
+            self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.learning_rate)
+        else:
+            raise ValueError("Optimizer has to be 'RMSprop' or 'Adam'. Other optimizers will be implemented in future versions.")
+
+        self.target_q_network.compile(self.optimizer, loss=tf.keras.losses.MeanSquaredError())
+        self.online_q_network.compile(self.optimizer, loss=tf.keras.losses.MeanSquaredError())
+        self.MSE_losses = []
+
+        # Reinforcement learning parameters:
+        self.discount_factor = discount_factor
+
+        # Memory replay parameters:
+
+        class ReplayBuffer:
+            def __init__(self, max_size):
+                self.buffer = deque(maxlen=max_size)
+
+            def add(self, experience):
+                self.buffer.append(experience)
+
+            def sample(self, batch_size):
+                return random.sample(self.buffer, batch_size)
+
+        self.memory_size = memory_size
+        self.memory = ReplayBuffer(self.memory_size)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def choose_action(self,
+                      cues,
+                      epsilon):
+        """
+        Defines an :math:`\\varepsilon`-greedy choice of the next best action to select.
+
+        If the probability is less than :math:`\\varepsilon`, action is selected at random.
+
+        If the probability is higher than or equal to :math:`\\varepsilon`, action is selected based on the cues that
+        are the characteristic of the flow field inside the current interrogation window at location defined by
+        the camera position (``camera_position``).
+
+        **Example:**
+
+        .. code:: python
+
+            # Once the camera agent has been initialized:
+            ca = CameraAgent(...)
+
+            # And we have the set of cues computed, e.g., from the initial interrogation window:
+            camera_position, cues = ca.env.reset()
+
+            # We can use the epsilon-greedy strategy to choose the action:
+            ca.choose_action(cues=cues,
+                             epsilon=0.5)
+
+        :param cues:
+            ``numpy.ndarray`` specifying :math:`N` cues that the RL agent senses. The cues are the input parameters
+            to the Q-network. It has to have size ``(1, N)``.
+        :param epsilon:
+            ``float`` specifying the exploration probability, :math:`\\varepsilon`. It has to be between 0 and 1.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+        if not isinstance(epsilon, float):
+            raise ValueError("Parameter `epsilon` has to be of type 'float'.")
+
+        if epsilon < 0 or epsilon > 1:
+            raise ValueError("Parameter `epsilon` has to be between 0 and 1.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Select random action with probability epsilon:
+        if np.random.rand() < epsilon:
+
+            return np.random.choice(self.n_actions)
+
+        # Select the currently best action with probability (1 - epsilon):
+        else:
+
+            # Not sure for the moment, which one should I be using?
+            # q_values = self.target_q_network(cues)
+            q_values = self.online_q_network(cues)
+
+            return np.argmax(q_values)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def remember(self, cues, action, reward, next_cues):
+        """
+        Adds the complete outcome of taking a step in the environment to the memory bank.
+        That outcome is represented by a tuple:
+
+        .. math::
+
+            (\\text{cues}, \\text{action}, \\text{reward}, \\text{next cues})
+
+        where the cues change from :math:`\\text{cues}` to :math:`\\text{next cues}` after taking an action,
+        and there is a numerical value of the reward associated with that action.
+
+        **Example:**
+
+        .. code:: python
+
+            # Once the camera agent has been initialized:
+            ca = CameraAgent(...)
+
+            # We can reset the environment to initialize the interrogation window:
+            camera_position, cues = ca.env.reset()
+
+            # The typical interaction with the environment will be choosing an action and executing it,
+            # and remembering the outcome of that step by adding it to the memory bank.
+            # The code below can represent one episode:
+            for _ in range(0,100):
+
+                action = ca.choose_action(cues,
+                                          epsilon=epsilon)
+
+                next_camera_position, next_cues, reward = ca.env.step(action,
+                                                                      reward_function=reward_function,
+                                                                      reward_transformation=reward_transformation,
+                                                                      verbose=False)
+
+                # We add the outcomes of the current step to the memory bank:
+                ca.remember(cues,
+                            action,
+                            reward,
+                            next_cues)
+
+                cues = next_cues
+
+        :param cues:
+            ``numpy.ndarray`` specifying :math:`N` cues that the RL agent senses
+            **before** taking a step in the environment. The cues are the input parameters
+            to the Q-network. It has to have size ``(1, N)``.
+        :param action:
+            ``int`` specifying the action to be taken at the current step in the environment.
+        :param reward:
+            ``float`` specifying the reward received after taking a step.
+        :param next_cues:
+            ``numpy.ndarray`` specifying :math:`N` cues that the RL agent senses
+            **after** taking a step in the environment. The cues are the input parameters
+            to the Q-network. It has to have size ``(1, N)``.
+        """
+
+        self.memory.add((cues, action, reward, next_cues))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def train(self,
+              new_learning_rate=0.001):
+        """
+        Trains the temporary Q-network (``online_q_network``) with the outcome of a single step in the environment.
+
+        **Example:**
+
+        .. code:: python
+
+            # Once the camera agent has been initialized:
+            ca = CameraAgent(...)
+
+            # We can train the agent with a single pass over a batch of training data:
+            ca.train(new_learning_rate=0.001)
+
+        :param new_learning_rate: (optional)
+            ``float`` specifying the new learning rate to use in the current pass over the minibatch.
+        """
+
+        # Before the buffer fills with actual data, we're not training yet:
+        if len(self.memory.buffer) < self.batch_size:
+            return
+
+        # Once the memory buffer holds enough observations...
+
+        # Now we can start sampling batches from the memory:
+        minibatch = self.memory.sample(self.batch_size)
+
+        batch_cues = np.zeros((self.batch_size, self.env.n_cues))
+        batch_q_values = np.zeros((self.batch_size, self.n_actions))
+
+        for i, batch_content in enumerate(minibatch):
+
+            cues, action, reward, next_cues = batch_content
+
+            # Compute the next Q-values using the online network to choose the best action:
+            next_q_values_selected = self.online_q_network(next_cues).numpy()
+            best_next_action = np.argmax(next_q_values_selected, axis=-1)
+
+            # Compute the next Q-values using the target network to have the target Q-value:
+            next_q_values_target = self.target_q_network(next_cues).numpy()
+            target_q_value = reward + self.discount_factor * next_q_values_target[0][best_next_action[0]]
+
+            # Get current Q-values from the online network:
+            q_values = self.online_q_network(cues).numpy()
+
+            # Swap the Q-value we have for the target Q-value that we want to have for this action:
+            q_values[0][action] = target_q_value
+
+            # Create a batch:
+            batch_cues[i, :] = cues
+            batch_q_values[i, :] = q_values
+
+        # Update the optimizer with the new learning rate:
+        self.optimizer.learning_rate.assign(new_learning_rate)
+
+        # Teach the Q-network to predict the target Q-values over the current batch:
+        history = self.online_q_network.fit(batch_cues,
+                                            batch_q_values,
+                                            epochs=self.n_epochs,
+                                            verbose=0)
+
+        # Append the losses:
+        self.MSE_losses.append(history.history['loss'])
+
+    def update_target_network(self):
+        """
+        Synchronizes the target Q-network with the online Q-network in double Q-learning
+        (see `Hasselt et al. <https://arxiv.org/abs/1509.06461>`_ for more information).
+        This function can be called once every a couple of steps in the environment,
+        or even once every a couple of episodes.
+
+        **Example:**
+
+        .. code:: python
+
+            # The general abstraction for synchronizing the two Q-networks in a training loop
+            # can be the following:
+            for episode in range(0,n_episodes):
+
+                ...
+
+                # Synchronize the networks once every 10 episodes:
+                if (episode+1) % 10 == 0:
+                    ca.update_target_network()
+        """
+
+        self.target_q_network.set_weights(self.online_q_network.get_weights())
+
+    def view_weights(self):
+        """
+        Returns the latest weights and biases of the target Q-network.
+
+        **Example:**
+
+        .. code:: python
+
+            # Once the camera agent has been initialized:
+            ca = CameraAgent(...)
+
+            # View the current target Q-network weights:
+            ca.view_weights()
+        """
+
+        return self.target_q_network.get_weights()
+    
+########################################################################################################################
+########################################################################################################################
+####
+####    Class: CameraAgentDoubleDQN
+####
+########################################################################################################################
+########################################################################################################################
+
+class CameraAgentDoubleDQN:
     """
     Creates a reinforcement learning (RL) agent that operates a virtual camera in a PIV experimental setting
     and provides a training loop for Q-learning. We use double Q-learning
