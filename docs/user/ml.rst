@@ -55,6 +55,12 @@ structure for any RL environment.
 
 .. autoclass:: pykitPIV.ml.CameraAgentSingleDQN
 
+.. autofunction:: pykitPIV.ml.CameraAgentSingleDQN.choose_action
+
+.. autofunction:: pykitPIV.ml.CameraAgentSingleDQN.train
+
+.. autofunction:: pykitPIV.ml.CameraAgentSingleDQN.view_weights
+
 .. autoclass:: pykitPIV.ml.CameraAgentDoubleDQN
 
 .. autofunction:: pykitPIV.ml.CameraAgentDoubleDQN.choose_action

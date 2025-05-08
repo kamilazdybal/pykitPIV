@@ -1399,7 +1399,6 @@ class CameraAgentSingleDQN:
     def __init__(self,
                  env,
                  q_network,
-                 n_epochs=100,
                  learning_rate=0.0001,
                  optimizer='RMSprop',
                  discount_factor=0.95):
@@ -1418,7 +1417,6 @@ class CameraAgentSingleDQN:
         self.q_network = q_network
 
         # Parameters of training the DNN:
-        self.n_epochs = n_epochs
         self.learning_rate = learning_rate
         if optimizer == 'RMSprop':
             self.optimizer = tf.keras.optimizers.RMSprop(learning_rate=self.learning_rate)
@@ -1487,13 +1485,17 @@ class CameraAgentSingleDQN:
         # Select the currently best action with probability (1 - epsilon):
         else:
 
-            q_values = self.q_network(cues)
+            q_values = self.q_network(cues, training=False)
 
             return np.argmax(q_values)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def train(self,
+              cues,
+              action,
+              reward,
+              next_cues,
               new_learning_rate=0.001):
         """
         Trains the temporary Q-network (``online_q_network``) with the outcome of a single step in the environment.
@@ -1508,21 +1510,39 @@ class CameraAgentSingleDQN:
             # We can train the agent with a single pass over a batch of training data:
             ca.train(new_learning_rate=0.001)
 
+        :param cues:
+            ``numpy.ndarray`` specifying the current cues.
+        :param action:
+            ``int`` specifying the current action selected.
+        :param reward:
+            ``float`` specifying the current reward received.
+        :param next_cues:
+            ``numpy.ndarray`` specifying the next cues seen after taking the current action in the environment.
         :param new_learning_rate: (optional)
             ``float`` specifying the new learning rate to use in the current pass over the minibatch.
         """
 
+        self.optimizer.learning_rate.assign(new_learning_rate)
 
+        # Compute the target Q-value (that we should have):
+        next_q_values = self.q_network(next_cues, training=False)
+        max_next_q = tf.reduce_max(next_q_values, axis=1)[0]
+        target_q_value = reward + self.discount_factor * max_next_q
 
+        with tf.GradientTape() as tape:
 
+            # Compute the Q-value that we actually have:
+            current_q_values = self.q_network(cues, training=True)
+            q_value_for_action = tf.gather(current_q_values[0], action)
 
+            # Compute the loss based on the difference between what the Q-value should be and what it actually is:
+            loss = tf.reduce_mean(tf.square(target_q_value - q_value_for_action))
 
-
-
-
+        grads = tape.gradient(loss, self.q_network.trainable_variables)
+        self.optimizer.apply_gradients(zip(grads, self.q_network.trainable_variables))
 
         # Append the losses:
-        self.MSE_losses.append(history.history['loss'])
+        self.MSE_losses.append(loss)
 
     def view_weights(self):
         """
