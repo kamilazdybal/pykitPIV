@@ -22,7 +22,7 @@
 
 ### [`11`: Integration with `LIMA` - Lightweight Image Matching Architecture](demo-pykitPIV-11-integration-with-LIMA.ipynb)
 
-### [`12`: Create a "virtual wind tunnel" as a reinforcement learning environment](demo-pykitPIV-12-reinforcement-learning-environment.ipynb)
+### [`12`: Create a "virtual wind tunnel" as a reinforcement learning environment](demo-pykitPIV-12-RL-environment.ipynb)
 
 ### [`13`: Train reinforcement learning to detect sources and sinks](demo-pykitPIV-13-RL-find-sources-and-sinks.ipynb)
 
@@ -32,10 +32,10 @@
 
 ### [`16`: Model astigmatic PIV](demo-pykitPIV-16-model-astigmatic-PIV.ipynb)
 
-### `17` 
+### [`17`: Generate synthetic BOS images](demo-pykitPIV-17-generate-synthetic-BOS-images.ipynb)
 
-### `18` 
+### [`18`: Computing Cues and Rewards](demo-pykitPIV-18-computing-Cues-and-Rewards.ipynb)
 
-### `19` 
+### [`19`: Double DQN with memory replay](demo-pykitPIV-19-DoubleDQN-RL-with-memory-replay-find-sources-and-sinks.ipynb)
 
-### `20` 
+### [`20` ]()
