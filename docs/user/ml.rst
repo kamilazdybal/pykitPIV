@@ -70,12 +70,18 @@ structure for any RL environment.
 **TF-Agents**-based
 ====================================
 
+.. note::
 
-
+    The future version will include environments that can be directly used with `TF-Agents <https://www.tensorflow.org/agents>`_.
 
 *********************************************
 Custom reinforcement learning rewards
 *********************************************
+
+.. note::
+
+    The future version will also include unsupervised rewards computed directly on PIV image pairs, such as image
+    frame consistency, smoothness, Charbonier loss, etc.
 
 .. autoclass:: pykitPIV.ml.Rewards
 
@@ -86,6 +92,11 @@ Custom reinforcement learning rewards
 *********************************************
 Custom reinforcement learning sensory cues
 *********************************************
+
+.. note::
+
+    The future version will also include unsupervised sensory cues computed directly on PIV image pairs, such as image
+    frame consistency, smoothness, Charbonier loss, etc.
 
 .. autoclass:: pykitPIV.ml.Cues
 

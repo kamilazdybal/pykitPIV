@@ -354,8 +354,8 @@ class PIVEnv(gym.Env):
     Below is an example of importing a user-defined flow field and using it as the flow in the virtual wind tunnel.
     This can be done by uploading an external velocity field tensor to a ``FlowField`` class object. Below, we demonstrate
     this on a velocity field generated using the ``FlowField`` class, but the methodology is such that the user can
-    replace the ``velocity_field`` tensor with a custom tensor that can be upladed externally, say, from a Johns Hopkins
-    Turbulence Database (JHTD).
+    replace the ``velocity_field`` tensor with a custom tensor that can be upladed externally, say, from a
+    `Johns Hopkins Turbulence Database (JHTD) <https://turbulence.idies.jhu.edu/home>`_.
 
     .. code:: python
 
@@ -1996,7 +1996,7 @@ class Rewards:
 
     Each function returns the reward, :math:`R`.
 
-    Functions of this class can be directly used as the ``rewards_function`` parameter in ``pykitPIV.ml.PIVEnv.step()``.
+    Functions of this class can be directly used as the ``reward_function`` parameter in ``pykitPIV.ml.PIVEnv.step()``.
 
     **Example:**
 
@@ -2263,7 +2263,7 @@ class Cues:
 
         .. math::
 
-            \\mathbf{c} = [\\vec{d\\mathbf{s}}_1, \\vec{d\\mathbf{s}}_2, \\dots, \\vec{d\\mathbf{s}}_n]
+            \\vec{d\\mathbf{s}}_1, \\vec{d\\mathbf{s}}_2, \\dots, \\vec{d\\mathbf{s}}_n
 
         These are further organized as:
 
