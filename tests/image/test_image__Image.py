@@ -209,8 +209,7 @@ class TestImageClass(unittest.TestCase):
         image.add_flowfield(flowfield)
 
         motion = Motion(particles,
-                        flowfield,
-                        time_separation=1)
+                        flowfield)
 
         motion.forward_euler(n_steps=10)
 
@@ -269,6 +268,7 @@ class TestImageClass(unittest.TestCase):
         flowfield = FlowField(n_images,
                               size=image_size,
                               size_buffer=size_buffer,
+                              time_separation=time_separation,
                               random_seed=random_seed)
 
         flowfield.generate_random_velocity_field(gaussian_filters=(2, 10),
@@ -276,8 +276,7 @@ class TestImageClass(unittest.TestCase):
                                                  displacement=(2, 10))
 
         motion = Motion(particles,
-                        flowfield,
-                        time_separation=time_separation)
+                        flowfield)
 
         motion.runge_kutta_4th(n_steps=10)
 
@@ -320,6 +319,7 @@ class TestImageClass(unittest.TestCase):
         flowfield = FlowField(n_images,
                               size=image_size,
                               size_buffer=size_buffer,
+                              time_separation=time_separation,
                               random_seed=random_seed)
 
         flowfield.generate_random_velocity_field(gaussian_filters=(2, 10),
@@ -327,8 +327,7 @@ class TestImageClass(unittest.TestCase):
                                                  displacement=(2, 10))
 
         motion = Motion(particles,
-                        flowfield,
-                        time_separation=time_separation)
+                        flowfield)
 
         motion.runge_kutta_4th(n_steps=10)
 
@@ -371,6 +370,7 @@ class TestImageClass(unittest.TestCase):
         flowfield = FlowField(n_images,
                               size=image_size,
                               size_buffer=size_buffer,
+                              time_separation=time_separation,
                               random_seed=random_seed)
 
         flowfield.generate_random_velocity_field(gaussian_filters=(2, 10),
@@ -378,19 +378,18 @@ class TestImageClass(unittest.TestCase):
                                                  displacement=(2, 10))
 
         motion = Motion(particles,
-                        flowfield,
-                        time_separation=time_separation)
+                        flowfield)
 
         motion.runge_kutta_4th(n_steps=10)
 
         image = Image(random_seed=random_seed)
 
         image.add_particles(particles)
-        image.add_flowfield(flowfield)
 
         with self.assertRaises(NameError):
             ds = image.get_displacement_field()
 
+        image.add_flowfield(flowfield)
         image.add_motion(motion)
 
         try:
@@ -434,19 +433,18 @@ class TestImageClass(unittest.TestCase):
                                                  displacement=(2, 10))
 
         motion = Motion(particles,
-                        flowfield,
-                        time_separation=time_separation)
+                        flowfield)
 
         motion.runge_kutta_4th(n_steps=10)
 
         image = Image(random_seed=random_seed)
 
         image.add_particles(particles)
-        image.add_flowfield(flowfield)
 
         with self.assertRaises(NameError):
             ds = image.get_displacement_field_magnitude()
 
+        image.add_flowfield(flowfield)
         image.add_motion(motion)
 
         try:
@@ -540,8 +538,7 @@ class TestImageClass(unittest.TestCase):
                                                  displacement=(2, 10))
 
         motion = Motion(particles,
-                        flowfield,
-                        time_separation=0.1)
+                        flowfield)
 
         motion.runge_kutta_4th(n_steps=10)
 
