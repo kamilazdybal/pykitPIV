@@ -155,6 +155,10 @@ class Motion:
     **Attributes:**
 
     - **particle_loss** - (can be re-set) as per user input.
+    - **particle_gain** - (can be re-set) as per user input.
+    - **random_seed** - (read-only) as per user input.
+    - **loss_percentage_per_image** (read-only) ``numpy.ndarray`` specifying the particle loss percentage for each PIV image pair.
+    - **gain_percentage_per_image** (read-only) ``numpy.ndarray`` specifying the particle gain percentage for each PIV image pair.
     - **particle_coordinates_I1** - (read-only) ``list`` of ``tuple`` specifying the coordinates of particles in image :math:`I_1`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **particle_coordinates_I2** - (read-only) ``list`` of ``tuple`` specifying the  coordinates of particles in image :math:`I_2`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **updated_particle_diameters** - (read-only) ``list`` of ``numpy.ndarray`` specifying the updated particle diameters for each PIV image pair.
