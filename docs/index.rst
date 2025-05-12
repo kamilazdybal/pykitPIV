@@ -99,4 +99,5 @@ If you use **pykitPIV** in your work, we will appreciate the citation to the fol
     tutorials/demo-data-augmentation
     tutorials/demo-import-external-velocity-field
     tutorials/demo-integrate-with-LIMA
+    tutorials/demo-SingleDQN
 
