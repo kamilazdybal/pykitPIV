@@ -54,6 +54,15 @@ class TestFlowFieldClass(unittest.TestCase):
             flowfield = FlowField(1, size_buffer=[])
 
         with self.assertRaises(ValueError):
+            flowfield = FlowField(1, time_separation=0)
+
+        with self.assertRaises(ValueError):
+            flowfield = FlowField(1, time_separation=[])
+
+        with self.assertRaises(ValueError):
+            flowfield = FlowField(1, time_separation=-1)
+
+        with self.assertRaises(ValueError):
             flowfield = FlowField(1, random_seed=[])
 
         # Not a two-element tuple:
@@ -147,6 +156,21 @@ class TestFlowFieldClass(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def test_flowfield__FlowField__resetting_time_separation(self):
+
+        # Re-setting time separation is allowed:
+        flowfield = FlowField(1, time_separation=1)
+        self.assertTrue(flowfield.time_separation == 1)
+
+        try:
+            flowfield.time_separation = 0.5
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(flowfield.time_separation == 0.5)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_flowfield__Flowfield__upload_velocity_field(self):
 
         n_images = 10
@@ -155,6 +179,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=n_images,
                               size=image_size,
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         try:
@@ -185,6 +210,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=(100, 200),
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.velocity_field is None)
@@ -213,6 +239,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=(100, 200),
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.velocity_field is None)
@@ -241,6 +268,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=(100, 200),
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.velocity_field is None)
@@ -270,6 +298,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=(100, 200),
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.velocity_field is None)
@@ -299,6 +328,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=(100, 200),
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.velocity_field is None)
@@ -329,6 +359,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=(100, 200),
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.velocity_field is None)
@@ -362,6 +393,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=size,
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.displacement is None)
@@ -379,6 +411,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=size,
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.displacement is None)
@@ -397,6 +430,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=size,
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.displacement is None)
@@ -415,6 +449,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=size,
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.displacement is None)
@@ -434,6 +469,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=size,
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.displacement is None)
@@ -453,6 +489,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=size,
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.displacement is None)
@@ -473,6 +510,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=size,
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.displacement is None)
@@ -493,6 +531,7 @@ class TestFlowFieldClass(unittest.TestCase):
         flowfield = FlowField(n_images=10,
                               size=size,
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
         self.assertTrue(flowfield.displacement is None)
@@ -505,5 +544,75 @@ class TestFlowFieldClass(unittest.TestCase):
         self.assertTrue(flowfield.displacement_per_image is not None)
 
         self.assertTrue(np.allclose(flowfield.displacement_per_image, np.max(np.abs(flowfield.velocity_field_magnitude), axis=(2,3)).ravel()))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_flowfield__Flowfield__compute_displacement_field_not_allowed_with_no_velocity(self):
+
+        flowfield = FlowField(n_images=10,
+                              size=(80, 80),
+                              size_buffer=10,
+                              time_separation=1,
+                              random_seed=100)
+
+        with self.assertRaises(AttributeError):
+            flowfield.compute_displacement_field()
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_flowfield__Flowfield__compute_displacement_field_allowed_with_velocity(self):
+
+        flowfield = FlowField(n_images=10,
+                              size=(80, 80),
+                              size_buffer=10,
+                              time_separation=1,
+                              random_seed=100)
+
+        flowfield.generate_random_velocity_field(displacement=(1, 10),
+                                                 gaussian_filters=(10, 30),
+                                                 n_gaussian_filter_iter=6)
+
+        self.assertTrue(flowfield.displacement_field is None)
+        self.assertTrue(flowfield.displacement_field_magnitude is None)
+
+        try:
+            flowfield.compute_displacement_field()
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(flowfield.displacement_field is not None)
+        self.assertTrue(flowfield.displacement_field_magnitude is not None)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_flowfield__Flowfield__compute_displacement_field_after_updating_time_separation(self):
+
+        flowfield = FlowField(n_images=10,
+                              size=(80, 80),
+                              size_buffer=10,
+                              time_separation=1,
+                              random_seed=100)
+
+        flowfield.generate_random_velocity_field(displacement=(1, 10),
+                                                 gaussian_filters=(10, 30),
+                                                 n_gaussian_filter_iter=6)
+
+        try:
+            flowfield.compute_displacement_field()
+        except Exception:
+            self.assertTrue(False)
+
+        ds_magnitude_1 = flowfield.displacement_field_magnitude
+
+        flowfield.time_separation = 2
+
+        try:
+            flowfield.compute_displacement_field()
+        except Exception:
+            self.assertTrue(False)
+
+        ds_magnitude_2 = flowfield.displacement_field_magnitude
+
+        self.assertTrue(np.max(ds_magnitude_2 > np.max(ds_magnitude_1)))
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
