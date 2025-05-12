@@ -32,7 +32,7 @@ class MotionSpecs:
         motion_spec = MotionSpecs()
 
         # Change one field of motion_spec:
-        motion_spec.time_separation = 0.1
+        motion_spec.n_steps = 20
 
         # You can print the current values of all attributes:
         print(motion_spec)
@@ -43,7 +43,6 @@ class MotionSpecs:
                  size=(512, 512),
                  size_buffer=10,
                  n_steps=10,
-                 time_separation=1,
                  particle_loss=(0, 0),
                  particle_gain=(0, 0),
                  random_seed=None,):
@@ -52,7 +51,6 @@ class MotionSpecs:
         self.size = size
         self.size_buffer = size_buffer
         self.n_steps = n_steps
-        self.time_separation = time_separation
         self.particle_loss = particle_loss
         self.particle_gain = particle_gain
         self.random_seed = random_seed
@@ -63,7 +61,6 @@ class MotionSpecs:
                 f"size={self.size},\n"
                 f"size_buffer={self.size_buffer},\n"
                 f"n_steps={self.n_steps},\n"
-                f"time_separation={self.time_separation},\n"
                 f"particle_loss={self.particle_loss},\n"
                 f"particle_gain={self.particle_gain},\n"
                 f"random_seed={self.random_seed})"
@@ -128,7 +125,6 @@ class Motion:
         # Initialize a motion object:
         motion = Motion(particles,
                         flowfield,
-                        time_separation=1,
                         particle_loss=(0, 2),
                         particle_gain='matching',
                         verbose=False,
@@ -138,8 +134,6 @@ class Motion:
         ``Particle`` class instance specifying the properties and positions of particles.
     :param flowfield:
         ``FlowField`` class instance specifying the flow field.
-    :param time_separation: (optional)
-        ``float`` or ``int`` specifying the time separation, :math:`\Delta t`, in seconds :math:`[s]` between two consecutive PIV images.
     :param particle_loss: (optional)
         ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
         percentage of lost particles between two consecutive PIV images. This percentage of particles from image :math:`I_1` will be randomly
@@ -160,19 +154,15 @@ class Motion:
 
     **Attributes:**
 
-    - **time_separation** - (can be re-set) as per user input.
     - **particle_loss** - (can be re-set) as per user input.
     - **particle_coordinates_I1** - (read-only) ``list`` of ``tuple`` specifying the coordinates of particles in image :math:`I_1`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **particle_coordinates_I2** - (read-only) ``list`` of ``tuple`` specifying the  coordinates of particles in image :math:`I_2`. The first element in each tuple are the coordinates along the **image height**, and the second element are the coordinates along the **image width**.
     - **updated_particle_diameters** - (read-only) ``list`` of ``numpy.ndarray`` specifying the updated particle diameters for each PIV image pair.
-    - **displacement_field** - (read-only) ``numpy.ndarray`` specifying the displacement field, :math:`ds = [dx, dy]`, in the :math:`x` and :math:`y` direction. It is computed as the velocity component multiplied by time separation and has a unit of :math:`\\text{px}`. It has size :math:`(N, 2, H+2b, W+2b)`. The second index corresponds to :math:`dx` and :math:`dy` displacement, respectively.
-    - **displacement_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the displacement field magnitude, :math:`|ds| = \sqrt{dx^2 + dy^2}`. It has a unit of :math:`\\text{px}`. It has size :math:`(N, 1, H+2b, W+2b)`.
     """
 
     def __init__(self,
                  particles,
                  flowfield,
-                 time_separation=1,
                  particle_loss=(0, 0),
                  particle_gain=(0, 0),
                  verbose=False,
@@ -195,12 +185,6 @@ class Motion:
         # Check that the number of images matches between the Particle class object and the FlowField class object:
         if particles.n_images != flowfield.n_images:
             raise ValueError(f"Inconsistent number of PIV image pairs between `Particle` class instance ({particles.n_images}) and `FlowField` class instance ({flowfield.n_images}).")
-
-        if (not isinstance(time_separation, float)) and (not isinstance(time_separation, int)):
-            raise ValueError("Parameter `time_separation` has to be of type `float` or `int`.")
-
-        if time_separation <= 0:
-            raise ValueError("Parameter `time_separation` has to be a non-zero, positive number.")
 
         if isinstance(particle_loss, tuple):
             check_two_element_tuple(particle_loss, 'particle_loss')
@@ -239,7 +223,6 @@ class Motion:
         # Class init:
         self.__particles = particles
         self.__flowfield = flowfield
-        self.__time_separation = time_separation
 
         if isinstance(particle_loss, tuple):
             self.__particle_loss = particle_loss
@@ -262,13 +245,6 @@ class Motion:
 
         # Initialize updated particle diameters:
         self.__updated_particle_diameters = None
-
-        # Compute the displacement field:
-        self.__displacement_field = np.zeros((self.__particles.n_images, 2, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
-        self.__displacement_field[:, 0, :, :] = self.__flowfield.velocity_field[:, 0, :, :] * time_separation
-        self.__displacement_field[:, 1, :, :] = self.__flowfield.velocity_field[:, 1, :, :] * time_separation
-
-        self.__displacement_field_magnitude = np.sqrt(self.displacement_field[:, 0:1, :, :] ** 2 + self.displacement_field[:, 1:2, :, :] ** 2)
 
         # Check whether particles loss will have to be modeled:
         if self.__particle_loss[1] > 0:
@@ -297,9 +273,6 @@ class Motion:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
-    @property
-    def time_separation(self):
-        return self.__time_separation
 
     @property
     def particle_loss(self):
@@ -333,32 +306,6 @@ class Motion:
     @property
     def updated_particle_diameters(self):
         return self.__updated_particle_diameters
-
-    @property
-    def displacement_field(self):
-        return self.__displacement_field
-
-    @property
-    def displacement_field_magnitude(self):
-        return self.__displacement_field_magnitude
-
-    # Setters:
-    @time_separation.setter
-    def time_separation(self, new_time_separation):
-        if (not isinstance(new_time_separation, float)) and (not isinstance(new_time_separation, int)):
-            raise ValueError("Parameter `time_separation` has to be of type `float` or `int`.")
-        else:
-            if new_time_separation <= 0:
-                raise ValueError("Parameter `time_separation` has to be a non-zero, positive number.")
-            else:
-                self.__time_separation = new_time_separation
-
-                # Re-compute the displacement field:
-                self.__displacement_field = np.zeros((self.__particles.n_images, 2, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
-                self.__displacement_field[:, 0, :, :] = self.__flowfield.velocity_field[:, 0, :, :] * new_time_separation
-                self.__displacement_field[:, 1, :, :] = self.__flowfield.velocity_field[:, 1, :, :] * new_time_separation
-
-                self.__displacement_field_magnitude = np.sqrt(self.displacement_field[:, 0:1, :, :] ** 2 + self.displacement_field[:, 1:2, :, :] ** 2)
 
     @particle_loss.setter
     def particle_loss(self, new_particle_loss):
@@ -480,7 +427,8 @@ class Motion:
 
             \Delta t = T / n
 
-        where :math:`T` is the time separation between two images specified as ``time_separation`` at class init and
+        where :math:`T` is the time separation between two images specified as ``time_separation`` in the ``FlowField``
+        class object and
         :math:`n` is the number of steps for the solver to take specified by the ``n_steps`` input parameter.
         The Euler scheme is applied :math:`n` times from :math:`t=0` to :math:`t=T`.
 
@@ -513,7 +461,7 @@ class Motion:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Integration time step:
-        __delta_t = self.time_separation / n_steps
+        __delta_t = self.__flowfield.time_separation / n_steps
 
         particle_coordinates_I2 = []
 
@@ -627,7 +575,8 @@ class Motion:
 
             \Delta t = T / n
 
-        where :math:`T` is the time separation between two images specified as ``time_separation`` at class init and
+        where :math:`T` is the time separation between two images specified as ``time_separation`` in the ``FlowField``
+        class object and
         :math:`n` is the number of steps for the solver to take specified by the ``n_steps`` input parameter.
         The 4th order Runge-Kutta scheme is applied :math:`n` times from :math:`t=0` to :math:`t=T`.
 
@@ -660,7 +609,7 @@ class Motion:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Integration time step:
-        __delta_t = self.time_separation / n_steps
+        __delta_t = self.__flowfield.time_separation / n_steps
 
         particle_coordinates_I2 = []
 

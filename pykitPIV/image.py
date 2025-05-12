@@ -270,6 +270,7 @@ class Image:
             flowfield = FlowField(1,
                                   size=(128, 512),
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Initialize an image object:
@@ -321,6 +322,7 @@ class Image:
             flowfield = FlowField(1,
                                   size=(128, 512),
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Initialize a motion object:
@@ -372,6 +374,7 @@ class Image:
             flowfield = FlowField(1,
                                   size=(128, 512),
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate random velocity field:
@@ -425,6 +428,7 @@ class Image:
             flowfield = FlowField(1,
                                   size=(128, 512),
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate random velocity field:
@@ -460,24 +464,19 @@ class Image:
 
     def get_displacement_field(self):
         """
-        Returns the displacement field from the object of the ``Motion`` class.
+        Returns the displacement field from the object of the ``FlowField`` class.
 
         **Example:**
 
         .. code:: python
 
-            from pykitPIV import Particle, FlowField, Motion, Image
-
-            # Initialize a particle object:
-            particles = Particle(1,
-                                 size=(128, 512),
-                                 size_buffer=10,
-                                 random_seed=100)
+            from pykitPIV import FlowField, Image
 
             # Initialize a flow field object:
             flowfield = FlowField(1,
                                   size=(128, 512),
                                   size_buffer=10,
+                                  time_separation=0.1,
                                   random_seed=100)
 
             # Generate random velocity field:
@@ -485,55 +484,49 @@ class Image:
                                                      gaussian_filters=(10, 30),
                                                      n_gaussian_filter_iter=6)
 
-            # Initialize a motion object:
-            motion = Motion(particles, flowfield)
-
             # Initialize an image object:
             image = Image(random_seed=100)
 
             # Add motion to an image:
-            image.add_motion(motion)
+            image.add_flowfield(flowfield)
 
             # Access the displacement field:
             ds = image.get_displacement_field()
 
         :return:
-            - **displacement_field** - as per ``Motion`` class.
+            - **displacement_field** - as per ``FlowField`` class.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Input parameter check:
 
-        if self.__motion is None:
-            raise NameError("Motion has not been added to the image yet! Use the `Image.add_motion()` method first.")
+        if self.__flowfield is None:
+            raise NameError("Flow field has not been added to the image yet! Use the `Image.add_flowfield()` method first.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        return self.__motion.displacement_field
+        self.__flowfield.compute_displacement_field()
+
+        return self.__flowfield.displacement_field
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def get_displacement_field_magnitude(self):
         """
-        Returns the displacement field magnitude from the object of the ``Motion`` class.
+        Returns the displacement field magnitude from the object of the ``FlowField`` class.
 
         **Example:**
 
         .. code:: python
 
-            from pykitPIV import Particle, FlowField, Motion, Image
-
-            # Initialize a particle object:
-            particles = Particle(1,
-                                 size=(128, 512),
-                                 size_buffer=10,
-                                 random_seed=100)
+            from pykitPIV import FlowField, Image
 
             # Initialize a flow field object:
             flowfield = FlowField(1,
                                   size=(128, 512),
                                   size_buffer=10,
+                                  time_separation=0.1,
                                   random_seed=100)
 
             # Generate random velocity field:
@@ -541,32 +534,31 @@ class Image:
                                                      gaussian_filters=(10, 30),
                                                      n_gaussian_filter_iter=6)
 
-            # Initialize a motion object:
-            motion = Motion(particles, flowfield)
-
             # Initialize an image object:
             image = Image(random_seed=100)
 
             # Add motion to an image:
-            image.add_motion(motion)
+            image.add_flowfield(flowfield)
 
             # Access the displacement field magnitude:
             ds_mag = image.get_displacement_field_magnitude()
 
         :return:
-            - **displacement_field_magnitude** - as per ``Motion`` class.
+            - **displacement_field_magnitude** - as per ``FlowField`` class.
         """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Input parameter check:
 
-        if self.__motion is None:
-            raise NameError("Motion has not been added to the image yet! Use the `Image.add_motion()` method first.")
+        if self.__flowfield is None:
+            raise NameError("Flow field has not been added to the image yet! Use the `Image.add_flowfield()` method first.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-        return self.__motion.displacement_field_magnitude
+        self.__flowfield.compute_displacement_field()
+
+        return self.__flowfield.displacement_field_magnitude
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -1044,6 +1036,7 @@ class Image:
             flowfield = FlowField(n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             flowfield.generate_potential_velocity_field(imposed_origin=None,
@@ -1056,7 +1049,7 @@ class Image:
             image.warp_images(time_separation=10)
 
         :param time_separation:
-            ``float`` or ``int`` specifying the timescale that will scale the velocity field to obtain a displacement field.
+            ``float`` or ``int`` specifying the time separation, :math:`\\Delta t`, that will scale the velocity field to obtain a displacement field.
         :param order:
             ``int`` specifying the order of the spline interpolation as per ``scipy.ndimage.map_coordinates``.
             It has to be a number between 0 and 5.
@@ -1261,6 +1254,7 @@ class Image:
             flowfield = FlowField(1,
                                   size=(128, 512),
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate random velocity field:
@@ -1340,6 +1334,7 @@ class Image:
             flowfield = FlowField(n_images=n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate random velocity field:
@@ -1350,7 +1345,6 @@ class Image:
             # Initialize a motion object:
             motion = Motion(particles,
                             flowfield,
-                            time_separation=1,
                             particle_loss=(0, 2),
                             particle_gain='matching',
                             verbose=False,
@@ -2112,7 +2106,9 @@ class Image:
 
         elif field == 'displacement':
 
-            quantity_to_plot = self.__motion.displacement_field
+            self.__flowfield.compute_displacement_field()
+
+            quantity_to_plot = self.__flowfield.displacement_field
 
         # Plot u-component of velocity:
 
@@ -2407,7 +2403,9 @@ class Image:
 
         elif field == 'displacement':
 
-            quantity_to_plot = self.__motion.displacement_field_magnitude
+            self.__flowfield.compute_displacement_field()
+
+            quantity_to_plot = self.__flowfield.displacement_field_magnitude
 
         if add_quiver or add_streamplot:
 
@@ -2417,7 +2415,7 @@ class Image:
 
             elif field == 'displacement':
 
-                vector_to_plot = self.__motion.displacement_field
+                vector_to_plot = self.__flowfield.displacement_field
 
         fig = plt.figure(figsize=figsize)
 

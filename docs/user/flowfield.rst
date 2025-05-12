@@ -28,6 +28,8 @@ Class: ``FlowField``
 
 .. autofunction:: pykitPIV.flowfield.FlowField.generate_langevin_velocity_field
 
+.. autofunction:: pykitPIV.flowfield.FlowField.compute_displacement_field
+
 .. autofunction:: pykitPIV.flowfield.FlowField.upload_velocity_field
 
 .. autofunction:: pykitPIV.flowfield.compute_divergence

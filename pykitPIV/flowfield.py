@@ -53,6 +53,7 @@ class FlowFieldSpecs:
                  n_images=1,
                  size=(512, 512),
                  size_buffer=10,
+                 time_separation=1,
                  random_seed=None,
                  flowfield_type='random smooth',
                  gaussian_filters=(10, 10),
@@ -72,6 +73,7 @@ class FlowFieldSpecs:
         self.n_images = n_images
         self.size = size
         self.size_buffer = size_buffer
+        self.time_separation = time_separation
         self.random_seed = random_seed
         self.flowfield_type = flowfield_type
         self.gaussian_filters = gaussian_filters
@@ -92,6 +94,7 @@ class FlowFieldSpecs:
                 f"(n_images={self.n_images},\n"
                 f"size={self.size},\n"
                 f"size_buffer={self.size_buffer},\n"
+                f"time_separation={self.time_separation},\n"
                 f"random_seed={self.random_seed},\n"
                 f"flowfield_type={self.flowfield_type!r},\n"
                 f"gaussian_filters={self.gaussian_filters},\n"
@@ -127,6 +130,12 @@ class FlowField:
     The velocity magnitude is computed as :math:`|\\vec{V}| = \\sqrt{u^2 + v^2}`
     and is also represented as a four-dimensional tensor array of size :math:`(N, 1, H, W)`.
 
+    The user also specifies the time separation, :math:`\Delta t`,
+    between two PIV image pairs with the parameter ``time_separation``.
+    With this, the user can populate the corresponding displacement field,
+    :math:`d\\vec{\\mathbf{s}} = [dx, dy] = [u \\Delta t, v \\Delta t]`,
+    and the displacement field magnitude, :math:`|d\\vec{\\mathbf{s}}|`.
+
     .. note::
 
         Only two-dimensional velocity fields are supported at the moment.
@@ -147,6 +156,7 @@ class FlowField:
         flowfield = FlowField(n_images=n_images,
                               size=image_size,
                               size_buffer=10,
+                              time_separation=1,
                               random_seed=100)
 
     :param n_images:
@@ -156,6 +166,8 @@ class FlowField:
     :param size_buffer: (optional)
         ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the image size in the width and height direction.
         This number should be approximately equal to the maximum displacement that particles are subject to in order to allow for new particles to arrive into the image area.
+    :param time_separation: (optional)
+        ``float`` or ``int`` specifying the time separation, :math:`\Delta t`, between two consecutive PIV images.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
         If specified, all operations are reproducible.
@@ -165,6 +177,7 @@ class FlowField:
     - **n_images** - (read-only) as per user input.
     - **size** - (read-only) as per user input.
     - **size_buffer** - (read-only) as per user input.
+    - **time_separation** - (can be re-set) as per user input.
     - **random_seed** - (read-only) as per user input.
     - **size_with_buffer** - (read-only) ``tuple`` specifying the size of each image in pixels with buffer added.
     - **displacement** - (read-only) ``tuple`` of two numerical elements specifying the minimum (first element)
@@ -180,12 +193,15 @@ class FlowField:
     - **velocity_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the velocity field magnitude,
       :math:`|\\vec{V}| = \\sqrt{u^2 + v^2}`, per each image. It has size :math:`(N, 1, H+2b, W+2b)`.
       This attribute becomes available after calling one of the velocity field generators.
+    - **displacement_field** - (read-only) ``numpy.ndarray`` specifying the displacement field, :math:`d\\vec{\\mathbf{s}} = [dx, dy]`, in the :math:`x` and :math:`y` direction. It is computed as the velocity component multiplied by time separation and has a unit of :math:`\\text{px}`. It has size :math:`(N, 2, H+2b, W+2b)`. The second index corresponds to :math:`dx` and :math:`dy` displacement, respectively.
+    - **displacement_field_magnitude** - (read-only) ``numpy.ndarray`` specifying the displacement field magnitude, :math:`|d\\vec{\\mathbf{s}}| = \\sqrt{dx^2 + dy^2}`. It has a unit of :math:`\\text{px}`. It has size :math:`(N, 1, H+2b, W+2b)`.
     """
 
     def __init__(self,
                  n_images,
                  size=(512, 512),
                  size_buffer=10,
+                 time_separation=1,
                  random_seed=None):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -206,6 +222,12 @@ class FlowField:
         if size_buffer < 0:
             raise ValueError("Parameter `size_buffer` has to non-negative.")
 
+        if (not isinstance(time_separation, float)) and (not isinstance(time_separation, int)):
+            raise ValueError("Parameter `time_separation` has to be of type `float` or `int`.")
+
+        if time_separation <= 0:
+            raise ValueError("Parameter `time_separation` has to be a non-zero, positive number.")
+
         if random_seed is not None:
             if type(random_seed) != int:
                 raise ValueError("Parameter `random_seed` has to be of type 'int'.")
@@ -218,6 +240,7 @@ class FlowField:
         self.__n_images = n_images
         self.__size = size
         self.__size_buffer = size_buffer
+        self.__time_separation = time_separation
         self.__random_seed = random_seed
 
         # Compute the image outline that serves as a buffer:
@@ -233,6 +256,10 @@ class FlowField:
         self.__velocity_field = None
         self.__velocity_field_magnitude = None
 
+        # Initialize the displacement field and its magnitude:
+        self.__displacement_field = None
+        self.__displacement_field_magnitude = None
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
@@ -247,6 +274,10 @@ class FlowField:
     @property
     def size_buffer(self):
         return self.__size_buffer
+
+    @property
+    def time_separation(self):
+        return self.__time_separation
 
     @property
     def random_seed(self):
@@ -272,6 +303,25 @@ class FlowField:
     @property
     def velocity_field_magnitude(self):
         return self.__velocity_field_magnitude
+
+    @property
+    def displacement_field(self):
+        return self.__displacement_field
+
+    @property
+    def displacement_field_magnitude(self):
+        return self.__displacement_field_magnitude
+
+    # Setters:
+    @time_separation.setter
+    def time_separation(self, new_time_separation):
+        if (not isinstance(new_time_separation, float)) and (not isinstance(new_time_separation, int)):
+            raise ValueError("Parameter `time_separation` has to be of type `float` or `int`.")
+        else:
+            if new_time_separation <= 0:
+                raise ValueError("Parameter `time_separation` has to be a non-zero, positive number.")
+            else:
+                self.__time_separation = new_time_separation
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -357,6 +407,7 @@ class FlowField:
             flowfield = FlowField(n_images=n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate random velocity field:
@@ -435,6 +486,7 @@ class FlowField:
             flowfield = FlowField(n_images=n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate random velocity field:
@@ -551,6 +603,7 @@ class FlowField:
             flowfield = FlowField(n_images=n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate sinusoidal velocity field:
@@ -674,6 +727,7 @@ class FlowField:
             flowfield = FlowField(n_images=n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate checkered velocity field:
@@ -783,6 +837,7 @@ class FlowField:
             flowfield = FlowField(n_images=n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate Chebyshev velocity field:
@@ -892,6 +947,7 @@ class FlowField:
             flowfield = FlowField(n_images=n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate spherical harmonics velocity field:
@@ -1016,6 +1072,7 @@ class FlowField:
             flowfield = FlowField(n_images=n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate radial velocity field:
@@ -1136,6 +1193,7 @@ class FlowField:
             flowfield = FlowField(n_images=n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Generate sinusoidal velocity field:
@@ -1280,6 +1338,7 @@ class FlowField:
             mean_flowfield = FlowField(n_images=n_images,
                                        size=image_size,
                                        size_buffer=10,
+                                       time_separation=1,
                                        random_seed=100)
 
             # Generate sinusoidal velocity field that will serve as the mean velocity field:
@@ -1291,6 +1350,7 @@ class FlowField:
             flowfield = FlowField(n_images=n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Solve the SLM for the mean velocity fields:
@@ -1452,6 +1512,56 @@ class FlowField:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def compute_displacement_field(self):
+        """
+        Computes the displacement field, :math:`d \\vec{\\mathbf{s}}`,
+        and the displacement field magnitude, :math:`|d \\vec{\\mathbf{s}}|`,
+        based on the current value of the time separation, :math:`\\Delta t`.
+        Calling this function populates the class attributes ``displacement_field``
+        and ``displacement_field_magnitude``.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import FlowField
+
+            # We are going to generate 10 flow fields for 10 PIV image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (128, 512)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images=n_images,
+                                  size=image_size,
+                                  size_buffer=10,
+                                  time_separation=1,
+                                  random_seed=100)
+
+            # Generate random velocity field:
+            flowfield.generate_random_velocity_field(displacement=(0, 10),
+                                                     gaussian_filters=(10, 30),
+                                                     n_gaussian_filter_iter=6)
+
+            # Compute the displacement field:
+            flowfield.compute_displacement_field()
+        """
+
+        if self.velocity_field is not None:
+
+            # Compute the displacement field:
+            self.__displacement_field = np.zeros((self.n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]))
+            self.__displacement_field[:, 0, :, :] = self.velocity_field[:, 0, :, :] * self.time_separation
+            self.__displacement_field[:, 1, :, :] = self.velocity_field[:, 1, :, :] * self.time_separation
+
+            self.__displacement_field_magnitude = np.sqrt(self.displacement_field[:, 0:1, :, :] ** 2 + self.displacement_field[:, 1:2, :, :] ** 2)
+
+        else:
+            raise AttributeError("Velocity field has not been created yet! No possible displacement field to compute.")
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def upload_velocity_field(self, velocity_field):
         """
         Uploads a custom velocity field, *e.g.*, generated from synthetic turbulence.
@@ -1472,6 +1582,7 @@ class FlowField:
             flowfield = FlowField(n_images=n_images,
                                   size=image_size,
                                   size_buffer=10,
+                                  time_separation=1,
                                   random_seed=100)
 
             # Importing an external velocity field file:
@@ -1563,6 +1674,7 @@ def compute_divergence(velocity_field,
         flowfield = FlowField(10,
                               size=(200, 200),
                               size_buffer=0,
+                              time_separation=1,
                               random_seed=100)
 
         # Generate random velocity field:
@@ -1623,6 +1735,7 @@ def compute_vorticity(velocity_field,
         flowfield = FlowField(10,
                               size=(200, 200),
                               size_buffer=0,
+                              time_separation=1,
                               random_seed=100)
 
         # Generate random velocity field:
@@ -1683,6 +1796,7 @@ def compute_q_criterion(velocity_field,
         flowfield = FlowField(10,
                               size=(200, 200),
                               size_buffer=0,
+                              time_separation=1,
                               random_seed=100)
 
         # Generate random velocity field:
