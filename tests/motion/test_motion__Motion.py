@@ -30,15 +30,6 @@ class TestMotionClass(unittest.TestCase):
                                                  displacement=(0, 10))
 
         with self.assertRaises(ValueError):
-            motion = Motion(particles, flowfield, time_separation=0)
-
-        with self.assertRaises(ValueError):
-            motion = Motion(particles, flowfield, time_separation=[])
-
-        with self.assertRaises(ValueError):
-            motion = Motion(particles, flowfield, time_separation=-1)
-
-        with self.assertRaises(ValueError):
             motion = Motion(particles, flowfield, particle_loss=[])
 
         with self.assertRaises(ValueError):
@@ -67,7 +58,6 @@ class TestMotionClass(unittest.TestCase):
 
         motion = Motion(particles,
                         flowfield,
-                        time_separation=1,
                         particle_loss=(1, 2),
                         particle_gain=(1, 2),
                         verbose=False,
@@ -76,7 +66,6 @@ class TestMotionClass(unittest.TestCase):
 
         # Attributes coming from user input:
         try:
-            motion.time_separation
             motion.particle_loss
             motion.particle_gain
             motion.random_seed
@@ -90,8 +79,6 @@ class TestMotionClass(unittest.TestCase):
             motion.particle_coordinates_I1
             motion.particle_coordinates_I2
             motion.updated_particle_diameters
-            motion.displacement_field
-            motion.displacement_field_magnitude
         except Exception:
             self.assertTrue(False)
 
@@ -106,16 +93,24 @@ class TestMotionClass(unittest.TestCase):
                                                  n_gaussian_filter_iter=20,
                                                  displacement=(0, 10))
 
-        # Re-setting time separation is allowed:
-        motion = Motion(particles, flowfield, time_separation = 1)
-        self.assertTrue(motion.time_separation == 1)
+        motion = Motion(particles,
+                        flowfield,
+                        particle_loss=2,
+                        particle_gain=3)
 
-        try:
-            motion.time_separation = 0.5
-        except Exception:
-            self.assertTrue(False)
+        self.assertTrue(motion.particle_loss[0] == 2)
+        self.assertTrue(motion.particle_loss[1] == 2)
+        self.assertTrue(motion.particle_gain[0] == 3)
+        self.assertTrue(motion.particle_gain[1] == 3)
 
-        self.assertTrue(motion.time_separation == 0.5)
+        # Re-set:
+        motion.particle_loss = 4
+        motion.particle_gain = 1
+
+        self.assertTrue(motion.particle_loss[0] == 4)
+        self.assertTrue(motion.particle_loss[1] == 4)
+        self.assertTrue(motion.particle_gain[0] == 1)
+        self.assertTrue(motion.particle_gain[1] == 1)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -131,18 +126,22 @@ class TestMotionClass(unittest.TestCase):
         motion = Motion(particles, flowfield)
 
         with self.assertRaises(AttributeError):
+            motion.random_seed = 1
+
+        with self.assertRaises(AttributeError):
             motion.particle_coordinates_I1 = 1
 
         with self.assertRaises(AttributeError):
             motion.particle_coordinates_I2 = 2
 
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-    def test_motion__Motion__time_separation_update_updates_displacement_fields(self):
+        with self.assertRaises(AttributeError):
+            motion.loss_percentage_per_image = 2
 
-        pass
+        with self.assertRaises(AttributeError):
+            motion.gain_percentage_per_image = 2
 
-
-
+        with self.assertRaises(AttributeError):
+            motion.updated_particle_diameters = 2
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -158,7 +157,6 @@ class TestMotionClass(unittest.TestCase):
 
         motion = Motion(particles,
                         flowfield,
-                        time_separation=0.1,
                         particle_loss=(20,20),
                         particle_gain=(0,0),
                         random_seed=100)
@@ -174,7 +172,6 @@ class TestMotionClass(unittest.TestCase):
 
         motion_no_loss = Motion(particles,
                                 flowfield,
-                                time_separation=0.1,
                                 particle_loss=(0,0),
                                 particle_gain=(0,0),
                                 random_seed=100)
@@ -187,7 +184,6 @@ class TestMotionClass(unittest.TestCase):
 
         motion_with_loss_again = Motion(particles,
                                         flowfield,
-                                        time_separation=0.1,
                                         particle_loss=(20,20),
                                         particle_gain=(0,0),
                                         random_seed=100)
@@ -204,7 +200,7 @@ class TestMotionClass(unittest.TestCase):
                                                  n_gaussian_filter_iter=20,
                                                  displacement=(0, 10))
 
-        motion = Motion(particles, flowfield, time_separation=0.5)
+        motion = Motion(particles, flowfield)
         motion.forward_euler(n_steps=10)
 
         size_of_diameters = motion.updated_particle_diameters[0].shape
@@ -222,7 +218,7 @@ class TestMotionClass(unittest.TestCase):
                                                  n_gaussian_filter_iter=20,
                                                  displacement=(0, 10))
 
-        motion = Motion(particles, flowfield, time_separation=2)
+        motion = Motion(particles, flowfield)
         motion.forward_euler(n_steps=10)
 
         size_of_diameters = motion.updated_particle_diameters[0].shape
@@ -246,7 +242,6 @@ class TestMotionClass(unittest.TestCase):
 
         motion = Motion(particles,
                         flowfield,
-                        time_separation=0.1,
                         particle_loss=(0,0),
                         particle_gain=(0,0),
                         random_seed=100)
@@ -255,7 +250,6 @@ class TestMotionClass(unittest.TestCase):
 
         motion_with_gain = Motion(particles,
                                 flowfield,
-                                time_separation=0.1,
                                 particle_loss=(20,20),
                                 particle_gain='matching',
                                 random_seed=100)
@@ -266,7 +260,6 @@ class TestMotionClass(unittest.TestCase):
 
         motion_with_non_matching_gain = Motion(particles,
                                 flowfield,
-                                time_separation=0.1,
                                 particle_loss=(20,20),
                                 particle_gain=(10,10),
                                 random_seed=100)
@@ -277,7 +270,6 @@ class TestMotionClass(unittest.TestCase):
 
         motion_with_non_matching_loss = Motion(particles,
                                                 flowfield,
-                                                time_separation=0.1,
                                                 particle_loss=(0,0),
                                                 particle_gain=(20,20),
                                                 random_seed=100)
