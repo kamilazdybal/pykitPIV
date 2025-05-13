@@ -22,7 +22,7 @@
 
 ### [`11`: Integration with `LIMA` - Lightweight Image Matching Architecture](demo-pykitPIV-11-integration-with-LIMA.ipynb)
 
-### [`12`: Create a "virtual wind tunnel" as a reinforcement learning environment](demo-pykitPIV-12-RL-environment.ipynb)
+### [`12`: Create a "virtual wind tunnel" as a reinforcement learning environment](demo-pykitPIV-12-construct-RL-environment.ipynb)
 
 ### [`13`: Train reinforcement learning to detect sources and sinks](demo-pykitPIV-13-RL-find-sources-and-sinks.ipynb)
 
