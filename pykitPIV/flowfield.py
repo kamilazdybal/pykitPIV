@@ -1656,7 +1656,7 @@ def compute_divergence(vector_field,
     """
     Computes the divergence of the specified vector field.
 
-    If the vector field is the velocity field:
+    If the vector field is the velocity field, :math:`\\vec{V} = [u, v]`:
 
     .. math::
 
@@ -1720,7 +1720,7 @@ def compute_vorticity(vector_field,
     """
     Computes the vorticity of the specified vector field.
 
-    If the vector field is the velocity field:
+    If the vector field is the velocity field, :math:`\\vec{V} = [u, v]`:
 
     .. math::
 
@@ -1784,7 +1784,7 @@ def compute_q_criterion(vector_field,
     """
     Computes the Q-criterion for the specified vector field.
 
-    If the vector field is the velocity field:
+    If the vector field is the velocity field, :math:`\\vec{V} = [u, v]`:
 
     .. math::
 
