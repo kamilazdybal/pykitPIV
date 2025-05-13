@@ -1028,6 +1028,10 @@ class PIVEnv(gym.Env):
         # Reset the camera position:
         self.__camera_position = camera_position
 
+        if verbose:
+            print('Camera position:')
+            print(camera_position)
+
         # Record PIV images at that camera position, but only if the inference model is given:
         if self.__inference_model is not None:
 
@@ -1060,7 +1064,7 @@ class PIVEnv(gym.Env):
         self.__targets_tensor = targets_tensor
 
         # Reward construction:
-        reward = reward_function(velocity_field=prediction_tensor,
+        reward = reward_function(vector_field=prediction_tensor,
                                  transformation=reward_transformation)
 
         # Compute the cues based on the current prediction tensor:
@@ -1069,6 +1073,8 @@ class PIVEnv(gym.Env):
         if verbose:
             print('Cues:')
             print(cues)
+            print('Reward:')
+            print(reward)
 
         return camera_position, cues, reward
 
@@ -2382,8 +2388,6 @@ class Rewards:
         from pykitPIV.flowfield import compute_q_criterion
 
         reward = transformation(compute_q_criterion(vector_field))
-
-        print(vector_field.shape)
 
         if self.__verbose: print(reward)
 
