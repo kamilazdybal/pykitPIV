@@ -1,7 +1,7 @@
 # `pykitPIV`: Python kinematic training for particle image velocimetry
 
 <p align="center">
-    <img src="docs/images/pykitPIV-logo.png" width="300">
+    <img src="docs/images/pykitPIV-logo-large.svg" width="300">
 </p>
 
 ## Introduction
@@ -69,89 +69,10 @@ author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
 }
 ```
 
-## Installation
-
-Install from `environment.yml`:
-
-```
-conda env create -f environment.yml
-conda activate pykitPIV
-python -m pip install .
-```
-
-or, start with a new Python environment:
-
-```
-conda create -n pykitPIV python=3.10
-```
-
-```
-conda activate pykitPIV
-```
-
-Install requirements:
-
-```
-pip install numpy
-pip install jupyterlab
-pip install matplotlib
-pip install h5py
-pip install torch
-pip install pandas
-pip install scipy
-pip install cmcrameri
-pip install Sphinx
-pip install sphinxcontrib-bibtex
-pip install furo
- 
-```
-
-Clone the pykitPIV repository:
-
-```
-git clone https://gitlab.empa.ch/kamila.zdybal/pykitPIV.git
-```
-
-and move there:
-
-```
-cd pykitPIV
-```
-
-Install ``pykitPIV``:
-
-```
-python -m pip install .
-```
-
-## Local documentation build
-
-Build documentation:
-
-```
-cd docs
-sphinx-build -b html . builddir
-make html
-```
-
-Open documentation in a web browser:
-
-```
-open _build/html/index.html
-```
-
-## Unit tests
-
-To run unit tests, run the following in the main ``pykitPIV`` directory:
-
-```
-python -m unittest discover -v
-```
-
-## Example PIV image pair
+## Example virtual PIV with an incompressible flow
 
 <p align="center">
-    <img src="docs/images/example-image-I1-I2-no-buffer.gif" width="600">
+    <img src="docs/images/animate-incompressible-PIV.gif" width="600">
 </p>
 
 ## Authors and contacts
