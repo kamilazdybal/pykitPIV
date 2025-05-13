@@ -2071,7 +2071,10 @@ def plot_trajectory(trajectory,
 
         from pykitPIV import plot_trajectory
 
-        # Assuming that we have access to the new displacement field:
+        # Assuming that we will plot the displacement field magnitude as the scalar quantity:
+        displacement_field_magnitude = ...
+
+        # And we will plot the displacement field as the vector field:
         displacement_field = ...
 
         # And we have computed the trajectory matrix:
@@ -2079,10 +2082,10 @@ def plot_trajectory(trajectory,
 
         # We can visualize the trajectory in the virtual environment:
         plot_trajectory(trajectory,
-                        quantity=None,
+                        quantity=displacement_field_magnitude,
                         vector_field=displacement_field,
-                        interrogation_window_size=None,
-                        interrogation_window_size_buffer=None,
+                        interrogation_window_size=(60,60),
+                        interrogation_window_size_buffer=10,
                         c_path='white',
                         c_init='white',
                         c_final='black',
