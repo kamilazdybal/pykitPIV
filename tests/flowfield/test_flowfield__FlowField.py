@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from pykitPIV import FlowField
+from pykitPIV import FlowField, compute_divergence, compute_vorticity, compute_q_criterion
 
 class TestFlowFieldClass(unittest.TestCase):
 
@@ -614,5 +614,97 @@ class TestFlowFieldClass(unittest.TestCase):
         ds_magnitude_2 = flowfield.displacement_field_magnitude
 
         self.assertTrue(np.max(ds_magnitude_2 > np.max(ds_magnitude_1)))
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+class TestFlowFieldUtilities(unittest.TestCase):
+
+    def test_flowfield__compute_divergence(self):
+
+        # Initialize a flow field object:
+        flowfield = FlowField(10,
+                              size=(200, 200),
+                              size_buffer=0,
+                              time_separation=1,
+                              random_seed=100)
+
+        # Generate random velocity field:
+        flowfield.generate_random_velocity_field(gaussian_filters=(10, 11),
+                                                 n_gaussian_filter_iter=20,
+                                                 displacement=(1, 2))
+
+        # Extract the velocity field components:
+        velocity_field = flowfield.velocity_field
+
+        try:
+            divergence = compute_divergence(vector_field=velocity_field,
+                                            edge_order=1)
+        except Exception:
+            self.assertTrue(False)
+
+        N, H, W = np.shape(divergence)
+
+        self.assertTrue(N == 10)
+        self.assertTrue(H == 200)
+        self.assertTrue(W == 200)
+
+        self.assertTrue(np.max(np.abs(divergence[:,:,:])) > 0)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_flowfield__compute_divergence_zero_div_on_potential_flow(self):
+
+        # Initialize a flow field object:
+        flowfield = FlowField(10,
+                              size=(200, 200),
+                              size_buffer=0,
+                              time_separation=1,
+                              random_seed=100)
+
+        # Generate potential velocity field:
+        flowfield.generate_potential_velocity_field(imposed_origin=None,
+                                                    displacement=(2, 2))
+
+        # Extract the velocity field components:
+        velocity_field = flowfield.velocity_field
+
+        try:
+            divergence = compute_divergence(vector_field=velocity_field,
+                                            edge_order=1)
+        except Exception:
+            self.assertTrue(False)
+
+        N, H, W = np.shape(divergence)
+
+        self.assertTrue(N == 10)
+        self.assertTrue(H == 200)
+        self.assertTrue(W == 200)
+
+        self.assertTrue(np.max(np.abs(divergence[:, :, :])) <= 1e-12)
+        self.assertTrue(np.min(np.abs(divergence[:, :, :])) <= 1e-12)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_flowfield__compute_divergence_on_source_sink_flows(self):
+
+        pass
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_flowfield__compute_vorticity(self):
+
+        pass
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_flowfield__compute_vorticity_zero_vort_on_potential_flow(self):
+
+        pass
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_flowfield__compute_q_criterion(self):
+
+        pass
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
