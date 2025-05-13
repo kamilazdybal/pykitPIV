@@ -1651,10 +1651,12 @@ class FlowField:
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-def compute_divergence(velocity_field,
+def compute_divergence(vector_field,
                        edge_order=1):
     """
-    Computes the divergence of the specified velocity field:
+    Computes the divergence of the specified vector field.
+
+    If the vector field is the velocity field:
 
     .. math::
 
@@ -1686,14 +1688,15 @@ def compute_divergence(velocity_field,
         velocity_field = flowfield.velocity_field
 
         # Compute the divergence of the velocity field:
-        divergence = compute_divergence(velocity_field,
+        divergence = compute_divergence(vector_field=velocity_field,
                                         edge_order=1)
 
-    :param velocity_field:
-        ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
-        where :math:`N` is the number of PIV image pairs, :math:`2` refers to each velocity component
-        :math:`u` and :math:`v` respectively,
+    :param vector_field:
+        ``numpy.ndarray`` specifying the vector field components. It should be of size :math:`(N, 2, H, W)`,
+        where :math:`N` is the number of PIV image pairs, :math:`2` refers to each vector field component and
         :math:`H` is the height and :math:`W` is the width of each PIV image.
+        For example, it can be the velocity field with components :math:`u` and :math:`v`, or
+        the displacement field with components :math:`dx` and :math:`dy`.
     :param edge_order: (optional)
         ``int`` specifying the order for the gradient computation at image boundaries
         as per `numpy.gradient <https://numpy.org/doc/stable/reference/generated/numpy.gradient.html>`_.
@@ -1703,8 +1706,8 @@ def compute_divergence(velocity_field,
           It has size :math:`(N, H, W)`.
     """
 
-    (dudy, dudx) = np.gradient(velocity_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
-    (dvdy, dvdx) = np.gradient(velocity_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
+    (dudy, dudx) = np.gradient(vector_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
+    (dvdy, dvdx) = np.gradient(vector_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
 
     divergence = dudx + dvdy
 
@@ -1712,10 +1715,12 @@ def compute_divergence(velocity_field,
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-def compute_vorticity(velocity_field,
+def compute_vorticity(vector_field,
                       edge_order=1):
     """
-    Computes the vorticity of the specified velocity field:
+    Computes the vorticity of the specified vector field.
+
+    If the vector field is the velocity field:
 
     .. math::
 
@@ -1747,14 +1752,15 @@ def compute_vorticity(velocity_field,
         velocity_field = flowfield.velocity_field
 
         # Compute the vorticity of the velocity field:
-        vorticity = compute_vorticity(velocity_field,
+        vorticity = compute_vorticity(vector_field=velocity_field,
                                       edge_order=1)
 
-    :param velocity_field:
-        ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
-        where :math:`N` is the number of PIV image pairs, :math:`2` refers to each velocity component
-        :math:`u` and :math:`v` respectively,
+    :param vector_field:
+        ``numpy.ndarray`` specifying the vector field components. It should be of size :math:`(N, 2, H, W)`,
+        where :math:`N` is the number of PIV image pairs, :math:`2` refers to each vector field component and
         :math:`H` is the height and :math:`W` is the width of each PIV image.
+        For example, it can be the velocity field with components :math:`u` and :math:`v`, or
+        the displacement field with components :math:`dx` and :math:`dy`.
     :param edge_order: (optional)
         ``int`` specifying the order for the gradient computation at image boundaries
         as per `numpy.gradient <https://numpy.org/doc/stable/reference/generated/numpy.gradient.html>`_.
@@ -1764,8 +1770,8 @@ def compute_vorticity(velocity_field,
           It has size :math:`(N, H, W)`.
     """
 
-    (dudy, dudx) = np.gradient(velocity_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
-    (dvdy, dvdx) = np.gradient(velocity_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
+    (dudy, dudx) = np.gradient(vector_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
+    (dvdy, dvdx) = np.gradient(vector_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
 
     vorticity = dvdx - dudy
 
@@ -1773,10 +1779,12 @@ def compute_vorticity(velocity_field,
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-def compute_q_criterion(velocity_field,
+def compute_q_criterion(vector_field,
                         edge_order=1):
     """
-    Computes the Q-criterion for the specified velocity field:
+    Computes the Q-criterion for the specified vector field.
+
+    If the vector field is the velocity field:
 
     .. math::
 
@@ -1808,14 +1816,15 @@ def compute_q_criterion(velocity_field,
         velocity_field = flowfield.velocity_field
 
         # Compute the Q-criterion for the velocity field:
-        q_criterion = compute_q_criterion(velocity_field,
+        q_criterion = compute_q_criterion(vector_field=velocity_field,
                                           edge_order=1)
 
-    :param velocity_field:
-        ``numpy.ndarray`` specifying the velocity components. It should be of size :math:`(N, 2, H, W)`,
-        where :math:`N` is the number of PIV image pairs, :math:`2` refers to each velocity component
-        :math:`u` and :math:`v` respectively,
+    :param vector_field:
+        ``numpy.ndarray`` specifying the vector field components. It should be of size :math:`(N, 2, H, W)`,
+        where :math:`N` is the number of PIV image pairs, :math:`2` refers to each vector field component and
         :math:`H` is the height and :math:`W` is the width of each PIV image.
+        For example, it can be the velocity field with components :math:`u` and :math:`v`, or
+        the displacement field with components :math:`dx` and :math:`dy`.
     :param edge_order: (optional)
         ``int`` specifying the order for the gradient computation at image boundaries
         as per `numpy.gradient <https://numpy.org/doc/stable/reference/generated/numpy.gradient.html>`_.
@@ -1826,8 +1835,8 @@ def compute_q_criterion(velocity_field,
     """
 
     # Compute the vorticity:
-    (dudy, dudx) = np.gradient(velocity_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
-    (dvdy, dvdx) = np.gradient(velocity_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
+    (dudy, dudx) = np.gradient(vector_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
+    (dvdy, dvdx) = np.gradient(vector_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
 
     vorticity = dvdx - dudy
 

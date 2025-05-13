@@ -2332,7 +2332,7 @@ class Rewards:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def q_criterion(self,
-                    velocity_field,
+                    vector_field,
                     transformation):
         """
         Computes the reward based on the Q-criterion.
@@ -2344,8 +2344,9 @@ class Rewards:
             from pykitPIV.ml import Rewards
             import numpy as np
 
-            # Once we have the velocity field specified:
-            velocity_field = ...
+            # Once we have the vector field specified
+            # e.g., velocity field or displacement field:
+            vector_field = ...
 
             # Instantiate an object of the Rewards class:
             rewards = Rewards(verbose=True,
@@ -2359,14 +2360,15 @@ class Rewards:
                 return Q
 
             # Compute the reward based on the Q-criterion for the present velocity field:
-            reward = rewards.q_criterion(velocity_field=velocity_field,
+            reward = rewards.q_criterion(vector_field=vector_field,
                                          transformation=transformation)
 
-        :param velocity_field:
-            ``numpy.ndarray`` specifying the velocity components under the interrogation window.
+        :param vector_field:
+            ``numpy.ndarray`` specifying the vector field components under the interrogation window.
             It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
-            where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
-            :math:`u` and :math:`v` respectively,
+            where :math:`1` is just one, fixed vector field, :math:`2` refers to each vector field component.
+            For example, it can be the velocity field with components :math:`u` and :math:`v`, or
+            the displacement field with components :math:`dx` and :math:`dy`.
             :math:`H_{\\text{i}}+2b` is the height and
             :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
         :param transformation:
@@ -2379,9 +2381,9 @@ class Rewards:
 
         from pykitPIV.flowfield import compute_q_criterion
 
-        reward = transformation(compute_q_criterion(velocity_field))
+        reward = transformation(compute_q_criterion(vector_field))
 
-        print(velocity_field.shape)
+        print(vector_field.shape)
 
         if self.__verbose: print(reward)
 
@@ -2390,7 +2392,7 @@ class Rewards:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def divergence(self,
-                   velocity_field,
+                   vector_field,
                    transformation):
         """
         Computes the reward based on the divergence of the flow field.
@@ -2402,8 +2404,9 @@ class Rewards:
             from pykitPIV.ml import Rewards
             import numpy as np
 
-            # Once we have the velocity field specified:
-            velocity_field = ...
+            # Once we have the vector field specified
+            # e.g., velocity field or displacement field:
+            vector_field = ...
 
             # Instantiate an object of the Rewards class:
             rewards = Rewards(verbose=True,
@@ -2415,14 +2418,15 @@ class Rewards:
                 return np.max(np.abs(div))
 
             # Compute the reward based on the divergence for the present velocity field:
-            reward = rewards.divergence(velocity_field=velocity_field,
+            reward = rewards.divergence(vector_field=vector_field,
                                         transformation=transformation)
 
-        :param velocity_field:
-            ``numpy.ndarray`` specifying the velocity components under the interrogation window.
+        :param vector_field:
+            ``numpy.ndarray`` specifying the vector field components under the interrogation window.
             It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
-            where :math:`1` is just one, fixed flow field, :math:`2` refers to each velocity component
-            :math:`u` and :math:`v` respectively,
+            where :math:`1` is just one, fixed vector field, :math:`2` refers to each vector field component.
+            For example, it can be the velocity field with components :math:`u` and :math:`v`, or
+            the displacement field with components :math:`dx` and :math:`dy`.
             :math:`H_{\\text{i}}+2b` is the height and
             :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
         :param transformation:
@@ -2435,7 +2439,7 @@ class Rewards:
 
         from pykitPIV.flowfield import compute_divergence
 
-        reward = transformation(compute_divergence(velocity_field))
+        reward = transformation(compute_divergence(vector_field))
 
         if self.__verbose: print(reward)
 
