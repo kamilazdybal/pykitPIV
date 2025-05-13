@@ -78,7 +78,7 @@ author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
 ## Example virtual PIV environment for reinforcement learning
 
 <p align="center">
-    <img src="docs/images/PIVEnv.svg" width="600">
+    <img src="docs/images/PIVEnv.svg" width="800">
 </p>
 
 ## Authors and contacts
