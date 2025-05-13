@@ -1,7 +1,7 @@
 # `pykitPIV`: Python kinematic training for particle image velocimetry
 
 <p align="center">
-    <img src="docs/images/pykitPIV-logo-large.svg" width="300">
+    <img src="docs/images/pykitPIV-logo.svg" width="300">
 </p>
 
 ## Introduction
@@ -73,6 +73,12 @@ author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
 
 <p align="center">
     <img src="docs/images/animate-incompressible-PIV.gif" width="600">
+</p>
+
+## Example virtual PIV environment
+
+<p align="center">
+    <img src="docs/images/PIVEnv.svg" width="600">
 </p>
 
 ## Authors and contacts
