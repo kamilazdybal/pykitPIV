@@ -269,7 +269,13 @@ class PIVEnv(gym.Env):
     for a reinforcement learning (RL) agent.
 
     The environment simulates a 2D section in a wind tunnel of a user-specified size, with synthetic or user-specified
-    static velocity field and provides synthetic PIV recordings under a (usually smaller) interrogation window.
+    static velocity field, :math:`\\vec{V} = [u, v]`, and provides synthetic PIV recordings under a
+    (usually much smaller) interrogation window.
+
+    The flow target for the RL agent is the displacement field,
+    :math:`d\\vec{\\mathbf{s}} = [dx, dy] = [u \\Delta t, v \\Delta t]`. This flow target is the basis for computing
+    sensory cues and rewards.
+
     The overall mechanics of this class is visualized below:
 
     .. image:: ../images/PIVEnv.svg
