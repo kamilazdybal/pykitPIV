@@ -309,13 +309,13 @@ class PIVEnv(gym.Env):
                          'seeding_mode': 'random'}
 
         flowfield_spec = {'size': (500, 1000),
+                          'time_separation': 5,
                           'flowfield_type': 'random smooth',
                           'gaussian_filters': (30, 30),
                           'n_gaussian_filter_iter': 5,
                           'displacement': (2, 2)}
 
         motion_spec = {'n_steps': 10,
-                       'time_separation': 5,
                        'particle_loss': (0, 2),
                        'particle_gain': (0, 2)}
 
@@ -363,13 +363,15 @@ class PIVEnv(gym.Env):
 
         # Initialize an object of the FlowField class that will store the user-specified flow field:
         user_flowfield = FlowField(1,
-                              size=(500, 1000),
-                              size_buffer=0)
+                                   size=(500, 1000),
+                                   size_buffer=0,
+                                   time_separation=1)
 
         # Create a dummy velocity field:
         user_flowfield.generate_random_velocity_field(displacement=(10, 10),
                                                  gaussian_filters=(30, 30),
                                                  n_gaussian_filter_iter=6)
+
         velocity_field = flowfield.velocity_field
 
         # Uplad a user-specified velocity field tensor:
@@ -556,6 +558,7 @@ class PIVEnv(gym.Env):
             flowfield = FlowField(n_images=1,
                                   size=self.__flowfield_size,
                                   size_buffer=0,
+                                  time_separation=self.__flowfield_spec.time_separation,
                                   random_seed=self.__random_seed)
 
             if self.__flowfield_type == 'random smooth':
@@ -735,6 +738,7 @@ class PIVEnv(gym.Env):
         flowfield = FlowField(n_images=1,
                               size=self.__interrogation_window_size,
                               size_buffer=self.__interrogation_window_size_buffer,
+                              time_separation=self.__flowfield_spec.time_separation,
                               random_seed=None)
 
         flowfield.upload_velocity_field(velocity_field_at_interrogation_window)
@@ -742,7 +746,6 @@ class PIVEnv(gym.Env):
         # Initialize a motion object:
         motion = Motion(particles,
                         flowfield,
-                        time_separation=self.__motion_spec.time_separation,
                         particle_loss=self.__motion_spec.particle_loss,
                         particle_gain=self.__motion_spec.particle_gain,
                         random_seed=self.__motion_spec.random_seed)
@@ -857,6 +860,7 @@ class PIVEnv(gym.Env):
                 flowfield = FlowField(n_images=1,
                                       size=self.__flowfield_size,
                                       size_buffer=0,
+                                      time_separation=self.__flowfield_spec.time_separation,
                                       random_seed=self.__random_seed)
 
                 if self.__flowfield_type == 'random smooth':
@@ -925,8 +929,10 @@ class PIVEnv(gym.Env):
             # ^ Note that we extract the interrogation window size without buffer because PIV images are not being
             # recorded.
 
-            targets_tensor = self.flowfield.velocity_field[:, :, h_start:h_stop, w_start:w_stop]
-            prediction_tensor = self.flowfield.velocity_field[:, :, h_start:h_stop, w_start:w_stop]
+            self.flowfield.compute_displacement_field()
+
+            targets_tensor = self.flowfield.displacement_field[:, :, h_start:h_stop, w_start:w_stop]
+            prediction_tensor = self.flowfield.displacement_field[:, :, h_start:h_stop, w_start:w_stop]
 
         # Save the prediction tensor and the targets tensor as globally-available variables:
         self.__prediction_tensor = prediction_tensor
@@ -1038,8 +1044,10 @@ class PIVEnv(gym.Env):
             # ^ Note that we extract the interrogation window size without buffer because PIV images are not being
             # recorded.
 
-            targets_tensor = self.flowfield.velocity_field[:, :, h_start:h_stop, w_start:w_stop]
-            prediction_tensor = self.flowfield.velocity_field[:, :, h_start:h_stop, w_start:w_stop]
+            self.flowfield.compute_displacement_field()
+
+            targets_tensor = self.flowfield.displacement_field[:, :, h_start:h_stop, w_start:w_stop]
+            prediction_tensor = self.flowfield.displacement_field[:, :, h_start:h_stop, w_start:w_stop]
 
         # Save the prediction tensor and the targets tensor as globally-available variables:
         self.__prediction_tensor = prediction_tensor
@@ -1128,7 +1136,7 @@ class PIVEnv(gym.Env):
         :param quantity: (optional)
             ``numpy.ndarray`` specifying the quantity to plot within the virtual wind tunnel section.
             It should have size :math:`(H_{\\text{wt}}, W_{\\text{wt}})`.
-            If set to ``None``, displacement field magnitude is plotted.
+            If set to ``None``, displacement field magnitude, :math:`|d\\vec{\\mathbf{s}}|`, is plotted.
         :param camera_position: (optional)
             ``numpy.ndarray`` specifying the camera position in pixels :math:`[\\text{px}]`.
             This defines the bottom-left corner of the interrogation window.
@@ -1184,6 +1192,9 @@ class PIVEnv(gym.Env):
 
         figure = plt.figure(figsize=figsize)
 
+        # Compute the displacement field:
+        self.flowfield.compute_displacement_field()
+
         if wind_tunnel_only:
 
             spec = figure.add_gridspec(ncols=1,
@@ -1206,7 +1217,7 @@ class PIVEnv(gym.Env):
         if quantity is not None:
             ims = plt.imshow(quantity, cmap=cmap, origin='lower', zorder=0)
         else:
-            ims = plt.imshow(self.flowfield.velocity_field_magnitude[0,0,:,:], cmap=cmap, origin='lower', zorder=0)
+            ims = plt.imshow(self.flowfield.displacement_field_magnitude[0,0,:,:], cmap=cmap, origin='lower', zorder=0)
 
         plt.colorbar(ims)
 
@@ -1216,8 +1227,8 @@ class PIVEnv(gym.Env):
             Y = np.arange(0, self.flowfield.size[0], 1)
 
             plt.streamplot(X, Y,
-                           self.flowfield.velocity_field[0, 0, :, :],
-                           self.flowfield.velocity_field[0, 1, :, :],
+                           self.flowfield.displacement_field[0, 0, :, :],
+                           self.flowfield.displacement_field[0, 1, :, :],
                            density=streamplot_density,
                            color=streamplot_color,
                            linewidth=streamplot_linewidth,
@@ -1229,8 +1240,8 @@ class PIVEnv(gym.Env):
             Y = np.arange(0, self.flowfield.size[0], quiver_step)
 
             plt.quiver(X, Y,
-                       self.flowfield.velocity_field[0, 0, ::quiver_step, ::quiver_step],
-                       self.flowfield.velocity_field[0, 1, ::quiver_step, ::quiver_step],
+                       self.flowfield.displacement_field[0, 0, ::quiver_step, ::quiver_step],
+                       self.flowfield.displacement_field[0, 1, ::quiver_step, ::quiver_step],
                        color=quiver_color)
 
         plt.title('Virtual wind tunnel', fontsize=fontsize)
@@ -1271,8 +1282,8 @@ class PIVEnv(gym.Env):
         if not wind_tunnel_only:
 
             if normalize_cbars:
-                vmin = np.min(self.flowfield.velocity_field_magnitude[0,0,:,:])
-                vmax = np.max(self.flowfield.velocity_field_magnitude[0,0,:,:])
+                vmin = np.min(self.flowfield.displacement_field_magnitude[0,0,:,:])
+                vmax = np.max(self.flowfield.displacement_field_magnitude[0,0,:,:])
             else:
                 vmin = None
                 vmax = None
