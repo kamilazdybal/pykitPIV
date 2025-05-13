@@ -1,4 +1,4 @@
-# Welcome to `pykitPIV`!
+# `pykitPIV`: Python kinematic training for particle image velocimetry
 
 <p align="center">
     <img src="docs/images/pykitPIV-logo.png" width="300">
@@ -47,27 +47,27 @@ check the following references:
 
 - [A lightweight convolutional neural network to reconstruct deformation in BOS recordings](https://link.springer.com/article/10.1007/s00348-023-03618-7)
 
-Kamila Zdybał is **pykitPIV**'s primary developer and point of contact and can be contacted by email at ``kamila.zdybal@empa.ch``.
-Other authors who contributed to **pykitPIV** are Claudio Mucignat, Stephan Kunz, and Ivan Lunati.
+## Documentation
+
+
 
 ## Citing pykitPIV
 
 If you use **pykitPIV** in your work, we will appreciate the citation to the following paper:
 
-.. code-block:: text
-
-        @article{pykitPIV2025,
-        title = "pykitPIV: Rich and reproducible virtual training of machine learning algorithms in velocimetry",
-        journal = "SoftwareX",
-        volume = "",
-        pages = "",
-        year = "2025",
-        issn = "",
-        doi = "",
-        url = "https://github.com/kamilazdybal/pykitPIV}",
-        author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
-        }
-
+```text
+@article{pykitPIV2025,
+title = "pykitPIV: Rich and reproducible virtual training of machine learning algorithms in velocimetry",
+journal = "SoftwareX",
+volume = "",
+pages = "",
+year = "2025",
+issn = "",
+doi = "",
+url = "https://github.com/kamilazdybal/pykitPIV}",
+author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
+}
+```
 
 ## Installation
 
@@ -154,6 +154,7 @@ python -m unittest discover -v
     <img src="docs/images/example-image-I1-I2-no-buffer.gif" width="600">
 </p>
 
+## Authors and contacts
 
-
-
+Kamila Zdybał is **pykitPIV**'s primary developer and point of contact and can be contacted by email at ``kamila.zdybal@empa.ch``.
+Other authors who contributed to **pykitPIV** are Claudio Mucignat, Stephan Kunz, and Ivan Lunati.
