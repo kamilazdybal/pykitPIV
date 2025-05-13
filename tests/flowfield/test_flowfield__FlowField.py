@@ -790,6 +790,39 @@ class TestFlowFieldUtilities(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def test_flowfield__compute_vorticity_zero_vort_on_potential_flow(self):
+
+        # Initialize a flow field object:
+        flowfield = FlowField(10,
+                              size=(200, 200),
+                              size_buffer=0,
+                              time_separation=1,
+                              random_seed=100)
+
+        # Generate potential velocity field:
+        flowfield.generate_potential_velocity_field(imposed_origin=None,
+                                                    displacement=(2, 2))
+
+        # Extract the velocity field components:
+        velocity_field = flowfield.velocity_field
+
+        try:
+            vorticity = compute_vorticity(vector_field=velocity_field,
+                                          edge_order=1)
+        except Exception:
+            self.assertTrue(False)
+
+        N, H, W = np.shape(vorticity)
+
+        self.assertTrue(N == 10)
+        self.assertTrue(H == 200)
+        self.assertTrue(W == 200)
+
+        self.assertTrue(np.max(np.abs(vorticity)) <= 1e-12)
+        self.assertTrue(np.min(np.abs(vorticity)) <= 1e-12)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_flowfield__compute_q_criterion(self):
 
         # Initialize a flow field object:
