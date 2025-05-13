@@ -32,6 +32,10 @@ Class: ``FlowField``
 
 .. autofunction:: pykitPIV.flowfield.FlowField.upload_velocity_field
 
+*********************************************
+Flow field utilities
+*********************************************
+
 .. autofunction:: pykitPIV.flowfield.compute_divergence
 
 .. autofunction:: pykitPIV.flowfield.compute_vorticity
