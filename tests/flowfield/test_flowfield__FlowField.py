@@ -648,7 +648,7 @@ class TestFlowFieldUtilities(unittest.TestCase):
         self.assertTrue(H == 200)
         self.assertTrue(W == 200)
 
-        self.assertTrue(np.max(np.abs(divergence[:,:,:])) > 0)
+        self.assertTrue(np.max(np.abs(divergence)) > 0)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -680,31 +680,145 @@ class TestFlowFieldUtilities(unittest.TestCase):
         self.assertTrue(H == 200)
         self.assertTrue(W == 200)
 
-        self.assertTrue(np.max(np.abs(divergence[:, :, :])) <= 1e-12)
-        self.assertTrue(np.min(np.abs(divergence[:, :, :])) <= 1e-12)
+        self.assertTrue(np.max(np.abs(divergence)) <= 1e-12)
+        self.assertTrue(np.min(np.abs(divergence)) <= 1e-12)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def test_flowfield__compute_divergence_on_source_sink_flows(self):
+    def test_flowfield__compute_divergence_on_source_flow(self):
 
-        pass
+        # Initialize a flow field object:
+        flowfield = FlowField(10,
+                              size=(200, 200),
+                              size_buffer=0,
+                              time_separation=1,
+                              random_seed=100)
+
+        # Generate radial velocity field:
+        flowfield.generate_radial_velocity_field(source=True,
+                                                 displacement=(1, 4),
+                                                 imposed_source_location=(50, 50),
+                                                 sigma=5.0,
+                                                 epsilon=1e-6)
+
+        # Extract the velocity field components:
+        velocity_field = flowfield.velocity_field
+
+        try:
+            divergence = compute_divergence(vector_field=velocity_field,
+                                            edge_order=1)
+        except Exception:
+            self.assertTrue(False)
+
+        N, H, W = np.shape(divergence)
+
+        self.assertTrue(N == 10)
+        self.assertTrue(H == 200)
+        self.assertTrue(W == 200)
+
+        # Only non-negative divergence:
+        self.assertTrue(np.min(divergence) >= 0)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_flowfield__compute_divergence_on_sink_flow(self):
+
+        # Initialize a flow field object:
+        flowfield = FlowField(10,
+                              size=(200, 200),
+                              size_buffer=0,
+                              time_separation=1,
+                              random_seed=100)
+
+        # Generate radial velocity field:
+        flowfield.generate_radial_velocity_field(source=False,
+                                                 displacement=(1, 4),
+                                                 imposed_source_location=(50, 50),
+                                                 sigma=5.0,
+                                                 epsilon=1e-6)
+
+        # Extract the velocity field components:
+        velocity_field = flowfield.velocity_field
+
+        try:
+            divergence = compute_divergence(vector_field=velocity_field,
+                                            edge_order=1)
+        except Exception:
+            self.assertTrue(False)
+
+        N, H, W = np.shape(divergence)
+
+        self.assertTrue(N == 10)
+        self.assertTrue(H == 200)
+        self.assertTrue(W == 200)
+
+        # Only non-positive divergence:
+        self.assertTrue(np.max(divergence) <= 0)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def test_flowfield__compute_vorticity(self):
 
-        pass
+        # Initialize a flow field object:
+        flowfield = FlowField(10,
+                              size=(200, 200),
+                              size_buffer=0,
+                              time_separation=1,
+                              random_seed=100)
 
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+        # Generate random velocity field:
+        flowfield.generate_random_velocity_field(gaussian_filters=(10, 11),
+                                                 n_gaussian_filter_iter=20,
+                                                 displacement=(1, 2))
 
-    def test_flowfield__compute_vorticity_zero_vort_on_potential_flow(self):
+        # Extract the velocity field components:
+        velocity_field = flowfield.velocity_field
 
-        pass
+        try:
+            vorticity = compute_vorticity(vector_field=velocity_field,
+                                          edge_order=1)
+        except Exception:
+            self.assertTrue(False)
+
+        N, H, W = np.shape(vorticity)
+
+        self.assertTrue(N == 10)
+        self.assertTrue(H == 200)
+        self.assertTrue(W == 200)
+
+        self.assertTrue(np.max(np.abs(vorticity)) > 0)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def test_flowfield__compute_q_criterion(self):
 
-        pass
+        # Initialize a flow field object:
+        flowfield = FlowField(10,
+                              size=(200, 200),
+                              size_buffer=0,
+                              time_separation=1,
+                              random_seed=100)
+
+        # Generate random velocity field:
+        flowfield.generate_random_velocity_field(gaussian_filters=(10, 11),
+                                                 n_gaussian_filter_iter=20,
+                                                 displacement=(1, 2))
+
+        # Extract the velocity field components:
+        velocity_field = flowfield.velocity_field
+
+        try:
+            q = compute_q_criterion(vector_field=velocity_field,
+                                            edge_order=1)
+        except Exception:
+            self.assertTrue(False)
+
+        N, H, W = np.shape(q)
+
+        self.assertTrue(N == 10)
+        self.assertTrue(H == 200)
+        self.assertTrue(W == 200)
+
+        self.assertTrue(np.max(np.abs(q)) > 0)
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
