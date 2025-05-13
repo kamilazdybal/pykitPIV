@@ -2029,14 +2029,14 @@ class CameraAgentDoubleDQN:
 ########################################################################################################################
 ########################################################################################################################
 ####
-####    Plot agent's trajectory over an environment
+####    Plot the agent's trajectory over an environment
 ####
 ########################################################################################################################
 ########################################################################################################################
 
-def plot_trajectory(displacement_field,
-                    trajectory,
+def plot_trajectory(trajectory,
                     quantity=None,
+                    vector_field=None,
                     interrogation_window_size=None,
                     interrogation_window_size_buffer=None,
                     c_path='white',
@@ -2078,9 +2078,9 @@ def plot_trajectory(displacement_field,
         trajectory = ...
 
         # We can visualize the trajectory in the virtual environment:
-        plot_trajectory(displacement_field,
-                        trajectory,
+        plot_trajectory(trajectory,
                         quantity=None,
+                        vector_field=displacement_field,
                         interrogation_window_size=None,
                         interrogation_window_size_buffer=None,
                         c_path='white',
@@ -2112,16 +2112,23 @@ def plot_trajectory(displacement_field,
     .. image:: ../images/ml_plot_trajectory.png
         :width: 800
 
-    :param displacement_field:
-        ``numpy.ndarray`` specifying
-    :param quantity:
-        ``numpy.ndarray`` specifying the quantity to visualize in the background.
     :param trajectory:
-        ``numpy.ndarray`` specifying
+        ``numpy.ndarray`` specifying the camera trajectory taken by the agent in the 2D virtual wind tunnel.
+        It should be of size :math:`(n_s, 2)`, where :math:`n_s` is the number of steps taken in the environment,
+        and columns represent the camera position along the height and width of the virtual wind tunnel, respectively.
+    :param quantity: (optional)
+        ``numpy.ndarray`` specifying the scalar quantity to visualize in the background.
+        It should be of size :math:`(H_{\\text{wt}}, W_{\\text{wt}})`.
+    :param vector_field: (optional)
+        ``numpy.ndarray`` specifying the vector field to visualize on top of any scalar quantity.
+        It should be of size :math:`(1, 2, H_{\\text{wt}}, W_{\\text{wt}})`.
     :param interrogation_window_size: (optional)
-        ``tuple`` specifying
+        ``tuple`` of two ``int`` elements specifying the size of the interrogation window in pixels :math:`[\\text{px}]`.
+        The first number is the window height, :math:`H_{\\text{i}}`,
+        the second number is the window width, :math:`W_{\\text{i}}`.
     :param interrogation_window_size_buffer: (optional)
-        ``int`` specifying
+        ``int`` specifying the buffer, :math:`b`, in pixels :math:`[\\text{px}]` to add to the interrogation window size
+        in the width and height direction.
     :param c: (optional)
         ``str`` specifying the color for the interrogation window outline.
     :param s: (optional)
@@ -2175,40 +2182,41 @@ def plot_trajectory(displacement_field,
 
     fontsize = 14
 
-    displacement_field_magnitude = np.sqrt(displacement_field[0, 0, :, :] ** 2 + displacement_field[0, 1, :, :] ** 2)
-
     plt.figure(figsize=figsize)
 
-    if quantity is None:
-        ims = plt.imshow(displacement_field_magnitude, cmap=cmap, origin='lower', vmin=vmin, vmax=vmax, zorder=0)
-    else:
+    # Visualize the scalar quantity:
+    if quantity is not None:
         ims = plt.imshow(quantity, cmap=cmap, origin='lower', vmin=vmin, vmax=vmax, zorder=0)
+        cbar = plt.colorbar(ims)
+    else:
+        cbar = None
 
-    cbar = plt.colorbar(ims)
+    # Visualize the vector field on top of the scalar quantity:
+    if vector_field is not None:
 
-    if add_streamplot:
+        if add_streamplot:
 
-        X = np.arange(0, displacement_field.shape[3], 1)
-        Y = np.arange(0, displacement_field.shape[2], 1)
+            X = np.arange(0, vector_field.shape[3], 1)
+            Y = np.arange(0, vector_field.shape[2], 1)
 
-        plt.streamplot(X, Y,
-                       displacement_field[0, 0, :, :],
-                       displacement_field[0, 1, :, :],
-                       density=streamplot_density,
-                       color=streamplot_color,
-                       linewidth=streamplot_linewidth,
-                       zorder=1)
+            plt.streamplot(X, Y,
+                           vector_field[0, 0, :, :],
+                           vector_field[0, 1, :, :],
+                           density=streamplot_density,
+                           color=streamplot_color,
+                           linewidth=streamplot_linewidth,
+                           zorder=1)
 
-    if add_quiver:
+        if add_quiver:
 
-        X = np.arange(0, displacement_field.shape[3], quiver_step)
-        Y = np.arange(0, displacement_field.shape[2], quiver_step)
+            X = np.arange(0, vector_field.shape[3], quiver_step)
+            Y = np.arange(0, vector_field.shape[2], quiver_step)
 
-        plt.quiver(X, Y,
-                   displacement_field[0, 0, ::quiver_step, ::quiver_step],
-                   displacement_field[0, 1, ::quiver_step, ::quiver_step],
-                   color=quiver_color,
-                   linewidths=quiver_linewidths)
+            plt.quiver(X, Y,
+                       vector_field[0, 0, ::quiver_step, ::quiver_step],
+                       vector_field[0, 1, ::quiver_step, ::quiver_step],
+                       color=quiver_color,
+                       linewidths=quiver_linewidths)
 
     plt.plot(trajectory[:, 1] - 0.5, trajectory[:, 0] - 0.5, c=c_path, lw=lw, zorder=2)
 
