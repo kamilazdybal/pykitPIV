@@ -380,7 +380,7 @@ class PIVEnv(gym.Env):
 
         velocity_field = flowfield.velocity_field
 
-        # Uplad a user-specified velocity field tensor:
+        # Upload a user-specified velocity field tensor:
         user_flowfield.upload_velocity_field(velocity_field)
 
         # Initialize the Gymnasium environment:
