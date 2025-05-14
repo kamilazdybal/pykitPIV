@@ -1361,7 +1361,7 @@ class PIVEnv(gym.Env):
             # Visualize the error map between the target and the inference:
             figure.add_subplot(spec[2, 8])
             prediction_error = np.abs(targets_magnitude - prediction_magnitude)
-            normalizer = np.max(targets_magnitude) - np.min(targets_magnitude)
+            normalizer = np.mean(targets_magnitude)
             error_map = prediction_error/normalizer*100
             ims = plt.imshow(error_map, origin='lower', cmap='Greys')
             plt.colorbar(ims)
