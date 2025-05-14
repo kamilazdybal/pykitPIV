@@ -2095,9 +2095,6 @@ class Image:
         if self.__flowfield is None:
             raise AttributeError("Flow field has not been added to the image yet! Use the `Image.add_flowfield()` method first.")
 
-        if field == 'displacement' and self.__motion is None:
-            raise AttributeError("Motion has not been added to the image yet! Use the `Image.add_motion()` method first.")
-
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         if field == 'velocity':
@@ -2391,9 +2388,6 @@ class Image:
 
         if self.__flowfield is None:
             raise AttributeError("Flow field has not been added to the image yet! Use the `Image.add_flowfield()` method first.")
-
-        if field == 'displacement' and self.__motion is None:
-            raise AttributeError("Motion has not been added to the image yet! Use the `Image.add_motion()` method first.")
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
