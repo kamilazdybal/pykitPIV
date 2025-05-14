@@ -581,6 +581,11 @@ class PIVEnv(gym.Env):
                                                          sigma=self.__flowfield_spec.radial_sigma,
                                                          epsilon=self.__flowfield_spec.radial_epsilon)
 
+            elif self.__flowfield_type == 'constant':
+
+                flowfield.generate_constant_velocity_field(u_magnitude=self.__flowfield_spec.constant_u_magnitude,
+                                                           v_magnitude=self.__flowfield_spec.constant_v_magnitude)
+
             if self.__flowfield_spec.apply_SLM:
 
                 # Solve the simplified Langevin model (SLM) for the mean velocity fields:

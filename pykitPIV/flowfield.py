@@ -59,6 +59,8 @@ class FlowFieldSpecs:
                  gaussian_filters=(10, 10),
                  n_gaussian_filter_iter=10,
                  displacement=(2, 2),
+                 constant_u_magnitude=(1,4),
+                 constant_v_magnitude=(1,4),
                  radial_source=True,
                  radial_imposed_source_location=None,
                  radial_sigma=20,
@@ -69,7 +71,6 @@ class FlowFieldSpecs:
                  n_stochastic_particles=1000000,
                  n_iterations=100):
 
-
         self.n_images = n_images
         self.size = size
         self.size_buffer = size_buffer
@@ -79,6 +80,8 @@ class FlowFieldSpecs:
         self.gaussian_filters = gaussian_filters
         self.n_gaussian_filter_iter = n_gaussian_filter_iter
         self.displacement = displacement
+        self.constant_u_magnitude = constant_u_magnitude
+        self.constant_v_magnitude = constant_v_magnitude
         self.radial_source = radial_source
         self.radial_imposed_source_location = radial_imposed_source_location
         self.radial_sigma = radial_sigma
@@ -100,6 +103,8 @@ class FlowFieldSpecs:
                 f"gaussian_filters={self.gaussian_filters},\n"
                 f"n_gaussian_filter_iter={self.n_gaussian_filter_iter},\n"
                 f"displacement={self.displacement},\n"
+                f"constant_u_magnitude={self.constant_u_magnitude},\n"
+                f"constant_v_magnitude={self.constant_v_magnitude},\n"
                 f"radial_source={self.radial_source},\n"
                 f"radial_imposed_source_location={self.radial_imposed_source_location},\n"
                 f"radial_sigma={self.radial_sigma},\n"
