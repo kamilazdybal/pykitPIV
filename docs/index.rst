@@ -92,12 +92,22 @@ If you use **pykitPIV** in your work, we will appreciate the citation to the fol
     :maxdepth: 2
     :caption: Tutorials
 
-    tutorials/demo-generate-images
-    tutorials/demo-image-statistics
-    tutorials/demo-PyTorch-dataloader
-    tutorials/demo-Gymnasium-Env
-    tutorials/demo-data-augmentation
-    tutorials/demo-import-external-velocity-field
-    tutorials/demo-integrate-with-LIMA
-    tutorials/demo-SingleDQN
-
+    tutorials/demo-01-generate-PIV-images
+    tutorials/demo-02-image-statistics
+    tutorials/demo-03-radial-flows
+    tutorials/demo-04-potential-flows
+    tutorials/demo-05-simplified-Langevin-model
+    tutorials/demo-06-upload-external-velocity-field
+    tutorials/demo-07-generate-temporal-sequence
+    tutorials/demo-08-postprocess-images
+    tutorials/demo-09-feature-size-estimation-tool
+    tutorials/demo-10-PyTorch-dataloader
+    tutorials/demo-11-integrate-with-LIMA
+    tutorials/demo-12-construct-RL-environment
+    tutorials/demo-13-SingleDQN
+    tutorials/demo-14-upload-trained-RL-model
+    tutorials/demo-15-model-out-of-plane-particles
+    tutorials/demo-16-model-astigmatic-PIV
+    tutorials/demo-17-generate-BOS-images
+    tutorials/demo-18-computing-Cues-and-Rewards
+    tutorials/demo-19-DoubleDQN
