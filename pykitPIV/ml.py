@@ -2409,6 +2409,11 @@ class Rewards:
 
         reward = transformation(compute_divergence(vector_field))
 
+        # Check that the reward is a single number (int or float).
+        # Otherwise, it will not work well with Q-learning:
+        if not isinstance(reward, int) and not isinstance(reward, float):
+            raise TypeError("Parameter `transformation` has to return a single number of type 'int' or 'float'.")
+
         if self.__verbose: print(reward)
 
         return reward
@@ -2471,6 +2476,11 @@ class Rewards:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         reward = transformation(compute_vorticity(vector_field))
+
+        # Check that the reward is a single number (int or float).
+        # Otherwise, it will not work well with Q-learning:
+        if not isinstance(reward, int) and not isinstance(reward, float):
+            raise TypeError("Parameter `transformation` has to return a single number of type 'int' or 'float'.")
 
         if self.__verbose: print(reward)
 
@@ -2536,6 +2546,11 @@ class Rewards:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         reward = transformation(compute_q_criterion(vector_field))
+
+        # Check that the reward is a single number (int or float).
+        # Otherwise, it will not work well with Q-learning:
+        if not isinstance(reward, int) and not isinstance(reward, float):
+            raise TypeError("Parameter `transformation` has to return a single number of type 'int' or 'float'.")
 
         if self.__verbose: print(reward)
 
