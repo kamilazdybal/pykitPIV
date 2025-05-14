@@ -1706,6 +1706,14 @@ def compute_divergence(vector_field,
           It has size :math:`(N, H, W)`.
     """
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    # Input parameter check:
+
+    check_four_dimensional_2D_vector_field_tensor(vector_field, 'vector_field')
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     (dudy, dudx) = np.gradient(vector_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
     (dvdy, dvdx) = np.gradient(vector_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
 
@@ -1770,6 +1778,14 @@ def compute_vorticity(vector_field,
           It has size :math:`(N, H, W)`.
     """
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    # Input parameter check:
+
+    check_four_dimensional_2D_vector_field_tensor(vector_field, 'vector_field')
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     (dudy, dudx) = np.gradient(vector_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
     (dvdy, dvdx) = np.gradient(vector_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
 
@@ -1833,6 +1849,14 @@ def compute_q_criterion(vector_field,
         - **q_criterion** - Q-criterion of the velocity field, :math:`Q`.
           It has size :math:`(N, H, W)`.
     """
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    # Input parameter check:
+
+    check_four_dimensional_2D_vector_field_tensor(vector_field, 'vector_field')
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Compute the vorticity:
     (dudy, dudx) = np.gradient(vector_field[:,0,:,:], axis=(1,2), edge_order=edge_order)

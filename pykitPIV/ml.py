@@ -2402,9 +2402,6 @@ class Rewards:
 
         # Input parameter check:
 
-        if not isinstance(vector_field, numpy.ndarray):
-            raise ValueError("Parameter `vector_field` has to be of type 'numpy.ndarray'.")
-
         if not callable(transformation):
             raise ValueError("Parameter `transformation` has to be a callable.")
 
@@ -2467,9 +2464,6 @@ class Rewards:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Input parameter check:
-
-        if not isinstance(vector_field, numpy.ndarray):
-            raise ValueError("Parameter `vector_field` has to be of type 'numpy.ndarray'.")
 
         if not callable(transformation):
             raise ValueError("Parameter `transformation` has to be a callable.")
@@ -2535,9 +2529,6 @@ class Rewards:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         # Input parameter check:
-
-        if not isinstance(vector_field, numpy.ndarray):
-            raise ValueError("Parameter `vector_field` has to be of type 'numpy.ndarray'.")
 
         if not callable(transformation):
             raise ValueError("Parameter `transformation` has to be a callable.")

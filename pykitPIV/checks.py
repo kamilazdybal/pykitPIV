@@ -29,3 +29,16 @@ def check_min_max_tuple(x, name):
 
     if not x[0] <= x[1]:
         raise ValueError("The first element in `" + name + "` has to be smaller than or equal to the second element.")
+
+def check_four_dimensional_2D_vector_field_tensor(vector_field, name):
+
+    if not isinstance(vector_field, np.ndarray):
+        raise ValueError("Parameter `" + name + "` has to be of type 'numpy.ndarray'.")
+
+    if vector_field.ndim != 4:
+        raise ValueError("Parameter `" + name + "` has to be a four-dimensional tensor.")
+
+    (N, Ch, H, W) = np.shape(vector_field)
+
+    if Ch != 2:
+        raise ValueError("Parameter `" + name + "` has to contain two vector field components.")
