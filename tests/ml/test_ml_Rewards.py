@@ -61,12 +61,114 @@ class TestRewardsClass(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def test_ml__Rewards__divergence(self):
+
+        rewards = Rewards(verbose=False,
+                          random_seed=100)
+
+        flowfield = FlowField(n_images=1,
+                              size=(50,100),
+                              size_buffer=2,
+                              time_separation=1,
+                              random_seed=100)
+
+        # Generate random velocity field:
+        flowfield.generate_constant_velocity_field(u_magnitude=(1, 4),
+                                                   v_magnitude=(1, 4))
+
+        # Access the velocity components tensor:
+        vector_field = flowfield.velocity_field
+
+        def transformation(vector_field):
+            return np.max(np.abs(vector_field))
+
+        try:
+            reward = rewards.divergence(vector_field=vector_field,
+                                        transformation=transformation)
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(isinstance(reward, int) or isinstance(reward, float))
+
+        # Check that this reward is zero since the flow field is constant:
+        self.assertTrue(reward == 0.0)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_ml__Rewards__vorticity(self):
+
+        rewards = Rewards(verbose=False,
+                          random_seed=100)
+
+        flowfield = FlowField(n_images=1,
+                              size=(50,100),
+                              size_buffer=2,
+                              time_separation=1,
+                              random_seed=100)
+
+        # Generate random velocity field:
+        flowfield.generate_constant_velocity_field(u_magnitude=(1, 4),
+                                                   v_magnitude=(1, 4))
+
+        # Access the velocity components tensor:
+        vector_field = flowfield.velocity_field
+
+        def transformation(vector_field):
+            return np.max(np.abs(vector_field))
+
+        try:
+            reward = rewards.vorticity(vector_field=vector_field,
+                                       transformation=transformation)
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(isinstance(reward, int) or isinstance(reward, float))
+
+        # Check that this reward is zero since the flow field is constant:
+        self.assertTrue(reward == 0.0)
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def test_ml__Rewards__q_criterion(self):
+
+        rewards = Rewards(verbose=False,
+                          random_seed=100)
+
+        flowfield = FlowField(n_images=1,
+                              size=(50,100),
+                              size_buffer=2,
+                              time_separation=1,
+                              random_seed=100)
+
+        # Generate random velocity field:
+        flowfield.generate_constant_velocity_field(u_magnitude=(1, 4),
+                                                   v_magnitude=(1, 4))
+
+        # Access the velocity components tensor:
+        vector_field = flowfield.velocity_field
+
+        def transformation(vector_field):
+            return np.max(np.abs(vector_field))
+
+        try:
+            reward = rewards.q_criterion(vector_field=vector_field,
+                                         transformation=transformation)
+        except Exception:
+            self.assertTrue(False)
+
+        self.assertTrue(isinstance(reward, int) or isinstance(reward, float))
+
+        # Check that this reward is zero since the flow field is constant:
+        self.assertTrue(reward == 0.0)
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
     def test_ml__Rewards__transformation_not_callable(self):
 
         rewards = Rewards()
 
         flowfield = FlowField(n_images=10,
-                              size=(50,100),
+                              size=(50, 100),
                               size_buffer=2,
                               time_separation=1,
                               random_seed=100)
@@ -94,13 +196,12 @@ class TestRewardsClass(unittest.TestCase):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def test_ml__Rewards__divergence(self):
+    def test_ml__Rewards__transformation_callable_but_returning_wrong_type(self):
 
-        rewards = Rewards(verbose=False,
-                          random_seed=100)
+        rewards = Rewards()
 
-        flowfield = FlowField(n_images=1,
-                              size=(50,100),
+        flowfield = FlowField(n_images=10,
+                              size=(50, 100),
                               size_buffer=2,
                               time_separation=1,
                               random_seed=100)
@@ -112,80 +213,19 @@ class TestRewardsClass(unittest.TestCase):
         # Access the velocity components tensor:
         vector_field = flowfield.velocity_field
 
-        def transformation(div):
-            return np.max(np.abs(div))
+        def transformation(vector_field):
+            return [np.max(np.abs(vector_field)), np.min(np.abs(vector_field))]
 
-        try:
+        with self.assertRaises(TypeError):
             reward = rewards.divergence(vector_field=vector_field,
                                         transformation=transformation)
-        except Exception:
-            self.assertTrue(False)
 
-        # Check that this reward is zero since the flow field is constant:
-        self.assertTrue(reward == 0.0)
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    def test_ml__Rewards__vorticity(self):
-
-        rewards = Rewards(verbose=False,
-                          random_seed=100)
-
-        flowfield = FlowField(n_images=1,
-                              size=(50,100),
-                              size_buffer=2,
-                              time_separation=1,
-                              random_seed=100)
-
-        # Generate random velocity field:
-        flowfield.generate_constant_velocity_field(u_magnitude=(1, 4),
-                                                   v_magnitude=(1, 4))
-
-        # Access the velocity components tensor:
-        vector_field = flowfield.velocity_field
-
-        def transformation(div):
-            return np.max(np.abs(div))
-
-        try:
+        with self.assertRaises(TypeError):
             reward = rewards.vorticity(vector_field=vector_field,
                                        transformation=transformation)
-        except Exception:
-            self.assertTrue(False)
 
-        # Check that this reward is zero since the flow field is constant:
-        self.assertTrue(reward == 0.0)
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    def test_ml__Rewards__q_criterion(self):
-
-        rewards = Rewards(verbose=False,
-                          random_seed=100)
-
-        flowfield = FlowField(n_images=1,
-                              size=(50,100),
-                              size_buffer=2,
-                              time_separation=1,
-                              random_seed=100)
-
-        # Generate random velocity field:
-        flowfield.generate_constant_velocity_field(u_magnitude=(1, 4),
-                                                   v_magnitude=(1, 4))
-
-        # Access the velocity components tensor:
-        vector_field = flowfield.velocity_field
-
-        def transformation(div):
-            return np.max(np.abs(div))
-
-        try:
+        with self.assertRaises(TypeError):
             reward = rewards.q_criterion(vector_field=vector_field,
                                          transformation=transformation)
-        except Exception:
-            self.assertTrue(False)
 
-        # Check that this reward is zero since the flow field is constant:
-        self.assertTrue(reward == 0.0)
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
