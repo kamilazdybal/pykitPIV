@@ -101,9 +101,11 @@ Reinforcement learning rewards
 
 .. autoclass:: pykitPIV.ml.Rewards
 
-.. autofunction:: pykitPIV.ml.Rewards.q_criterion
-
 .. autofunction:: pykitPIV.ml.Rewards.divergence
+
+.. autofunction:: pykitPIV.ml.Rewards.vorticity
+
+.. autofunction:: pykitPIV.ml.Rewards.q_criterion
 
 *********************************************
 Reinforcement learning sensory cues

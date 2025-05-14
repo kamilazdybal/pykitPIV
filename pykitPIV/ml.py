@@ -2346,6 +2346,142 @@ class Rewards:
     def random_seed(self):
         return self.__random_seed
 
+    @property
+    def verbose(self):
+        return self.__verbose
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def divergence(self,
+                   vector_field,
+                   transformation):
+        """
+        Computes the reward based on the divergence of the flow field.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV.ml import Rewards
+            import numpy as np
+
+            # Once we have the vector field specified
+            # e.g., velocity field or displacement field:
+            vector_field = ...
+
+            # Instantiate an object of the Rewards class:
+            rewards = Rewards(verbose=True,
+                              random_seed=None)
+
+            # Design a custom transformation that looks for regions of high divergence (either positive or negative)
+            # and computes the maximum absolute value of divergence in that region:
+            def transformation(div):
+                return np.max(np.abs(div))
+
+            # Compute the reward based on the divergence for the present velocity field:
+            reward = rewards.divergence(vector_field=vector_field,
+                                        transformation=transformation)
+
+        :param vector_field:
+            ``numpy.ndarray`` specifying the vector field components under the interrogation window.
+            It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
+            where :math:`1` is just one, fixed vector field, :math:`2` refers to each vector field component.
+            For example, it can be the velocity field with components :math:`u` and :math:`v`, or
+            the displacement field with components :math:`dx` and :math:`dy`.
+            :math:`H_{\\text{i}}+2b` is the height and
+            :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
+        :param transformation:
+            ``function`` specifying an arbitrary transformation of the Q-criterion
+            and an arbitrary compression of the Q-criterion field to a single value.
+
+        :return:
+            - **reward** - ``float`` specifying the reward, :math:`R`.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(vector_field, numpy.ndarray):
+            raise ValueError("Parameter `vector_field` has to be of type 'numpy.ndarray'.")
+
+        if not callable(transformation):
+            raise ValueError("Parameter `transformation` has to be a callable.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        reward = transformation(compute_divergence(vector_field))
+
+        if self.__verbose: print(reward)
+
+        return reward
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def vorticity(self,
+                  vector_field,
+                  transformation):
+        """
+        Computes the reward based on the vorticity of the flow field.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV.ml import Rewards
+            import numpy as np
+
+            # Once we have the vector field specified
+            # e.g., velocity field or displacement field:
+            vector_field = ...
+
+            # Instantiate an object of the Rewards class:
+            rewards = Rewards(verbose=True,
+                              random_seed=None)
+
+            # Design a custom transformation that looks for regions of high vorticity (either positive or negative)
+            # and computes the mean absolute value of vorticity in that region:
+            def transformation(vort):
+                return np.mean(np.abs(vort))
+
+            # Compute the reward based on the divergence for the present velocity field:
+            reward = rewards.vorticity(vector_field=vector_field,
+                                       transformation=transformation)
+
+        :param vector_field:
+            ``numpy.ndarray`` specifying the vector field components under the interrogation window.
+            It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
+            where :math:`1` is just one, fixed vector field, :math:`2` refers to each vector field component.
+            For example, it can be the velocity field with components :math:`u` and :math:`v`, or
+            the displacement field with components :math:`dx` and :math:`dy`.
+            :math:`H_{\\text{i}}+2b` is the height and
+            :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
+        :param transformation:
+            ``function`` specifying an arbitrary transformation of the Q-criterion
+            and an arbitrary compression of the Q-criterion field to a single value.
+
+        :return:
+            - **reward** - ``float`` specifying the reward, :math:`R`.
+        """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(vector_field, numpy.ndarray):
+            raise ValueError("Parameter `vector_field` has to be of type 'numpy.ndarray'.")
+
+        if not callable(transformation):
+            raise ValueError("Parameter `transformation` has to be a callable.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        reward = transformation(compute_vorticity(vector_field))
+
+        if self.__verbose: print(reward)
+
+        return reward
+
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     def q_criterion(self,
@@ -2396,65 +2532,19 @@ class Rewards:
             - **reward** - ``float`` specifying the reward, :math:`R`.
         """
 
-        from pykitPIV.flowfield import compute_q_criterion
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if not isinstance(vector_field, numpy.ndarray):
+            raise ValueError("Parameter `vector_field` has to be of type 'numpy.ndarray'.")
+
+        if not callable(transformation):
+            raise ValueError("Parameter `transformation` has to be a callable.")
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         reward = transformation(compute_q_criterion(vector_field))
-
-        if self.__verbose: print(reward)
-
-        return reward
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    def divergence(self,
-                   vector_field,
-                   transformation):
-        """
-        Computes the reward based on the divergence of the flow field.
-
-        **Example:**
-
-        .. code:: python
-
-            from pykitPIV.ml import Rewards
-            import numpy as np
-
-            # Once we have the vector field specified
-            # e.g., velocity field or displacement field:
-            vector_field = ...
-
-            # Instantiate an object of the Rewards class:
-            rewards = Rewards(verbose=True,
-                              random_seed=None)
-
-            # Design a custom transformation that looks for regions of high divergence (either positive or negative)
-            # and computes the maximum absolute value of divergence in that region:
-            def transformation(div):
-                return np.max(np.abs(div))
-
-            # Compute the reward based on the divergence for the present velocity field:
-            reward = rewards.divergence(vector_field=vector_field,
-                                        transformation=transformation)
-
-        :param vector_field:
-            ``numpy.ndarray`` specifying the vector field components under the interrogation window.
-            It should be of size :math:`(1, 2, H_{\\text{i}}+2b, W_{\\text{i}}+2b)`,
-            where :math:`1` is just one, fixed vector field, :math:`2` refers to each vector field component.
-            For example, it can be the velocity field with components :math:`u` and :math:`v`, or
-            the displacement field with components :math:`dx` and :math:`dy`.
-            :math:`H_{\\text{i}}+2b` is the height and
-            :math:`W_{\\text{i}}+2b` is the width of the interrogation window.
-        :param transformation:
-            ``function`` specifying an arbitrary transformation of the Q-criterion
-            and an arbitrary compression of the Q-criterion field to a single value.
-
-        :return:
-            - **reward** - ``float`` specifying the reward, :math:`R`.
-        """
-
-        from pykitPIV.flowfield import compute_divergence
-
-        reward = transformation(compute_divergence(vector_field))
 
         if self.__verbose: print(reward)
 
