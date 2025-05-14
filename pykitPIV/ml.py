@@ -2412,7 +2412,7 @@ class Rewards:
         # Check that the reward is a single number (int or float).
         # Otherwise, it will not work well with Q-learning:
         if not isinstance(reward, int) and not isinstance(reward, float):
-            raise TypeError("Parameter `transformation` has to return a single number of type 'int' or 'float'.")
+            raise TypeError("Parameter `transformation` has to return a single number of type 'int' or 'float' but returns " + str(type(reward)) + " instead.")
 
         if self.__verbose: print(reward)
 
@@ -2480,7 +2480,7 @@ class Rewards:
         # Check that the reward is a single number (int or float).
         # Otherwise, it will not work well with Q-learning:
         if not isinstance(reward, int) and not isinstance(reward, float):
-            raise TypeError("Parameter `transformation` has to return a single number of type 'int' or 'float'.")
+            raise TypeError("Parameter `transformation` has to return a single number of type 'int' or 'float' but returns " + str(type(reward)) + " instead.")
 
         if self.__verbose: print(reward)
 
@@ -2550,7 +2550,7 @@ class Rewards:
         # Check that the reward is a single number (int or float).
         # Otherwise, it will not work well with Q-learning:
         if not isinstance(reward, int) and not isinstance(reward, float):
-            raise TypeError("Parameter `transformation` has to return a single number of type 'int' or 'float'.")
+            raise TypeError("Parameter `transformation` has to return a single number of type 'int' or 'float' but returns " + str(type(reward)) + " instead.")
 
         if self.__verbose: print(reward)
 
