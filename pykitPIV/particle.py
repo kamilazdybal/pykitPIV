@@ -226,7 +226,7 @@ class Particle:
       inside that pixel.
       This array has size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the number of image pairs,
       :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment), :math:`H` is the height
-      and :math:`W` the width of each image, and :math:`b` is an optional image buffer.
+      and :math:`W` the width of each image, and :math:`b` is an optional image buffer. This array has type ``numpy.int16``.
     - **particle_diameters** - (read-only) ``list`` of ``numpy.ndarray``, each specifying the diameters of
       all seeded particles in pixels :math:`[\\text{px}]`
       for each image based on each template diameter. Each array in this list has length :math:`n_i`.
