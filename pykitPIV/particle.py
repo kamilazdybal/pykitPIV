@@ -518,6 +518,10 @@ class Particle:
         return self.__seeding_mode
 
     @property
+    def dtype(self):
+        return self.__dtype
+
+    @property
     def random_seed(self):
         return self.__random_seed
 

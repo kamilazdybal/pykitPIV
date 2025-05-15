@@ -52,7 +52,7 @@ class ImageSpecs:
                  covariance_matrix=None,
                  clip_intensities=True,
                  normalize_intensities=False,
-                 ):
+                 dtype=np.float64):
 
         self.n_images = n_images
         self.size = size
@@ -69,6 +69,7 @@ class ImageSpecs:
         self.covariance_matrix = covariance_matrix
         self.clip_intensities = clip_intensities
         self.normalize_intensities = normalize_intensities
+        self.dtype = dtype
 
     def __repr__(self):
         return (f"{self.__class__.__name__}"
@@ -86,7 +87,8 @@ class ImageSpecs:
                 f"extend_gaussian={self.extend_gaussian},\n"
                 f"covariance_matrix={self.covariance_matrix},\n"
                 f"clip_intensities={self.clip_intensities},\n"
-                f"normalize_intensities={self.normalize_intensities})"
+                f"normalize_intensities={self.normalize_intensities},\n"
+                f"dtype={self.dtype})"
                 )
 
 ########################################################################################################################
@@ -107,18 +109,26 @@ class Image:
     .. code:: python
 
         from pykitPIV import Image
+        import numpy as np
 
         # Initialize an image object:
-        image = Image(random_seed=100)
+        image = Image(verbose=False,
+                      dtype=np.float32,
+                      random_seed=100)
 
     :param verbose: (optional)
         ``bool`` specifying if the verbose print statements should be displayed.
+    :param dtype: (optional)
+        ``numpy.dtype`` specifying the data type for image intensities. To reduce memory, you can switch from the
+        default ``numpy.float64`` to ``numpy.float32``.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
         If specified, all operations are reproducible.
 
     **Attributes:**
 
+    - **verbose** - (read-only) as per user input.
+    - **dtype** - (read-only) as per user input.
     - **random_seed** - (read-only) as per user input.
     - **images_I1** - (read-only) ``numpy.ndarray`` of size :math:`(N, C_{in}, H+2b, W+2b)`, where :math:`N` is the
       number PIV image pairs, :math:`C_{in}` is the number of channels (one channel, greyscale, is supported at the moment),
@@ -140,6 +150,7 @@ class Image:
 
     def __init__(self,
                  verbose=False,
+                 dtype=np.float64,
                  random_seed=None):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -147,6 +158,9 @@ class Image:
         # Input parameter check:
         if not isinstance(verbose, bool):
             raise ValueError("Parameter `verbose` has to be of type 'bool'.")
+
+        if not isinstance(dtype, type):
+            raise ValueError("Parameter `dtype` has to be of type 'type'.")
 
         if random_seed is not None:
             if type(random_seed) != int:
@@ -158,6 +172,7 @@ class Image:
 
         # Class init:
         self.__verbose = verbose
+        self.__dtype = dtype
         self.__random_seed = random_seed
 
         # Initialize images:
@@ -182,6 +197,14 @@ class Image:
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     # Properties coming from user inputs:
+    @property
+    def verbose(self):
+        return self.__verbose
+
+    @property
+    def dtype(self):
+        return self.__dtype
+
     @property
     def random_seed(self):
         return self.__random_seed
@@ -865,7 +888,7 @@ class Image:
             number_of_particles = particle_height_coordinate.shape[0]
 
             # Initialize an empty image:
-            particles_with_gaussian_light = np.zeros((self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
+            particles_with_gaussian_light = np.zeros((self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]), dtype=self.dtype)
 
             # Establish the peak intensity for each particle depending on its position with respect to the laser beam plane:
             if no_laser_plane:
@@ -922,7 +945,7 @@ class Image:
         # Add light to image I1:
         if self.__particles is not None:
 
-            images_I1 = np.zeros((self.__particles.n_images, 1, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
+            images_I1 = np.zeros((self.__particles.n_images, 1, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]), dtype=self.dtype)
 
             for i in range(0,self.__particles.n_images):
 
@@ -955,7 +978,7 @@ class Image:
         # Add light to image I2:
         if self.__motion is not None:
 
-            images_I2 = np.zeros((self.__particles.n_images, 1, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
+            images_I2 = np.zeros((self.__particles.n_images, 1, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]), dtype=self.dtype)
 
             for i in range(0,self.__particles.n_images):
 
@@ -1078,7 +1101,7 @@ class Image:
 
         if self.__flowfield is not None:
 
-            images_I2 = np.zeros((self.__particles.n_images, 1, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]))
+            images_I2 = np.zeros((self.__particles.n_images, 1, self.__particles.size_with_buffer[0], self.__particles.size_with_buffer[1]), dtype=self.dtype)
 
             for i in range(0,self.__particles.n_images):
 
