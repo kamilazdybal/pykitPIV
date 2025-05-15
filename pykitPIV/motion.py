@@ -45,7 +45,8 @@ class MotionSpecs:
                  n_steps=10,
                  particle_loss=(0, 0),
                  particle_gain=(0, 0),
-                 random_seed=None,):
+                 dtype=np.float64,
+                 random_seed=None):
 
         self.n_images = n_images
         self.size = size
@@ -53,6 +54,7 @@ class MotionSpecs:
         self.n_steps = n_steps
         self.particle_loss = particle_loss
         self.particle_gain = particle_gain
+        self.dtype = dtype
         self.random_seed = random_seed
 
     def __repr__(self):
@@ -63,6 +65,7 @@ class MotionSpecs:
                 f"n_steps={self.n_steps},\n"
                 f"particle_loss={self.particle_loss},\n"
                 f"particle_gain={self.particle_gain},\n"
+                f"dtype={self.dtype},\n"
                 f"random_seed={self.random_seed})"
                 )
 
@@ -93,6 +96,7 @@ class Motion:
     .. code:: python
 
         from pykitPIV import Particle, FlowField, Motion
+        import numpy as np
 
         # We are going to generate 10 PIV image pairs:
         n_images = 10
@@ -109,12 +113,14 @@ class Motion:
                              densities=(0.01, 0.05),
                              diameter_std=(0.1,1),
                              seeding_mode='random',
+                             dtype=np.float32,
                              random_seed=100)
 
         # Initialize a flow field object:
         flowfield = FlowField(n_images=n_images,
                               size=image_size,
                               size_buffer=10,
+                              dtype=np.float32,
                               random_seed=100)
 
         # Generate random velocity field:
@@ -128,6 +134,7 @@ class Motion:
                         particle_loss=(0, 2),
                         particle_gain='matching',
                         verbose=False,
+                        dtype=np.float32,
                         random_seed=None)
 
     :param particles:
@@ -148,6 +155,9 @@ class Motion:
         It can also be set to ``int`` or ``float`` to generate a fixed particle gain value across all :math:`N` image pairs.
     :param verbose: (optional)
         ``bool`` specifying if the verbose print statements should be displayed.
+    :param dtype: (optional)
+        ``numpy.dtype`` specifying the data type for particle coordinates. To reduce memory, you can switch from the
+        default ``numpy.float64`` to ``numpy.float32``.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
         If specified, all operations are reproducible.
@@ -156,6 +166,8 @@ class Motion:
 
     - **particle_loss** - (can be re-set) as per user input.
     - **particle_gain** - (can be re-set) as per user input.
+    - **verbose** - (read-only) as per user input.
+    - **dtype** - (read-only) as per user input.
     - **random_seed** - (read-only) as per user input.
     - **loss_percentage_per_image** (read-only) ``numpy.ndarray`` specifying the particle loss percentage for each PIV image pair.
     - **gain_percentage_per_image** (read-only) ``numpy.ndarray`` specifying the particle gain percentage for each PIV image pair.
@@ -170,6 +182,7 @@ class Motion:
                  particle_loss=(0, 0),
                  particle_gain=(0, 0),
                  verbose=False,
+                 dtype=np.float64,
                  random_seed=None):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -216,6 +229,9 @@ class Motion:
         if not isinstance(verbose, bool):
             raise ValueError("Parameter `verbose` has to be of type 'bool'.")
 
+        if not isinstance(dtype, type):
+            raise ValueError("Parameter `dtype` has to be of type 'type'.")
+
         if random_seed is not None:
             if type(random_seed) != int:
                 raise ValueError("Parameter `random_seed` has to be of type 'int'.")
@@ -241,6 +257,7 @@ class Motion:
             self.__particle_gain = particle_gain
 
         self.__verbose = verbose
+        self.__dtype = dtype
         self.__random_seed = random_seed
 
         # Initialize particle coordinates:
@@ -285,6 +302,14 @@ class Motion:
     @property
     def particle_gain(self):
         return self.__particle_gain
+
+    @property
+    def verbose(self):
+        return self.__verbose
+
+    @property
+    def dtype(self):
+        return self.__dtype
 
     @property
     def random_seed(self):
@@ -520,7 +545,7 @@ class Motion:
                 particle_coordinates_old = np.vstack((particle_coordinates_old, added_particle_coordinates))
                 updated_particle_diameters = np.hstack((updated_particle_diameters, added_particle_diameters))
 
-            particle_coordinates_I2.append((particle_coordinates_old[:,0], particle_coordinates_old[:,1]))
+            particle_coordinates_I2.append((particle_coordinates_old[:,0].astype(self.dtype), particle_coordinates_old[:,1].astype(self.dtype)))
             self.__updated_particle_diameters.append(updated_particle_diameters)
 
         self.__particle_coordinates_I2 = particle_coordinates_I2
@@ -711,7 +736,7 @@ class Motion:
                 particle_coordinates_old = np.vstack((particle_coordinates_old, added_particle_coordinates))
                 updated_particle_diameters = np.hstack((updated_particle_diameters, added_particle_diameters))
 
-            particle_coordinates_I2.append((particle_coordinates_old[:,0], particle_coordinates_old[:,1]))
+            particle_coordinates_I2.append((particle_coordinates_old[:,0].astype(self.dtype), particle_coordinates_old[:,1].astype(self.dtype)))
             self.__updated_particle_diameters.append(updated_particle_diameters)
 
         self.__particle_coordinates_I2 = particle_coordinates_I2
