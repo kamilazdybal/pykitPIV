@@ -48,6 +48,7 @@ class ParticleSpecs:
                  densities=(0.05, 0.1),
                  diameter_std=(0, 0.1),
                  seeding_mode='random',
+                 dtype=np.float64,
                  random_seed=None):
 
         self.n_images = n_images
@@ -58,6 +59,7 @@ class ParticleSpecs:
         self.densities = densities
         self.diameter_std = diameter_std
         self.seeding_mode = seeding_mode
+        self.dtype = dtype
         self.random_seed = random_seed
 
     def __repr__(self):
@@ -70,6 +72,7 @@ class ParticleSpecs:
                 f"densities={self.densities},\n"
                 f"diameter_std={self.diameter_std},\n"
                 f"seeding_mode={self.seeding_mode!r},\n"
+                f"dtype={self.dtype},\n"
                 f"random_seed={self.random_seed})"
                 )
 
@@ -91,6 +94,7 @@ class Particle:
     .. code:: python
 
         from pykitPIV import Particle
+        import numpy as np
 
         # We are going to generate 10 PIV image pairs:
         n_images = 10
@@ -107,6 +111,7 @@ class Particle:
                              densities=(0.01, 0.05),
                              diameter_std=(0, 0.1),
                              seeding_mode='random',
+                             dtype=np.float32,
                              random_seed=100)
 
         # Access particle coordinates on the first image:
@@ -126,6 +131,7 @@ class Particle:
                              densities=0.1,
                              diameter_std=0.1,
                              seeding_mode='random',
+                             dtype=np.float32,
                              random_seed=100)
 
     .. image:: ../images/Particle-setting-spectrum.png
@@ -180,6 +186,9 @@ class Particle:
         - ``'user'`` seeding allows for particle coordinates to be provided by the user.
           This provides an interesting functionality where the user can chain movement of particles and create
           time-resolved sequence of images.
+    :param dtype: (optional)
+        ``numpy.dtype`` specifying the data type for particle coordinates. To reduce memory, you can switch from the
+        default ``numpy.float64`` to ``numpy.float32``.
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
         If specified, all operations are reproducible.
@@ -195,6 +204,7 @@ class Particle:
     - **diameter_std** - (read-only) as per user input.
     - **min_diameter** - (read-only) as per user input.
     - **seeding_mode** - (read-only) as per user input.
+    - **dtype** - (read-only) as per user input.
     - **random_seed** - (read-only) as per user input.
     - **size_with_buffer** - (read-only) ``tuple`` specifying the size of each image in pixels with buffer added.
     - **diameter_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle diameters in pixels
@@ -204,8 +214,10 @@ class Particle:
     - **density_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the particle densities in particle
       per pixel :math:`[\\text{ppp}]` for each image. Template densities are random numbers between ``densities[0]`` and ``densities[1]``.
     - **n_of_particles** - (read-only) ``list`` specifying the number of particles created for each image, :math:`n_i`, based on each template density.
-    - **particle_coordinates** - (read-only) ``list`` specifying the absolute coordinates of all particle centers for each image.
-      The positions are computed based on the ``seeding_mode``. The first element in each tuple are the coordinates
+    - **particle_coordinates** - (read-only) ``list`` of ``tuple`` of two ``numpy.ndarray`` specifying the absolute coordinates of all particle centers for each image.
+      The positions are computed based on the ``seeding_mode``.
+      Each tuple refers to one PIV image pair.
+      The first element in each tuple are the coordinates
       along the image height, and the second element are the coordinates along the image width.
     - **particle_positions** - (read-only) ``numpy.ndarray`` specifying the per-pixel starting positions of all particles' centers
       for each image pair; these positions will later populate the first image frame, :math:`I_1`.
@@ -230,6 +242,7 @@ class Particle:
                  diameter_std=(0, 0.1),
                  min_diameter=1e-2,
                  seeding_mode='random',
+                 dtype=np.float64,
                  random_seed=None):
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -292,6 +305,9 @@ class Particle:
         if seeding_mode not in __seeding_mode:
             raise ValueError("Parameter `seeding_mode` has to be 'random', 'user', or 'poisson'.")
 
+        if not isinstance(dtype, type):
+            raise ValueError("Parameter `dtype` has to be of type 'type'.")
+
         if random_seed is not None:
             if type(random_seed) != int:
                 raise ValueError("Parameter `random_seed` has to be of type 'int'.")
@@ -327,6 +343,7 @@ class Particle:
 
         self.__min_diameter = min_diameter
         self.__seeding_mode = seeding_mode
+        self.__dtype = dtype
         self.__random_seed = random_seed
 
         # Compute the image outline that serves as a buffer:
@@ -355,15 +372,15 @@ class Particle:
 
             # Initialize particle coordinates, positions, and diameters on each of the ``n_image`` images:
             particle_coordinates = []
-            particle_positions = np.zeros((self.n_images, 1, self.__height_with_buffer, self.__width_with_buffer))
+            particle_positions = np.zeros((self.n_images, 1, self.__height_with_buffer, self.__width_with_buffer), dtype=np.int16)
             particle_diameters = []
 
             # Populate particle data for each of the ``n_image`` images:
             for i in range(0,self.n_images):
 
                 # Generate absolute coordinates for particles' centers within the total available image area (drawn from random uniform distribution):
-                self.__y_coordinates = self.__height_with_buffer * np.random.rand(self.n_of_particles[i])
-                self.__x_coordinates = self.__width_with_buffer * np.random.rand(self.n_of_particles[i])
+                self.__y_coordinates = self.__height_with_buffer * np.random.rand(self.n_of_particles[i]).astype(self.__dtype)
+                self.__x_coordinates = self.__width_with_buffer * np.random.rand(self.n_of_particles[i]).astype(self.__dtype)
 
                 particle_coordinates.append((self.__y_coordinates, self.__x_coordinates))
 
