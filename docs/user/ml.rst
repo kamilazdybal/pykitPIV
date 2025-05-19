@@ -36,19 +36,12 @@ For more information on **PyTorch** data primitives visit this `PyTorch document
 
 .. autoclass:: pykitPIV.ml.PIVDatasetPyTorch
 
-**TensorFlow**-based
-====================================
+**TensorFlow**-based or **Keras**-based
+=======================================
 
 For more information on **TensorFlow** data primitives visit this `TensorFlow documentation website <https://www.tensorflow.org/guide/data>`_.
 
 .. autoclass:: pykitPIV.ml.PIVDatasetTF
-
-**Keras**-based
-====================================
-
-For more information on **Keras** data primitives visit this `Keras documentation website <https://keras.io/api/data_loading/>`_.
-
-.. autoclass:: pykitPIV.ml.PIVDatasetKeras
 
 *********************************************
 Reinforcement learning environments

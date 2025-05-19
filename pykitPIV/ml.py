@@ -105,11 +105,11 @@ class PIVDatasetPyTorch(Dataset):
 ########################################################################################################################
 ########################################################################################################################
 
-class PIVDatasetTF(Dataset):
+class PIVDatasetTF(tf.keras.utils.PyDataset):
     """
-    Loads and stores the **pykitPIV**-generated dataset for **TensorFlow**.
+    Loads and stores the **pykitPIV**-generated dataset for **TensorFlow** or **Keras**.
 
-    This is a subclass of ``tf.data.Dataset``.
+    This is a subclass of ``tf.keras.utils.PyDataset``.
 
     **Example:**
 
@@ -128,85 +128,7 @@ class PIVDatasetTF(Dataset):
         ``str`` specifying the path to the saved dataset.
         It can also be directly passed as a ``dict`` defining the **pykitPIV** dataset.
     :param transform: (optional)
-        ``torchvision.transform`` specifying vision transformations to augment the training dataset.
-    """
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    def __init__(self, dataset, transform=None):
-
-        if isinstance(dataset, str):
-
-            # Upload the dataset:
-            f = h5py.File(dataset, "r")
-
-            # Access image intensities:
-            self.data = np.array(f["I"]).astype("float32")
-
-            # Access flow targets:
-            self.target = np.array(f["targets"]).astype("float32")
-
-        elif isinstance(dataset, dict):
-
-            # Access image intensities:
-            self.data = np.array(dataset["I"]).astype("float32")
-
-            # Access flow targets:
-            self.target = np.array(dataset["targets"]).astype("float32")
-
-        # Multiply the v-component of velocity by -1:
-        self.target[:,1,:,:] = -self.target[:,1,:,:]
-
-        if isinstance(dataset, str): f.close()
-
-        # Allow for any custom data transforms to be used later:
-        self.transform = transform
-
-    def __len__(self):
-
-        return len(self.data)
-
-    def __getitem__(self, idx):
-
-        # Get the sample:
-        sample = self.data[idx], self.target[idx]
-
-        # Apply any custom data transforms on this sample:
-        if self.transform:
-            sample = self.transform(sample)
-
-        return sample
-
-########################################################################################################################
-########################################################################################################################
-####
-####    Class: PIVDatasetKeras
-####
-########################################################################################################################
-########################################################################################################################
-
-class PIVDatasetKeras(Dataset):
-    """
-    Loads and stores the **pykitPIV**-generated dataset for **Keras**.
-
-    **Example:**
-
-    .. code:: python
-
-        from pykitPIV import PIVDatasetKeras
-
-        # Specify the path to the saved dataset:
-        path = 'docs/data/pykitPIV-dataset-10-PIV-pairs-256-by-256.h5'
-
-        # Load and store the dataset:
-        PIV_data = PIVDatasetKeras(dataset=path)
-
-    :param dataset:
-        ``str`` specifying the path to the saved dataset.
-        ``str`` specifying the path to the saved dataset.
-        It can also be directly passed as a ``dict`` defining the **pykitPIV** dataset.
-    :param transform: (optional)
-        ``torchvision.transform`` specifying vision transformations to augment the training dataset.
+        ``callable`` specifying vision transformations to augment the training dataset.
     """
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
