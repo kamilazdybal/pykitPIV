@@ -197,9 +197,11 @@ class FlowField:
     - **displacement** - (read-only) ``tuple`` of two numerical elements specifying the minimum (first element)
       and maximum (second element) maximum displacement on each image.
       This attribute becomes available after calling one of the velocity field generators.
+      The assumption is that this displacement value corresponds to time being unity.
     - **displacement_per_image** - (read-only) ``numpy.ndarray`` specifying the template for the maximum displacements
       per each image. Template displacements are random numbers between minimum and maximum displacement.
       This attribute becomes available after calling one of the velocity field generators.
+      The assumption is that this displacement value corresponds to time being unity.
     - **velocity_field** - (read-only) ``numpy.ndarray`` specifying the velocity vector, :math:`\\vec{V} = [u, v]`,
       per each image. It has size :math:`(N, 2, H+2b, W+2b)`.
       The second index corresponds to :math:`u` and :math:`v` velocity component, respectively.
@@ -702,7 +704,6 @@ class FlowField:
             self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
             self.__velocity_field[i, 0, :, :] = velocity_field_u
             self.__velocity_field[i, 1, :, :] = velocity_field_v
-
 
         # Compute the updated displacement per image:
         self.__displacement_per_image = np.max(np.abs(self.__velocity_field_magnitude), axis=(2,3)).ravel()
