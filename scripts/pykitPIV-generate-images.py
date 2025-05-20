@@ -25,7 +25,8 @@ parser.add_argument('--gaussian_filters',       type=float,     default=[15, 15]
 parser.add_argument('--n_gaussian_filter_iter', type=int,       default=10,                     metavar='n_GF_iter')
 parser.add_argument('--displacement',           type=float,     default=[2.0, 10.0], nargs="+",  metavar='disp')
 parser.add_argument('--n_steps',                type=int,       default=4,                     metavar='N_STEPS')
-parser.add_argument('--particle_loss',          type=float,     default=[0, 0], nargs="+",      metavar='PLOSS')
+parser.add_argument('--particle_loss',          type=float,     default=[0, 2], nargs="+",      metavar='PLOSS')
+parser.add_argument('--particle_gain',          type=float,     default=[0, 2], nargs="+",      metavar='PGAIN')
 parser.add_argument('--exposures',              type=float,     default=[0.95, 0.95], nargs="+", metavar='EXP')
 parser.add_argument('--laser_beam_thickness',   type=float,     default=1,                      metavar='LB-t')
 parser.add_argument('--laser_beam_shape',       type=float,     default=0.95,                   metavar='LB-s')
@@ -50,6 +51,7 @@ n_gaussian_filter_iter = vars(args).get('n_gaussian_filter_iter')
 displacement_min, displacement_max = tuple(vars(args).get('displacement'))
 n_steps = vars(args).get('n_steps')
 particle_loss_min, particle_loss_max = tuple(vars(args).get('particle_loss'))
+particle_gain_min, particle_gain_max = tuple(vars(args).get('particle_gain'))
 exposures_min, exposures_max = tuple(vars(args).get('exposures'))
 laser_beam_thickness = vars(args).get('laser_beam_thickness')
 laser_beam_shape = vars(args).get('laser_beam_shape')
@@ -70,11 +72,14 @@ particles = Particle(n_images,
                      diameters=(diameters_min, diameters_max),
                      densities=(densities_min, densities_max),
                      diameter_std=diameter_std,
+                     dtype=np.float32,
                      random_seed=random_seed)
 
 flowfield = FlowField(n_images,
                       size=image_size,
                       size_buffer=size_buffer,
+                      time_separation=time_separation,
+                      dtype=np.float32,
                       random_seed=random_seed)
 
 flowfield.generate_random_velocity_field(gaussian_filters=(gaussian_filters_min, gaussian_filters_max),
@@ -83,12 +88,14 @@ flowfield.generate_random_velocity_field(gaussian_filters=(gaussian_filters_min,
 
 motion = Motion(particles,
                 flowfield,
-                time_separation=time_separation,
-                particle_loss=(particle_loss_min, particle_loss_max))
+                particle_loss=(particle_loss_min, particle_loss_max),
+                particle_gain=(particle_gain_min, particle_gain_max),
+                dtype=np.float32)
 
 motion.runge_kutta_4th(n_steps=n_steps)
 
-image = Image(random_seed=random_seed)
+image = Image(dtype=np.float32,
+              random_seed=random_seed)
 
 image.add_particles(particles)
 image.add_flowfield(flowfield)

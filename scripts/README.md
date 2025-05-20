@@ -2,6 +2,10 @@
 
 Generating 5000 images 256px x 256px takes about 1.5h.
 
+```
+python pykitPIV-generate-images.py --n_images 100 --size_buffer 10 --image_height 256 --image_width 256
+```
+
 # Scripts for training RL
 
 ```
