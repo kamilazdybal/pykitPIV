@@ -113,7 +113,7 @@ images_tensor = image.concatenate_tensors((images_I1, images_I2))
 targets_tensor = image.remove_buffers(image.get_displacement_field())
 
 tensors_dictionary = {"I"      : images_tensor, 
-                      "target" : targets_tensor}
+                      "targets" : targets_tensor}
 
 num, decimal = [part for part in str(time_separation).split('.')]
 
