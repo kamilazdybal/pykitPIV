@@ -239,26 +239,60 @@ class PIVCVAE(tf.keras.Model):
             tf.keras.layers.Conv2DTranspose(filters=input_shape[-1], kernel_size=3, strides=1, padding='same'), ])
 
     @tf.function
-    def sample(self, eps=None):
+    def sample(self,
+               eps=None):
+        """
+        Draws an image sample from decoding the latent space.
+        """
 
         if eps is None:
             eps = tf.random.normal(shape=(100, self.latent_dimension))
 
         return self.decode(eps, apply_sigmoid=True)
 
-    def encode(self, x):
+    def encode(self,
+               x):
+        """
+        Encodes an image sample down to the mean, :math:`\mu`, and the log-variance.
+        """
 
         mean, logvar = tf.split(self.encoder(x), num_or_size_splits=2, axis=1)
 
         return mean, logvar
 
-    def reparameterize(self, mean, logvar):
+    def reparameterize(self,
+                       mean,
+                       logvar):
+        """
+        Computes the reparameterization trick to generate a sample :math:`z`:
+
+        .. math::
+
+            z = \\mu + \\sigma \\times \\varepsilon
+
+        where :math:`\\mu` is the mean, :math:`\\sigma` is the standard deviation of the distribution,
+        and :math:`\\varepsilon` is the random noise. Note that
+
+        .. math::
+
+            \\sigma = \\exp(\\sqrt{\\text{log variance}})
+
+        :param mean:
+            ``tensorflow.Tensor`` specifying the mean of the distribution.
+        :param logvar:
+            ``tensorflow.Tensor`` specifying the log-variance of the distribution.
+        """
 
         eps = tf.random.normal(shape=mean.shape)
 
         return eps * tf.exp(logvar * .5) + mean
 
-    def decode(self, z, apply_sigmoid=False):
+    def decode(self,
+               z,
+               apply_sigmoid=False):
+        """
+        Decodes a sample of the latent space into logits or probabilities.
+        """
 
         logits = self.decoder(z)
 
