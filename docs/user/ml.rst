@@ -44,6 +44,12 @@ For more information on **TensorFlow** data primitives visit this `TensorFlow do
 .. autoclass:: pykitPIV.ml.PIVDatasetTF
 
 *********************************************
+Variational and generative approaches
+*********************************************
+
+.. autoclass:: pykitPIV.ml.PIVVAE
+
+*********************************************
 Reinforcement learning environments
 *********************************************
 
