@@ -186,8 +186,8 @@ class PIVDatasetTF(tf.keras.utils.PyDataset):
 ########################################################################################################################
 class PIVCVAE(tf.keras.Model):
     """
-    Provides a convolutional variational autoencoder (CVAE) for generating new velocity field,
-    displacement field, or image intensity samples that match in distribution those coming from an experiment.
+    Provides a convolutional variational autoencoder (CVAE) for generating new velocity fields,
+    displacement fields, or image intensities samples that match in distribution those coming from an experiment.
     This approach can be used to extend the training data for transfer learning and can help adapt a machine learning
     model to the changing experimental conditions.
 
@@ -202,7 +202,26 @@ class PIVCVAE(tf.keras.Model):
 
         from pykitPIV import PIVCVAE
 
+        # Specify the shape of the images at the input of CVAE:
+        input_shape = (256, 256, 2)
 
+        # Specify the latent dimension (typically mean + log-variance):
+        latent_dimension = 2
+
+        # Instantiate a CVAE model:
+        model = PIVCVAE(input_shape=input_shape,
+                        latent_dimension=latent_dimension)
+
+    .. note::
+
+        Note that TensorFlow's convention for image size for convolutions is different from that of PyTorch.
+        While PyTorch accepts :math:`(N, C, H, W)`, TensorFlow uses the convention :math:`(N, H, W, C)`
+        with the channel being the last dimension. To prepare **pykitPIV**'s images for TensorFlow's convolutional layers,
+        you can simply run the following transpose:
+
+        .. code:: python
+
+            PIV_images = np.transpose(PIV_images, (0, 2, 3, 1))
 
     :param input_shape:
         ``tuple`` of ``int`` specifying the path shape of the input image, or image pair. Typically, this will be
@@ -243,6 +262,13 @@ class PIVCVAE(tf.keras.Model):
                eps=None):
         """
         Draws an image sample from decoding the latent space.
+
+        :param eps: (optional)
+            ``tensorflow.Tensor`` specifying the random noise for random new sample generation. If set to ``None``,
+            a tensor of 100 random noise values will be generated from the normal distribution.
+
+        :return:
+            - **sample** - ``tensorflow.Tensor`` specifying the new image sample.
         """
 
         if eps is None:
@@ -254,6 +280,13 @@ class PIVCVAE(tf.keras.Model):
                x):
         """
         Encodes an image sample down to the mean, :math:`\mu`, and the log-variance.
+
+        :param x: (optional)
+            ``tensorflow.Tensor`` specifying the input image, preprocessed as necessary.
+
+        :return:
+            - **mean** - ``tensorflow.Tensor`` specifying the mean of the distribution.
+            - **logvar** - ``tensorflow.Tensor`` specifying the log-variance of the distribution.
         """
 
         mean, logvar = tf.split(self.encoder(x), num_or_size_splits=2, axis=1)
@@ -281,23 +314,38 @@ class PIVCVAE(tf.keras.Model):
             ``tensorflow.Tensor`` specifying the mean of the distribution.
         :param logvar:
             ``tensorflow.Tensor`` specifying the log-variance of the distribution.
+
+        :return:
+            - **z** - ``tensorflow.Tensor`` specifying the latent variable, :math:`z`.
         """
 
         eps = tf.random.normal(shape=mean.shape)
 
-        return eps * tf.exp(logvar * .5) + mean
+        z = eps * tf.exp(logvar * .5) + mean
+
+        return z
 
     def decode(self,
                z,
                apply_sigmoid=False):
         """
         Decodes a sample of the latent space into logits or probabilities.
+
+        :param z:
+            ``tensorflow.Tensor`` specifying the latent variable.
+        :param apply_sigmoid: (optional)
+            ``bool`` specifying whether the sigmoid should be applied to the logits.
+
+        :return:
+            - **logits** - ``tensorflow.Tensor`` specifying the logits if ``apply_sigmoid=False`` or probabilities if ``apply_sigmoid=True``.
         """
 
         logits = self.decoder(z)
 
         if apply_sigmoid:
+
             probs = tf.sigmoid(logits)
+
             return probs
 
         return logits
