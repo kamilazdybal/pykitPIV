@@ -47,7 +47,15 @@ For more information on **TensorFlow** data primitives visit this `TensorFlow do
 Variational and generative approaches
 *********************************************
 
-.. autoclass:: pykitPIV.ml.PIVVAE
+.. autoclass:: pykitPIV.ml.PIVCVAE
+
+.. autofunction:: pykitPIV.ml.PIVCVAE.sample
+
+.. autofunction:: pykitPIV.ml.PIVCVAE.encode
+
+.. autofunction:: pykitPIV.ml.PIVCVAE.reparameterize
+
+.. autofunction:: pykitPIV.ml.PIVCVAE.decode
 
 *********************************************
 Reinforcement learning environments

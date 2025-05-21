@@ -185,27 +185,89 @@ class PIVDatasetTF(tf.keras.utils.PyDataset):
 ########################################################################################################################
 ########################################################################################################################
 
-class PIVVAE(tf.keras.Model):
+class PIVCVAE(tf.keras.Model):
     """
-    Provides a convolutional variational autoencoder (VAE) for generating new displacement field samples that match in distributions
+    Provides a convolutional variational autoencoder (CVAE) for generating new displacement field samples that match in distributions
     those coming from an experiment.
 
     This approach can be used to extend the training data for transfer learning.
 
     For more information on building convolutional VAEs, the user is referred to this
-    `TensorFlow tutorial website <https://www.tensorflow.org/tutorials/generative/cvae>`_.
+    `TensorFlow's CVAE tutorial <https://www.tensorflow.org/tutorials/generative/cvae>`_.
+
+    This is a subclass of ``tensorflow.keras.Model``.
+
+    **Example:**
+
+    .. code:: python
+
+        from pykitPIV import PIVCVAE
+
+
+
+    :param input_shape:
+        ``tuple`` of ``int`` specifying the path shape of the input image, or image pair. Typically, this will be
+        ``(H, W, 1)`` for a single scalar quantity or ``(H, W, 2)`` for 2D vector quantities.
+    :param latent_dimension: (optional)
+        ``int`` specifying the latent dimension of the CVAE.
     """
 
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    def __init__(self,
+                 input_shape,
+                 latent_dimension):
 
+        super().__init__()
 
-    pass
+        self.latent_dimension = latent_dimension
 
+        # Construct a convolutional encoder:
+        self.encoder = tf.keras.Sequential([
+            tf.keras.layers.InputLayer(shape=input_shape),
+            tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
+            tf.keras.layers.Flatten(),
+            tf.keras.layers.Dense(latent_dimension + latent_dimension), ])
 
+        # Construct a convolutional decoder:
+        self.decoder = tf.keras.Sequential([
+            tf.keras.layers.InputLayer(shape=(latent_dimension,)),
+            tf.keras.layers.Dense(units=7 * 7 * 32, activation=tf.nn.relu),
+            tf.keras.layers.Reshape(target_shape=(7, 7, 32)),
+            tf.keras.layers.Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same', activation='relu'),
+            tf.keras.layers.Conv2DTranspose(filters=32, kernel_size=3, strides=2, padding='same', activation='relu'),
+            tf.keras.layers.Conv2DTranspose(filters=input_shape[-1], kernel_size=3, strides=1, padding='same'), ])
 
+    @tf.function
+    def sample(self, eps=None):
 
+        if eps is None:
+            eps = tf.random.normal(shape=(100, self.latent_dimension))
 
+        return self.decode(eps, apply_sigmoid=True)
 
+    def encode(self, x):
+
+        mean, logvar = tf.split(self.encoder(x), num_or_size_splits=2, axis=1)
+
+        return mean, logvar
+
+    def reparameterize(self, mean, logvar):
+
+        eps = tf.random.normal(shape=mean.shape)
+
+        return eps * tf.exp(logvar * .5) + mean
+
+    def decode(self, z, apply_sigmoid=False):
+
+        logits = self.decoder(z)
+
+        if apply_sigmoid:
+            probs = tf.sigmoid(logits)
+            return probs
+
+        return logits
 
 ########################################################################################################################
 ########################################################################################################################
