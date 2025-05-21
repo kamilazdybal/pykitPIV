@@ -1,9 +1,9 @@
-# `pykitPIV`: Python kinematic training for particle image velocimetry
-
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Documentation Status](https://readthedocs.org/projects/pykitPIV/badge/?version=latest)](https://pykitpiv.readthedocs.io/en/latest/?badge=latest)
 [![GitHub](https://img.shields.io/badge/GitHub-pykitPIV-blue.svg)](https://github.com/kamilazdybal/pykitPIV)
 [![Binder](https://mybinder.org/badge_logo.svg)]()
+
+# `pykitPIV`: Python kinematic training for particle image velocimetry
 
 <p align="center">
     <img src="docs/images/pykitPIV-logo.svg" width="300">
