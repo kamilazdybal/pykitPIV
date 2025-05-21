@@ -180,17 +180,16 @@ class PIVDatasetTF(tf.keras.utils.PyDataset):
 ########################################################################################################################
 ########################################################################################################################
 ####
-####    Class: PIVVAE
+####    Class: PIVCVAE
 ####
 ########################################################################################################################
 ########################################################################################################################
-
 class PIVCVAE(tf.keras.Model):
     """
-    Provides a convolutional variational autoencoder (CVAE) for generating new displacement field samples that match in distributions
-    those coming from an experiment.
-
-    This approach can be used to extend the training data for transfer learning.
+    Provides a convolutional variational autoencoder (CVAE) for generating new velocity field,
+    displacement field, or image intensity samples that match in distribution those coming from an experiment.
+    This approach can be used to extend the training data for transfer learning and can help adapt a machine learning
+    model to the changing experimental conditions.
 
     For more information on building convolutional VAEs, the user is referred to this
     `TensorFlow's CVAE tutorial <https://www.tensorflow.org/tutorials/generative/cvae>`_.
