@@ -49,7 +49,7 @@ If you use **pykitPIV** in your work, we will appreciate the citation to the fol
         year = "2025",
         issn = "",
         doi = "",
-        url = "https://github.com/kamilazdybal/pykitPIV}",
+        url = "https://github.com/kamilazdybal/pykitPIV",
         author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
         }
 

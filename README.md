@@ -6,6 +6,8 @@
 
 ## Introduction
 
+Check out [**pykitPIV**'s documentation](https://pykitpiv.readthedocs.io/en/latest/)!
+
 **pykitPIV** is a Python package that provides rich and reproducible virtual environments
 for training machine learning (ML) algorithms in velocimetry.
 
@@ -38,18 +40,9 @@ tasks using diverse custom-built rewards and sensory cues.
     <img src="docs/images/pykitPIV-modules.svg" width="800">
 </p>
 
-For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please
-check the following references:
-
-- [Kinematic training of convolutional neural networks for particle image velocimetry](https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae/meta)
-
-- [A lightweight neural network designed for fluid velocimetry](https://link.springer.com/article/10.1007/s00348-023-03695-8)
-
-- [A lightweight convolutional neural network to reconstruct deformation in BOS recordings](https://link.springer.com/article/10.1007/s00348-023-03618-7)
-
 ## Documentation
 
-
+Documentation at ReadTheDocs can be found [here](https://pykitpiv.readthedocs.io/en/latest/).
 
 ## Citing pykitPIV
 
@@ -64,7 +57,7 @@ pages = "",
 year = "2025",
 issn = "",
 doi = "",
-url = "https://github.com/kamilazdybal/pykitPIV}",
+url = "https://github.com/kamilazdybal/pykitPIV",
 author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
 }
 ```
@@ -85,3 +78,14 @@ author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
 
 Kamila Zdybał is **pykitPIV**'s primary developer and point of contact and can be contacted by email at ``kamila.zdybal@empa.ch``.
 Other authors who contributed to **pykitPIV** are Claudio Mucignat, Stephan Kunz, and Ivan Lunati.
+
+## Related work
+
+For more information on kinematic training of convolutional neural networks (CNNs) using synthetic PIV images, please
+check the following references:
+
+- [Kinematic training of convolutional neural networks for particle image velocimetry](https://iopscience.iop.org/article/10.1088/1361-6501/ac8fae/meta)
+
+- [A lightweight neural network designed for fluid velocimetry](https://link.springer.com/article/10.1007/s00348-023-03695-8)
+
+- [A lightweight convolutional neural network to reconstruct deformation in BOS recordings](https://link.springer.com/article/10.1007/s00348-023-03618-7)
