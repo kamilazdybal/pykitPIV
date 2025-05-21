@@ -2,6 +2,15 @@
     :width: 700
     :align: center
 
+.. image:: https://img.shields.io/badge/License-MIT-blue.svg
+    :target: https://opensource.org/licenses/MIT
+.. image:: https://readthedocs.org/projects/pykitPIV/badge/?version=latest
+    :target: https://pykitpiv.readthedocs.io/en/latest/?badge=latest
+.. image:: https://img.shields.io/badge/GitHub-pykitPIV-blue.svg
+    :target: https://github.com/kamilazdybal/pykitPIV
+.. image:: https://mybinder.org/badge_logo.svg
+    :target: https://
+
 **pykitPIV** is a Python package that provides rich and reproducible virtual environments
 for training machine learning (ML) algorithms in velocimetry.
 
