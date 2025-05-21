@@ -11,5 +11,6 @@ pandas
 scikit-learn
 tensorflow==2.16.2
 keras==3.8.0
+torch==2.2.2
 tqdm
 .
