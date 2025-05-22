@@ -6,7 +6,7 @@
 # `pykitPIV`: Python kinematic training for particle image velocimetry
 
 <p align="center">
-    <img src="docs/images/pykitPIV-logo.svg" width="300">
+    <img src="docs/images/pykitPIV-banner.png">
 </p>
 
 ## Introduction
