@@ -121,3 +121,4 @@ If you use **pykitPIV** in your work, we will appreciate the citation to the fol
     tutorials/demo-18-computing-Cues-and-Rewards
     tutorials/demo-19-DoubleDQN
     tutorials/demo-20-TF-dataloader
+    tutorials/demo-21-CVAE
