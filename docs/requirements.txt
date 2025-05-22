@@ -16,4 +16,5 @@ torchvision==0.17.2
 gymnasium
 pygame
 tqdm
+cmcrameri
 .
