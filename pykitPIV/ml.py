@@ -29,6 +29,11 @@ class PIVDatasetPyTorch(Dataset):
     """
     Loads and stores the **pykitPIV**-generated dataset for **PyTorch**.
 
+    .. note::
+
+        The image intensities have to be indexed by ``"I"`` and the targets have to be indexed by ``"targets"``
+        within the dataset dictionary.
+
     This is a subclass of ``torch.utils.data.Dataset``.
 
     **Example:**
@@ -108,6 +113,11 @@ class PIVDatasetPyTorch(Dataset):
 class PIVDatasetTF(tf.keras.utils.PyDataset):
     """
     Loads and stores the **pykitPIV**-generated dataset for **TensorFlow** or **Keras**.
+
+    .. note::
+
+        The image intensities have to be indexed by ``"I"`` and the targets have to be indexed by ``"targets"``
+        within the dataset dictionary.
 
     This is a subclass of ``tf.keras.utils.PyDataset``.
 
