@@ -271,10 +271,11 @@ class PIVCVAE(tf.keras.Model):
     def sample(self,
                eps=None):
         """
-        Draws an image sample from decoding the latent space.
+        Draws an image sample from decoding the latent space using the random vector, :math:`\\varepsilon`.
 
         :param eps: (optional)
-            ``tensorflow.Tensor`` specifying the random noise for random new sample generation. If set to ``None``,
+            ``tensorflow.Tensor`` specifying the random noise, :math:`\\varepsilon`, for random new sample generation.
+            If set to ``None``,
             a tensor of 100 random noise values will be generated from the normal distribution.
 
         :return:
@@ -289,14 +290,14 @@ class PIVCVAE(tf.keras.Model):
     def encode(self,
                x):
         """
-        Encodes an image sample down to the mean, :math:`\mu`, and the log-variance.
+        Encodes an image sample down to the mean, :math:`\mu`, and the log-variance, :math:`\\ln(\\sigma^2)`.
 
         :param x: (optional)
             ``tensorflow.Tensor`` specifying the input image, preprocessed as necessary.
 
         :return:
             - **mean** - ``tensorflow.Tensor`` specifying the mean of the distribution.
-            - **logvar** - ``tensorflow.Tensor`` specifying the log-variance of the distribution.
+            - **logvar** - ``tensorflow.Tensor`` specifying the log-variance, :math:`\\ln(\\sigma^2)`, of the distribution.
         """
 
         mean, logvar = tf.split(self.encoder(x), num_or_size_splits=2, axis=1)
@@ -318,12 +319,18 @@ class PIVCVAE(tf.keras.Model):
 
         .. math::
 
-            \\sigma = \\exp(\\sqrt{\\text{log variance}})
+            \\sigma = \\sqrt{\\exp(\\ln(\\sigma^2))} = \\exp \\big( \\frac{1}{2} \\cdot \\ln(\\sigma^2) \\big)
+
+        and therefore :math:`z` is computed in this function as:
+
+        .. math::
+
+            z = \\mu + \\exp \\big( \\frac{1}{2} \\cdot \\ln(\\sigma^2) \\big) \\times \\varepsilon
 
         :param mean:
             ``tensorflow.Tensor`` specifying the mean of the distribution.
         :param logvar:
-            ``tensorflow.Tensor`` specifying the log-variance of the distribution.
+            ``tensorflow.Tensor`` specifying the log-variance, :math:`\\ln(\\sigma^2)`, of the distribution.
 
         :return:
             - **z** - ``tensorflow.Tensor`` specifying the latent variable, :math:`z`.
