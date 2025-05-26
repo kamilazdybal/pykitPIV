@@ -47,6 +47,7 @@ class ParticleSpecs:
                  distances=(0.5, 2),
                  densities=(0.05, 0.1),
                  diameter_std=(0, 0.1),
+                 min_diameter=1e-2,
                  seeding_mode='random',
                  dtype=np.float64,
                  random_seed=None):
@@ -58,6 +59,7 @@ class ParticleSpecs:
         self.distances = distances
         self.densities = densities
         self.diameter_std = diameter_std
+        self.min_diameter = min_diameter
         self.seeding_mode = seeding_mode
         self.dtype = dtype
         self.random_seed = random_seed
@@ -71,6 +73,7 @@ class ParticleSpecs:
                 f"distances={self.distances},\n"
                 f"densities={self.densities},\n"
                 f"diameter_std={self.diameter_std},\n"
+                f"min_diameter={self.min_diameter},\n"
                 f"seeding_mode={self.seeding_mode!r},\n"
                 f"dtype={self.dtype},\n"
                 f"random_seed={self.random_seed})"
@@ -110,6 +113,7 @@ class Particle:
                              distances=(1, 2),
                              densities=(0.01, 0.05),
                              diameter_std=(0, 0.1),
+                             min_diameter=0.1,
                              seeding_mode='random',
                              dtype=np.float32,
                              random_seed=100)
@@ -130,6 +134,7 @@ class Particle:
                              distances=1,
                              densities=0.1,
                              diameter_std=0.1,
+                             min_diameter=0.1,
                              seeding_mode='random',
                              dtype=np.float32,
                              random_seed=100)
