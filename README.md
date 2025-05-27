@@ -73,6 +73,16 @@ Below, we show a few illustrative examples of the possible workflows that can be
 
 ### Virtual PIV with a compressible/incompressible flow
 
+You can find the complete tutorial here: [demo-pykitPIV-07-generate-temporal-sequence-of-images.ipynb](https://github.com/kamilazdybal/pykitPIV/blob/main/jupyter-notebooks/demo-pykitPIV-07-generate-temporal-sequence-of-images.ipynb).
+
+Below, we show two flow cases:
+
+- a compressible flow
+- an incompressible (potential) flow
+
+Notably, the compressible flow leads to clustering of particles in the regions of strongest divergence, 
+while the incompressible flow, having zero divergence, cannot lead to clustering of particles.
+
 <p align="center">
     <img src="docs/images/animate-incompressible-PIV.gif" width="600">
 </p>
@@ -85,6 +95,20 @@ Below, we show a few illustrative examples of the possible workflows that can be
 
 ### Virtual PIV environment for reinforcement learning
 
+You can find the complete tutorial here: [demo-pykitPIV-13-SingleDQN-RL-find-sources-and-sinks.ipynb](https://github.com/kamilazdybal/pykitPIV/blob/main/jupyter-notebooks/demo-pykitPIV-13-SingleDQN-RL-find-sources-and-sinks.ipynb).
+
+The functionalities from the machine learning module can be used to train a reinforcement learning (RL) agent 
+to navigate the virtual PIV camera towards sources/sinks in a radial flow. 
+The agent can perform one of the five actions:
+
+- Move up
+- Move down
+- Move right
+- Move left
+- Stay
+
+on the virtual camera, thereby with each step it moves the virtual PIV camera in 2D by N pixels.
+
 <p align="center">
     <img src="docs/images/PIVEnv.svg" width="800">
 </p>
@@ -92,6 +116,15 @@ Below, we show a few illustrative examples of the possible workflows that can be
 -------
 
 ### Variational-generative approach for creating new training samples
+
+You can find the complete tutorial here: [demo-pykitPIV-21-convolutional-variational-autoencoder.ipynb](https://github.com/kamilazdybal/pykitPIV/blob/main/jupyter-notebooks/demo-pykitPIV-21-convolutional-variational-autoencoder.ipynb).
+
+The functionalities from the machine learning module can be used to train a convolutional variational autoencoder (CVAE). 
+The trained CVAE model generates new velocity fields (u and v components) that belong to the distribution 
+of some experimental data. New PIV snapshots can then be generated with the newly generated velocity fields. 
+Hence, this approach can be used to extend the training data for transfer learning and can help adapt 
+a machine learning model to the changing experimental conditions. Potentially, the simplified Langevin model (SLM) 
+can be added atop the generated flow field samples to mitigate the smoothing effect that the variational autoencoder has.
 
 <p align="center">
     <img src="docs/images/PIVCVAE.svg">
