@@ -69,7 +69,7 @@ author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
 
 ## Illustrative examples
 
--------
+Below, we show a few illustrative examples of the possible workflows that can be established with **pykitPIV**.
 
 ### Virtual PIV with a compressible/incompressible flow
 
@@ -96,8 +96,6 @@ author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
 <p align="center">
     <img src="docs/images/PIVCVAE.svg">
 </p>
-
--------
 
 ## Authors and contacts
 
