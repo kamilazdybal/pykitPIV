@@ -87,6 +87,10 @@ author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
 
 ### Variational-generative approach for creating new training samples
 
+<p align="center">
+    <img src="docs/images/PIVCVAE.svg">
+</p>
+
 ## Authors and contacts
 
 Kamila Zdybał is **pykitPIV**'s primary developer and point of contact and can be contacted by email at ``kamila.zdybal@empa.ch``.

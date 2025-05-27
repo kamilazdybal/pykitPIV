@@ -204,6 +204,13 @@ class PIVCVAE(tf.keras.Model):
     For more information on building convolutional VAEs, the user is referred to this
     `TensorFlow's CVAE tutorial <https://www.tensorflow.org/tutorials/generative/cvae>`_.
 
+    The general workflow for augmenting training datasets with samples that fall in the distribution
+    of a given experiment is illustrated below:
+
+    .. image:: ../images/PIVCVAE.svg
+        :width: 800
+        :align: center
+
     This is a subclass of ``tensorflow.keras.Model``.
 
     **Example:**
