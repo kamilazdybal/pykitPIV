@@ -51,7 +51,7 @@ If you use **pykitPIV** in your work, we will appreciate the citation to the fol
 .. code-block:: text
 
         @article{pykitPIV2025,
-        title = "pykitPIV: Rich and reproducible virtual training of machine learning algorithms in velocimetry",
+        title = "pykitPIV: A framework for flexible and reproducible virtual training of machine learning models in optical velocimetry",
         journal = "SoftwareX",
         volume = "",
         pages = "",
