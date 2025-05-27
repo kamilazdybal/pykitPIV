@@ -21,26 +21,27 @@ Install requirements:
 .. code-block:: bash
 
     pip install numpy
-    pip install jupyterlab
     pip install matplotlib
     pip install h5py
-    pip install torch
     pip install pandas
     pip install scipy
     pip install cmcrameri
+    pip install urllib3
+    pip install termcolor
+    pip install scikit-learn
+    pip install torch==2.2.2
+    pip install torchvision==0.17.2
+    pip install tensorflow==2.16.2
+    pip install keras==3.8.0
+    pip install gymnasium
+    pip install tqdm
 
-Additional requirements for the ``ml`` module:
+Additional requirements for Jupyter notebook tutorials:
 
 .. code-block:: bash
 
-    pip install torchvision
-    pip install tensorflow
-    pip install tf-agents
-    pip install gymnasium
-    pip install tqdm
+    pip install jupyterlab
     pip install onnxruntime
-    pip install pygame
-    pip install opencv-python
 
 Optional for local documentation builds:
 
