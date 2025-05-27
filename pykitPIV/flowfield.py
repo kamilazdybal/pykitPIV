@@ -1229,6 +1229,14 @@ class FlowField:
 
             # Access the velocity field magnitude:
             flowfield.velocity_field_magnitude
+
+        :param imposed_origin: (optional)
+            ``tuple`` specifying the user-imposed origin location, :math:`(h_o, w_o)`.
+            Note that you need to account for the buffer size when specifying the values :math:`(h_o, w_o)`.
+            If set to ``None``, the origin location will be randomized in each image.
+        :param displacement: (optional)
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+            displacement.
        """
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
