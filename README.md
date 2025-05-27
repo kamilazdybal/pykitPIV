@@ -69,6 +69,8 @@ author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
 
 ## Illustrative examples
 
+-------
+
 ### Virtual PIV with a compressible/incompressible flow
 
 <p align="center">
@@ -79,17 +81,23 @@ author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
     <img src="docs/images/animate-compressible-PIV.gif" width="600">
 </p>
 
+-------
+
 ### Virtual PIV environment for reinforcement learning
 
 <p align="center">
     <img src="docs/images/PIVEnv.svg" width="800">
 </p>
 
+-------
+
 ### Variational-generative approach for creating new training samples
 
 <p align="center">
     <img src="docs/images/PIVCVAE.svg">
 </p>
+
+-------
 
 ## Authors and contacts
 
