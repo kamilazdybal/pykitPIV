@@ -77,8 +77,8 @@ You can find the complete tutorial here: [demo-pykitPIV-07-generate-temporal-seq
 
 Below, we show two flow cases:
 
-- a compressible flow
 - an incompressible (potential) flow
+- a compressible flow
 
 Notably, the compressible flow leads to clustering of particles in the regions of strongest divergence, 
 while the incompressible flow, having zero divergence, cannot lead to clustering of particles.
