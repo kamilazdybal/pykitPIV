@@ -21,11 +21,13 @@ parser.add_argument('--dt',                     type=float,     default=[1, 2, 3
 parser.add_argument('--diameters',              type=float,     default=[2, 3], nargs="+",      metavar='D')
 parser.add_argument('--densities',              type=float,     default=[0.3, 0.31], nargs="+", metavar='rho')
 parser.add_argument('--diameter_std',           type=float,     default=0.5,                    metavar='D_std')
+parser.add_argument('--min_diameter',           type=float,     default=0.01,                    metavar='D_min')
 parser.add_argument('--gaussian_filters',       type=float,     default=[10, 10.1], nargs="+",  metavar='GF')
 parser.add_argument('--n_gaussian_filter_iter', type=int,       default=10,                     metavar='n_GF_iter')
 parser.add_argument('--displacement',           type=float,     default=[2.0, 3.0], nargs="+",  metavar='disp')
 parser.add_argument('--n_steps',                type=int,       default=10,                     metavar='N_STEPS')
 parser.add_argument('--particle_loss',          type=float,     default=[0, 0], nargs="+",      metavar='PLOSS')
+parser.add_argument('--particle_gain',          type=float,     default=[0, 2], nargs="+",      metavar='PGAIN')
 parser.add_argument('--exposures',              type=float,     default=[0.9, 0.95], nargs="+", metavar='EXP')
 parser.add_argument('--laser_beam_thickness',   type=float,     default=1,                      metavar='LB-t')
 parser.add_argument('--laser_beam_shape',       type=float,     default=0.95,                   metavar='LB-s')
@@ -45,11 +47,13 @@ time_separations = list(vars(args).get('dt'))
 diameters_min, diameters_max = tuple(vars(args).get('diameters'))
 densities_min, densities_max = tuple(vars(args).get('densities'))
 diameter_std = vars(args).get('diameter_std')
+min_diameter = vars(args).get('min_diameter')
 gaussian_filters_min, gaussian_filters_max = tuple(vars(args).get('gaussian_filters'))
 n_gaussian_filter_iter = vars(args).get('n_gaussian_filter_iter')
 displacement_min, displacement_max = tuple(vars(args).get('displacement'))
 n_steps = vars(args).get('n_steps')
 particle_loss_min, particle_loss_max = tuple(vars(args).get('particle_loss'))
+particle_gain_min, particle_gain_max = tuple(vars(args).get('particle_gain'))
 exposures_min, exposures_max = tuple(vars(args).get('exposures'))
 laser_beam_thickness = vars(args).get('laser_beam_thickness')
 laser_beam_shape = vars(args).get('laser_beam_shape')
@@ -75,11 +79,15 @@ particles = Particle(n_images,
                      diameters=(diameters_min, diameters_max),
                      densities=(densities_min, densities_max),
                      diameter_std=diameter_std,
+                     min_diameter=min_diameter,
+                     dtype=np.float32,
                      random_seed=random_seed)
 
 flowfield = FlowField(n_images,
                       size=image_size,
                       size_buffer=size_buffer,
+                      time_separation=time_separations[0],
+                      dtype=np.float32,
                       random_seed=random_seed)
 
 flowfield.generate_random_velocity_field(gaussian_filters=(gaussian_filters_min, gaussian_filters_max),
@@ -88,18 +96,25 @@ flowfield.generate_random_velocity_field(gaussian_filters=(gaussian_filters_min,
 
 motion = Motion(particles,
                 flowfield,
-                time_separation=time_separations[0],
-                particle_loss=(particle_loss_min, particle_loss_max))
+                particle_loss=(particle_loss_min, particle_loss_max),
+                particle_gain=(particle_gain_min, particle_gain_max),
+                dtype=np.float32)
 
 for i, time_separation in enumerate(time_separations):
 
     print('\nGenerating images for time separation of ' + str(time_separation) + 's...')
 
-    motion.time_separation = time_separation
+    flowfield.time_separation = time_separation
+
+    motion = Motion(particles,
+                    flowfield,
+                    particle_loss=(particle_loss_min, particle_loss_max),
+                    particle_gain=(particle_gain_min, particle_gain_max))
 
     motion.runge_kutta_4th(n_steps=n_steps)
 
-    image = Image(random_seed=random_seed)
+    image = Image(dtype=np.float32,
+                  random_seed=random_seed)
 
     image.add_particles(particles)
     image.add_flowfield(flowfield)
@@ -127,7 +142,7 @@ for i, time_separation in enumerate(time_separations):
         targets_tensor = np.concatenate((targets_tensor, current_targets_tensor), axis=0)
 
 tensors_dictionary = {"I"      : images_tensor,
-                      "target" : targets_tensor}
+                      "targets" : targets_tensor}
 
 image.save_to_h5(tensors_dictionary,
                  filename='pykitPIV-dataset-' + str(n_images*len(time_separations)) + '-PIV-pairs-' + str(image_height) + '-by-' + str(image_width) + '-density-' + str(densities_min) + '-' + str(densities_max) + '-ploss-max-' + str(particle_loss_max) + '-dt-' + dts_string + '-rs-' + str(random_seed) + '.h5',
