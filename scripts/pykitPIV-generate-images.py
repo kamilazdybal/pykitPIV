@@ -21,6 +21,7 @@ parser.add_argument('--dt',                     type=float,     default=1.0,    
 parser.add_argument('--diameters',              type=float,     default=[2, 3], nargs="+",      metavar='D')
 parser.add_argument('--densities',              type=float,     default=[0.02, 0.4], nargs="+", metavar='rho')
 parser.add_argument('--diameter_std',           type=float,     default=0.5,                    metavar='D_std')
+parser.add_argument('--min_diameter',           type=float,     default=0.01,                    metavar='D_min')
 parser.add_argument('--gaussian_filters',       type=float,     default=[15, 15], nargs="+",  metavar='GF')
 parser.add_argument('--n_gaussian_filter_iter', type=int,       default=10,                     metavar='n_GF_iter')
 parser.add_argument('--displacement',           type=float,     default=[2.0, 10.0], nargs="+",  metavar='disp')
@@ -46,6 +47,7 @@ time_separation = vars(args).get('dt')
 diameters_min, diameters_max = tuple(vars(args).get('diameters'))
 densities_min, densities_max = tuple(vars(args).get('densities'))
 diameter_std = vars(args).get('diameter_std')
+min_diameter = vars(args).get('min_diameter')
 gaussian_filters_min, gaussian_filters_max = tuple(vars(args).get('gaussian_filters'))
 n_gaussian_filter_iter = vars(args).get('n_gaussian_filter_iter')
 displacement_min, displacement_max = tuple(vars(args).get('displacement'))
@@ -72,6 +74,7 @@ particles = Particle(n_images,
                      diameters=(diameters_min, diameters_max),
                      densities=(densities_min, densities_max),
                      diameter_std=diameter_std,
+                     min_diameter=min_diameter,
                      dtype=np.float32,
                      random_seed=random_seed)
 
