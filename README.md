@@ -63,7 +63,7 @@ year = "2025",
 issn = "",
 doi = "",
 url = "https://github.com/kamilazdybal/pykitPIV",
-author = "Zdybał, K. and Mucignat, C. and Kunz, S. and Lunati, I."
+author = "Zdybał, K. and Mucignat, C. and Lunati, I."
 }
 ```
 
