@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from collections import deque
 import gymnasium as gym
-import pygame
 import random
 import tensorflow as tf
 from pykitPIV.checks import *
@@ -519,6 +518,13 @@ class PIVEnv(gym.Env):
                      inference_model=None,
                      random_seed=100)
 
+    Note that at any stage of training the RL agent, the time separation between two PIV image frames can be updated
+    using the ``time_separation`` attribute:
+
+    .. code:: python
+
+        env.time_separation = 2
+
     :param interrogation_window_size:
         ``tuple`` of two ``int`` elements specifying the size of the interrogation window in pixels :math:`[\\text{px}]`.
         The first number is the window height, :math:`H_{\\text{i}}`,
@@ -568,6 +574,23 @@ class PIVEnv(gym.Env):
     :param random_seed: (optional)
         ``int`` specifying the random seed for random number generation in ``numpy``.
         If specified, all operations are reproducible.
+
+    **Attributes:**
+
+    - **flowfield** - (read-only) as per user input.
+    - **flowfield_type** - (read-only) as per user input.
+    - **flowfield_size** - (read-only) as per user input.
+    - **time_separation** - (can be re-set) as per user input.
+    - **admissible_observation_space** - (read-only) ``tuple`` specifying the admissible observation space along
+      height and width.
+    - **camera_position** - (read-only) ``tuple`` specifying the camera position.
+    - **action_to_direction** - (read-only) ``dict`` specifying how action numbers translate to directions in
+      the 2D virtual environment.
+    - **action_to_verbose_direction** - (read-only) ``dict`` specifying how action numbers translate to verbose
+      direction strings in the 2D virtual environment.
+    - **n_actions** - (read-only) ``int`` specifying the total number of actions possible in this environment.
+    - **prediction_tensor** - (read-only) ``numpy.ndarray`` specifying the predicted displacement field tensor.
+    - **targets_tensor** - (read-only) ``numpy.ndarray`` specifying the ground truth displacement field tensor.
     """
 
     def __init__(self,
@@ -723,6 +746,10 @@ class PIVEnv(gym.Env):
             # This is an object of the pykitPIV.flowfield.FlowField class:
             self.__flowfield = flowfield
 
+            # Set the initial time separation to the value coming from the FlowFieldSpec.
+            # This value can be overwritten later during RL training.
+            self.__time_separation = self.__flowfield_spec.time_separation
+
         # Otherwise, use the flow field provided by the user:
         else:
 
@@ -732,6 +759,10 @@ class PIVEnv(gym.Env):
             self.__flowfield_type = 'user'
 
             self.__flowfield_size = user_flowfield.velocity_field_magnitude.shape[2::]
+
+            # Set the initial time separation to the value coming from the FlowFieldSpec.
+            # This value can be overwritten later during RL training.
+            self.__time_separation = user_flowfield.time_separation
 
         # Observation space for the RL agent: - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -775,14 +806,7 @@ class PIVEnv(gym.Env):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    @property
-    def admissible_observation_space(self):
-        return self.__admissible_observation_space
-
-    @property
-    def camera_position(self):
-        return self.__camera_position
-
+    # Properties coming from user inputs:
     @property
     def flowfield(self):
         return self.__flowfield
@@ -797,6 +821,19 @@ class PIVEnv(gym.Env):
 
     # ^ For now, the flow field in the wind tunnel cannot be overwritten during RL training.
     # This may be modified in the future.
+
+    @property
+    def time_separation(self):
+        return self.__time_separation
+
+    # Properties computed at class init:
+    @property
+    def admissible_observation_space(self):
+        return self.__admissible_observation_space
+
+    @property
+    def camera_position(self):
+        return self.__camera_position
 
     @property
     def action_to_direction(self):
@@ -817,6 +854,17 @@ class PIVEnv(gym.Env):
     @property
     def targets_tensor(self):
         return self.__targets_tensor
+
+    # Setters:
+    @time_separation.setter
+    def time_separation(self, new_time_separation):
+        if (not isinstance(new_time_separation, float)) and (not isinstance(new_time_separation, int)):
+            raise ValueError("Parameter `time_separation` has to be of type `float` or `int`.")
+        else:
+            if new_time_separation <= 0:
+                raise ValueError("Parameter `time_separation` has to be a non-zero, positive number.")
+            else:
+                self.__time_separation = new_time_separation
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -873,8 +921,10 @@ class PIVEnv(gym.Env):
         flowfield = FlowField(n_images=1,
                               size=self.__interrogation_window_size,
                               size_buffer=self.__interrogation_window_size_buffer,
-                              time_separation=self.__flowfield_spec.time_separation,
+                              time_separation=self.time_separation,
                               random_seed=None)
+
+        # ^ The time separation is now taken from the class attribute, which can mean that this value has changed.
 
         flowfield.upload_velocity_field(velocity_field_at_interrogation_window)
 
@@ -995,7 +1045,7 @@ class PIVEnv(gym.Env):
                 flowfield = FlowField(n_images=1,
                                       size=self.__flowfield_size,
                                       size_buffer=0,
-                                      time_separation=self.__flowfield_spec.time_separation,
+                                      time_separation=self.time_separation,
                                       random_seed=self.__random_seed)
 
                 if self.__flowfield_type == 'random smooth':
