@@ -24,7 +24,7 @@ Install requirements:
     pip install matplotlib
     pip install h5py
     pip install pandas
-    pip install scipy
+    pip install scipy==1.15.1
     pip install cmcrameri
     pip install urllib3
     pip install termcolor
@@ -40,7 +40,7 @@ Additional requirements for Jupyter notebook tutorials:
 
 .. code-block:: bash
 
-    pip install jupyterlab
+    pip install --upgrade jupyterlab
     pip install onnxruntime
 
 Optional for local documentation builds:
