@@ -57,7 +57,11 @@ class PIVDatasetPyTorch(Dataset):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def __init__(self, dataset, transform=None):
+    def __init__(self,
+                 dataset,
+                 transform=None):
+
+        super().__init__()
 
         if isinstance(dataset, str):
 
@@ -142,7 +146,11 @@ class PIVDatasetTF(tf.keras.utils.PyDataset):
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-    def __init__(self, dataset, transform=None):
+    def __init__(self,
+                 dataset,
+                 transform=None):
+
+        super().__init__()
 
         if isinstance(dataset, str):
 
@@ -241,7 +249,8 @@ class PIVCVAE(tf.keras.Model):
 
     :param input_shape:
         ``tuple`` of ``int`` specifying the path shape of the input image, or image pair. Typically, this will be
-        ``(H, W, 1)`` for a single scalar quantity or ``(H, W, 2)`` for 2D vector quantities.
+        ``(H, W, 1)`` for a single scalar quantity or ``(H, W, 2)`` for 2D vector quantities. For the moment,
+        height and width should be divisible by 4 due to the architecture used.
     :param latent_dimension: (optional)
         ``int`` specifying the latent dimension of the CVAE.
     """
@@ -604,6 +613,8 @@ class PIVEnv(gym.Env):
                  user_flowfield=None,
                  inference_model=None,
                  random_seed=None):
+
+        super().__init__()
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
