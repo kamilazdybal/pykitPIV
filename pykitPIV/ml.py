@@ -257,19 +257,24 @@ class PIVCVAE(tf.keras.Model):
 
         self.latent_dimension = latent_dimension
 
+        (H, W, _) = input_shape
+
+        encoded_H = H // 4
+        encoded_W = W // 4
+
         # Construct a convolutional encoder:
         self.encoder = tf.keras.Sequential([
             tf.keras.layers.InputLayer(shape=input_shape),
-            tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=(2, 2), activation='relu'),
-            tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=(2, 2), activation='relu'),
+            tf.keras.layers.Conv2D(filters=32, kernel_size=3, strides=2, padding='same', activation='relu'),
+            tf.keras.layers.Conv2D(filters=64, kernel_size=3, strides=2, padding='same', activation='relu'),
             tf.keras.layers.Flatten(),
             tf.keras.layers.Dense(latent_dimension + latent_dimension), ])
 
         # Construct a convolutional decoder:
         self.decoder = tf.keras.Sequential([
             tf.keras.layers.InputLayer(shape=(latent_dimension,)),
-            tf.keras.layers.Dense(units=7 * 7 * 32, activation=tf.nn.relu),
-            tf.keras.layers.Reshape(target_shape=(7, 7, 32)),
+            tf.keras.layers.Dense(units=encoded_H * encoded_W * 32, activation=tf.nn.relu),
+            tf.keras.layers.Reshape(target_shape=(encoded_H, encoded_W, 32)),
             tf.keras.layers.Conv2DTranspose(filters=64, kernel_size=3, strides=2, padding='same', activation='relu'),
             tf.keras.layers.Conv2DTranspose(filters=32, kernel_size=3, strides=2, padding='same', activation='relu'),
             tf.keras.layers.Conv2DTranspose(filters=input_shape[-1], kernel_size=3, strides=1, padding='same'), ])
