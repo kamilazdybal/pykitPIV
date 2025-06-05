@@ -865,6 +865,7 @@ class PIVEnv(gym.Env):
                 raise ValueError("Parameter `time_separation` has to be a non-zero, positive number.")
             else:
                 self.__time_separation = new_time_separation
+                self.__flowfield.time_separation = new_time_separation
 
     # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -917,7 +918,7 @@ class PIVEnv(gym.Env):
                              seeding_mode=self.__particle_spec.seeding_mode,
                              random_seed=self.__particle_spec.random_seed)
 
-        # Initialize a flow field object:
+        # Initialize a flow field object corresponding to just the flow field within the interrogation window:
         flowfield = FlowField(n_images=1,
                               size=self.__interrogation_window_size,
                               size_buffer=self.__interrogation_window_size_buffer,
