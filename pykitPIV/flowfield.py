@@ -1830,13 +1830,53 @@ def compute_vorticity(vector_field,
 def compute_q_criterion(vector_field,
                         edge_order=1):
     """
-    Computes the Q-criterion for the specified vector field.
+    Computes the Q-criterion for the specified vector field, :math:`\\vec{V} = [u, v]`.
 
-    If the vector field is the velocity field, :math:`\\vec{V} = [u, v]`:
+    The Q-criterion comes from decomposing the velocity gradient into the rate of strain tensor and the vorticity tensor:
 
     .. math::
 
-        Q = \\frac{1}{2} \\left( \\left(\\frac{\\partial v}{\\partial x} - \\frac{\\partial u}{\\partial y} \\right)^2 - \\left(\\frac{\\partial u}{\\partial x}^2 + \\frac{\\partial v}{\\partial y}^2 + 2 \\left( \\frac{\\partial u}{\\partial y} + \\frac{\\partial v}{\\partial x} \\right)^2 \\right) \\right)
+        \\nabla \\vec{V} = \\mathbf{S} + \\pmb{\\Omega}
+
+    where :math:`\\mathbf{S} = \\frac{1}{2} [ (\\nabla \\vec{V}) + (\\nabla \\vec{V})^{\\top}]` is the rate-of-strain tensor
+    and :math:`\\pmb{\\Omega} = \\frac{1}{2} [ (\\nabla \\vec{V}) - (\\nabla \\vec{V})^{\\top}]` is the vorticity tensor.
+
+    The Q-criterion is defined as regions where the vorticity tensor magnitude dominates over the strain rate tensor magnitude:
+
+    .. math::
+
+        Q = \\frac{1}{2} \\big( \\| \\pmb{\\Omega} \\|^2 - \\| \\mathbf{S} \\|^2 \\big) > 0
+
+    where :math:`\\| \\bullet \\|` is the Euclidean (or Frobenius) norm.
+
+    In 2D, the vorticity tensor is
+
+    .. math::
+
+        \\pmb{\\Omega} =
+        \\begin{bmatrix}
+        0 & \\frac{1}{2} \\left( \\frac{\\partial v}{\\partial x} - \\frac{\\partial u}{\\partial y} \\right) \\\\
+        \\frac{1}{2} \\left( \\frac{\\partial u}{\\partial y} - \\frac{\\partial v}{\\partial x} \\right) & 0
+        \\end{bmatrix}
+
+    and the rate-of-strain tensor is
+
+    .. math::
+
+        \\mathbf{S} =
+        \\begin{bmatrix}
+        \\frac{\\partial u}{\\partial x} & \\frac{1}{2} \\left( \\frac{\\partial v}{\\partial x} + \\frac{\\partial u}{\\partial y} \\right) \\\\
+        \\frac{1}{2} \\left( \\frac{\\partial u}{\\partial y} + \\frac{\\partial v}{\\partial x} \\right) & \\frac{\\partial v}{\\partial y}
+        \\end{bmatrix}
+
+    Hence, in 2D, we can write the Q-criterion as:
+
+    .. math::
+
+        Q = \\frac{1}{2} \\left( \\frac{1}{2} \\left( \\frac{\\partial v}{\\partial x} - \\frac{\\partial u}{\\partial y} \\right)^2 - \\left( \\frac{\\partial u}{\\partial x} \\right)^2 - \\left( \\frac{\\partial v}{\\partial y} \\right)^2 - \\frac{1}{2} \\left( \\frac{\\partial u}{\\partial y} + \\frac{\\partial v}{\\partial x} \\right)^2 \\right)
+
+    See `Jeong & Hussain <https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/on-the-identification-of-a-vortex/D26006DDB95FB28DA80E28A581182DF1>`_
+    and `Haller <https://www.cambridge.org/core/journals/journal-of-fluid-mechanics/article/an-objective-definition-of-a-vortex/3CD781A3AEC4BA16571CBC2D9B4E973F>`_ for more info on the Q-criterion.
 
     .. note::
 
@@ -1894,15 +1934,18 @@ def compute_q_criterion(vector_field,
     (dudy, dudx) = np.gradient(vector_field[:,0,:,:], axis=(1,2), edge_order=edge_order)
     (dvdy, dvdx) = np.gradient(vector_field[:,1,:,:], axis=(1,2), edge_order=edge_order)
 
-    vorticity = dvdx - dudy
+    # Compute the components of the vorticity tensor:
+    omega_12 = 0.5 * (dvdx - dudy)
+    omega_21 = 0.5 * (dudy - dvdx)
 
     # Compute the components of the strain rate tensor:
-    S11 = dudx
-    S22 = dvdy
-    S12 = 0.5 * (dudy + dvdx)
+    S_11 = dudx
+    S_22 = dvdy
+    S_12 = 0.5 * (dvdx + dudy)
+    S_21 = 0.5 * (dudy + dvdx)
 
     # Compute the Q-criterion:
-    q_criterion = 0.5 * (vorticity ** 2 - (S11 ** 2 + S22 ** 2 + 2 * (S12 ** 2)))
+    q_criterion = 0.5 * ( (omega_12 ** 2 + omega_21 ** 2) - (S_11 ** 2 + S_22 ** 2 + S_12 ** 2 + S_21 ** 2) )
 
     return q_criterion
 
