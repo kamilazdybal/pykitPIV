@@ -435,7 +435,7 @@ class FlowField:
                                   time_separation=1,
                                   random_seed=100)
 
-            # Generate random velocity field:
+            # Generate a constant velocity field:
             flowfield.generate_constant_velocity_field(u_magnitude=(1, 4),
                                                        v_magnitude=(1, 4))
 
@@ -1220,7 +1220,7 @@ class FlowField:
                                   time_separation=1,
                                   random_seed=100)
 
-            # Generate sinusoidal velocity field:
+            # Generate a potential velocity field:
             flowfield.generate_potential_velocity_field(imposed_origin=None,
                                                         displacement=(2, 2))
 
@@ -1278,6 +1278,120 @@ class FlowField:
             # Potential flow:
             velocity_field_u = 2 * dx
             velocity_field_v = - 2 * dy
+
+            velocity_magnitude = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+            velocity_magnitude_scale = self.__displacement_per_image[i] / np.max(velocity_magnitude)
+
+            velocity_field_u = velocity_magnitude_scale * velocity_field_u
+            velocity_field_v = velocity_magnitude_scale * velocity_field_v
+
+            self.__velocity_field_magnitude[i, 0, :, :] = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
+
+            self.__velocity_field[i, 0, :, :] = velocity_field_u
+            self.__velocity_field[i, 1, :, :] = velocity_field_v
+
+    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    def generate_taylor_green_vortex_velocity_field(self,
+                                                    k=1,
+                                                    imposed_origin=(0, 0),
+                                                    displacement=(1, 4)):
+        """
+        Generates a Taylor-Green vortex of the form:
+
+        .. math::
+
+            u(h, w) = \\sin(k (w - w_o)) \\cos(k (h - h_o))
+
+        .. math::
+
+            v(h, w) = - \\cos(k (w - w_o)) \\sin(k (h - h_o))
+
+        where :math:`(h_o, w_o)` is the origin location on the PIV image and :math:`k` is the wavelength that can be
+        used to adjust the sizes of vortices.
+
+        This flow field divergence-free.
+
+        **Example:**
+
+        .. code:: python
+
+            from pykitPIV import FlowField
+
+            # We are going to generate 10 flow fields for 10 PIV image pairs:
+            n_images = 10
+
+            # Specify size in pixels for each image:
+            image_size = (256, 256)
+
+            # Initialize a flow field object:
+            flowfield = FlowField(n_images=n_images,
+                                  size=image_size,
+                                  size_buffer=10,
+                                  time_separation=1,
+                                  random_seed=100)
+
+            # Generate a Taylor-Green vortex velocity field:
+            flowfield.generate_potential_velocity_field(k=0.01,
+                                                        imposed_origin=None,
+                                                        displacement=(2, 2))
+
+            # Access the velocity components tensor:
+            flowfield.velocity_field
+
+            # Access the velocity field magnitude:
+            flowfield.velocity_field_magnitude
+
+        :param k: (optional)
+            ``float`` or ``int`` specifying the wavelength, :math:`k`.
+        :param imposed_origin: (optional)
+            ``tuple`` specifying the user-imposed origin location, :math:`(h_o, w_o)`.
+            Note that you need to account for the buffer size when specifying the values :math:`(h_o, w_o)`.
+            If set to ``None``, the origin location will be randomized in each image.
+        :param displacement: (optional)
+            ``tuple`` of two numerical elements specifying the minimum (first element) and maximum (second element)
+            displacement.
+       """
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        # Input parameter check:
+
+        if imposed_origin is not None:
+            check_two_element_tuple(imposed_origin, 'imposed_origin')
+
+        check_two_element_tuple(displacement, 'displacement')
+        check_min_max_tuple(displacement, 'displacement')
+
+        # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+        self.__displacement = displacement
+        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+
+        self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
+        self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
+
+        h = np.linspace(0, self.size_with_buffer[0], self.size_with_buffer[0])
+        w = np.linspace(0, self.size_with_buffer[1], self.size_with_buffer[1])
+
+        (grid_w, grid_h) = np.meshgrid(w, h)
+
+        if imposed_origin is not None:
+            origin_h, origin_w = imposed_origin
+
+        for i in range(0, self.n_images):
+
+            if imposed_origin is None:
+                origin_h = np.random.rand(1) * (self.size_with_buffer[0] - 1)
+                origin_w = np.random.rand(1) * (self.size_with_buffer[1] - 1)
+
+            # Vector from source to each point:
+            dx = grid_w - origin_w
+            dy = grid_h - origin_h
+
+            # Potential flow:
+            velocity_field_u = np.sin(k * dx) * np.cos(k * dy)
+            velocity_field_v = - np.cos(k * dx) * np.sin(k * dy)
 
             velocity_magnitude = np.sqrt(velocity_field_u ** 2 + velocity_field_v ** 2)
             velocity_magnitude_scale = self.__displacement_per_image[i] / np.max(velocity_magnitude)
