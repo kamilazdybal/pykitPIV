@@ -1596,7 +1596,14 @@ class FlowField:
 
     def upload_velocity_field(self, velocity_field):
         """
-        Uploads a custom velocity field, *e.g.*, generated from synthetic turbulence.
+        Uploads a custom velocity field, *e.g.*, generated from synthetic turbulence or from turbulence databases.
+
+        An example synthetic turbulence generator implemented in Python can be found here:
+        `Saad et al. - TurboGenPY <https://github.com/saadgroup/TurboGenPY>`_.
+        You can also access its `web-based version <https://turbulence.utah.edu/>`_.
+
+        Another popular source of turbulent velocity fields is the
+        `Johns Hopkins Turbulence Database (JHTD) <https://turbulence.idies.jhu.edu/home>`_.
 
         **Example:**
 
