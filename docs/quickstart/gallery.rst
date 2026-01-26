@@ -5,6 +5,8 @@ A gallery of examples
 Virtual PIV of a Taylor-Green vortex
 ==================================================================
 
+You can find the complete tutorial here: `demo-pykitPIV-07-generate-temporal-sequence-of-images.ipynb <https://pykitpiv.readthedocs.io/en/latest/tutorials/demo-07-generate-temporal-sequence.html>`_.
+
 .. image:: ../images/animate-taylor-green-vortex-PIV.gif
     :width: 700
     :align: center
