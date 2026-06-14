@@ -2244,7 +2244,7 @@ class Image:
 
         if vmin_vmax is not None:
             check_two_element_tuple(vmin_vmax, 'vmin_vmax')
-            check_min_max_tuple(vmin_vmax)
+            check_min_max_tuple(vmin_vmax, 'vmin_vmax')
 
         if not isinstance(origin, str):
             raise ValueError("Parameter `origin` has to be of type 'str'.")
@@ -2517,7 +2517,7 @@ class Image:
 
         if vmin_vmax is not None:
             check_two_element_tuple(vmin_vmax, 'vmin_vmax')
-            check_min_max_tuple(vmin_vmax)
+            check_min_max_tuple(vmin_vmax, 'vmin_vmax')
 
         if not isinstance(cbar, bool):
             raise ValueError("Parameter `cbar` has to be of type 'bool'.")
