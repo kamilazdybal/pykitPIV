@@ -1455,10 +1455,10 @@ class Image:
 
             # Save grayscale image to .tiff:
             image_to_save = PILImage.fromarray(img1, mode='L')
-            image_to_save.save(filename + '-' + str(i) + '-I1.tiff')
+            image_to_save.save(filename + '-' + str(i).zfill(4) + '-I1.tiff')
 
             image_to_save = PILImage.fromarray(img2, mode='L')
-            image_to_save.save(filename + '-' + str(i) + '-I2.tiff')
+            image_to_save.save(filename + '-' + str(i).zfill(4) + '-I2.tiff')
 
         if verbose: print('Images saved.')
 
