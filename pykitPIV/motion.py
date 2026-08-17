@@ -236,7 +236,9 @@ class Motion:
             if type(random_seed) != int:
                 raise ValueError("Parameter `random_seed` has to be of type 'int'.")
             else:
-                np.random.seed(seed=random_seed)
+                self.__rng = np.random.default_rng(random_seed)
+        else:
+            self.__rng = np.random.default_rng()
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -270,7 +272,7 @@ class Motion:
         # Check whether particles loss will have to be modeled:
         if self.__particle_loss[1] > 0:
             self.__particles_lost = True
-            self.__loss_percentage_per_image = np.random.rand(self.__particles.n_images) * (self.__particle_loss[1] - self.__particle_loss[0]) + self.__particle_loss[0]
+            self.__loss_percentage_per_image = self.__rng.random(self.__particles.n_images) * (self.__particle_loss[1] - self.__particle_loss[0]) + self.__particle_loss[0]
         else:
             self.__particles_lost = False
             self.__loss_percentage_per_image = None
@@ -286,7 +288,7 @@ class Motion:
         else:
             if self.__particle_gain[1] > 0:
                 self.__particles_gained = True
-                self.__gain_percentage_per_image = np.random.rand(self.__particles.n_images) * (self.__particle_gain[1] - self.__particle_gain[0]) + self.__particle_gain[0]
+                self.__gain_percentage_per_image = self.__rng.random(self.__particles.n_images) * (self.__particle_gain[1] - self.__particle_gain[0]) + self.__particle_gain[0]
             else:
                 self.__particles_gained = False
                 self.__gain_percentage_per_image = None
@@ -355,7 +357,7 @@ class Motion:
         # Check whether particle loss will have to be modeled:
         if self.__particle_loss[1] > 0:
             self.__particles_lost = True
-            self.__loss_percentage_per_image = np.random.rand(self.__particles.n_images) * (self.__particle_loss[1] - self.__particle_loss[0]) + self.__particle_loss[0]
+            self.__loss_percentage_per_image = self.__rng.random(self.__particles.n_images) * (self.__particle_loss[1] - self.__particle_loss[0]) + self.__particle_loss[0]
             if isinstance(self.__particle_gain, str):
                 self.__gain_percentage_per_image = self.__loss_percentage_per_image
         else:
@@ -394,7 +396,7 @@ class Motion:
         else:
             if self.__particle_gain[1] > 0:
                 self.__particles_gained = True
-                self.__gain_percentage_per_image = np.random.rand(self.__particles.n_images) * (self.__particle_gain[1] - self.__particle_gain[0]) + self.__particle_gain[0]
+                self.__gain_percentage_per_image = self.__rng.random(self.__particles.n_images) * (self.__particle_gain[1] - self.__particle_gain[0]) + self.__particle_gain[0]
             else:
                 self.__particles_gained = False
                 self.__gain_percentage_per_image = None
@@ -407,7 +409,7 @@ class Motion:
 
         current_loss_percentage = self.loss_percentage_per_image[idx]
 
-        idx_removed = np.random.choice(np.array([i for i in range(0,n_particles)]), int(current_loss_percentage * n_particles / 100), replace=False)
+        idx_removed = self.__rng.choice(np.array([i for i in range(0,n_particles)]), int(current_loss_percentage * n_particles / 100), replace=False)
         idx_retained = [ii for ii in range(0, n_particles) if ii not in idx_removed]
 
         if self.__verbose: print('Image ' + str(idx+1) + ':\t' + str(n_particles - len(idx_retained)) + ' particles lost')
@@ -425,10 +427,10 @@ class Motion:
         n_added_particles = int(current_gain_percentage * n_particles / 100)
 
         added_particle_coordinates = np.zeros((n_added_particles, 2))
-        added_particle_coordinates[:, 0] = self.__particles.size_with_buffer[0] * np.random.rand(n_added_particles)
-        added_particle_coordinates[:, 1] = self.__particles.size_with_buffer[1] * np.random.rand(n_added_particles)
+        added_particle_coordinates[:, 0] = self.__particles.size_with_buffer[0] * self.__rng.random(n_added_particles)
+        added_particle_coordinates[:, 1] = self.__particles.size_with_buffer[1] * self.__rng.random(n_added_particles)
 
-        added_particle_diameters = np.random.normal(self.__particles.diameter_per_image[idx], self.__particles.diameter_std_per_image[idx], n_added_particles)
+        added_particle_diameters = self.__rng.normal(self.__particles.diameter_per_image[idx], self.__particles.diameter_std_per_image[idx], n_added_particles)
 
         if self.__verbose: print('Image ' + str(idx+1) + ':\t' + str(n_added_particles) + ' particles added')
 
