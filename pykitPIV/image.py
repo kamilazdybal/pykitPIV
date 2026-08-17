@@ -166,7 +166,9 @@ class Image:
             if type(random_seed) != int:
                 raise ValueError("Parameter `random_seed` has to be of type 'int'.")
             else:
-                np.random.seed(seed=random_seed)
+                self.__rng = np.random.default_rng(random_seed)
+        else:
+            self.__rng = np.random.default_rng()
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -856,9 +858,6 @@ class Image:
         if clip_intensities and normalize_intensities:
             raise ValueError("Only one of `clip_intensities`, `normalize_intensities` can be set to True.")
 
-        if self.random_seed is not None:
-            np.random.seed(seed=self.random_seed)
-
         if self.__particles is None:
             raise NameError("Particles have not been added to the image yet! Use the `Image.add_particles()` method first.")
 
@@ -873,7 +872,7 @@ class Image:
         self.__maximum_intensity = maximum_intensity
 
         # Randomize image exposure:
-        self.__exposures_per_image = np.random.rand(self.__particles.n_images) * (__exposures[1] - __exposures[0]) + __exposures[0]
+        self.__exposures_per_image = self.__rng.random(self.__particles.n_images) * (__exposures[1] - __exposures[0]) + __exposures[0]
 
         # Function for adding Gaussian light distribution to image I1 or image I2:
         def __gaussian_light(idx,
@@ -894,7 +893,7 @@ class Image:
             if no_laser_plane:
                 particle_position_relative_to_laser_centerline = np.zeros((number_of_particles,))
             else:
-                particle_positions_off_laser_plane = laser_beam_thickness * np.random.rand(number_of_particles) - laser_beam_thickness / 2
+                particle_positions_off_laser_plane = laser_beam_thickness * self.__rng.random(number_of_particles) - laser_beam_thickness / 2
                 particle_position_relative_to_laser_centerline = np.abs(particle_positions_off_laser_plane) / (laser_beam_thickness / 2)
 
             particle_peak_intensities = self.exposures_per_image[idx] * maximum_intensity * np.exp(-0.5 * (particle_position_relative_to_laser_centerline ** 2 / laser_beam_shape ** 2))
