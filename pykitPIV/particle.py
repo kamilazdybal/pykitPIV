@@ -317,7 +317,9 @@ class Particle:
             if type(random_seed) != int:
                 raise ValueError("Parameter `random_seed` has to be of type 'int'.")
             else:
-                np.random.seed(seed=random_seed)
+                self.__rng = np.random.default_rng(random_seed)
+        else:
+            self.__rng = np.random.default_rng()
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -357,8 +359,8 @@ class Particle:
         self.__size_with_buffer = (self.__height_with_buffer, self.__width_with_buffer)
 
         # Initialize parameters for particle generation:
-        self.__particle_diameter_per_image = np.random.rand(self.__n_images) * (self.__diameters[1] - self.__diameters[0]) + self.__diameters[0]
-        self.__particle_diameter_std_per_image = np.random.rand(self.__n_images) * (self.__diameter_std[1] - self.__diameter_std[0]) + self.__diameter_std[0]
+        self.__particle_diameter_per_image = self.__rng.random(self.__n_images) * (self.__diameters[1] - self.__diameters[0]) + self.__diameters[0]
+        self.__particle_diameter_std_per_image = self.__rng.random(self.__n_images) * (self.__diameter_std[1] - self.__diameter_std[0]) + self.__diameter_std[0]
 
         # These are initialized to None and will be overwritten depending on which seeding mode the user chooses:
         self.__particle_density_per_image = None
@@ -369,7 +371,7 @@ class Particle:
         if seeding_mode == 'random':
 
             # Compute the seeding density for each image:
-            self.__particle_density_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
+            self.__particle_density_per_image = self.__rng.random(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
 
             # Compute the total number of particles for a given particle density on each image:
             n_of_particles = self.__size[0] * self.__size[1] * self.__particle_density_per_image
@@ -384,8 +386,8 @@ class Particle:
             for i in range(0,self.n_images):
 
                 # Generate absolute coordinates for particles' centers within the total available image area (drawn from random uniform distribution):
-                self.__y_coordinates = self.__height_with_buffer * np.random.rand(self.n_of_particles[i]).astype(self.__dtype)
-                self.__x_coordinates = self.__width_with_buffer * np.random.rand(self.n_of_particles[i]).astype(self.__dtype)
+                self.__y_coordinates = self.__height_with_buffer * self.__rng.random(self.n_of_particles[i]).astype(self.__dtype)
+                self.__x_coordinates = self.__width_with_buffer * self.__rng.random(self.n_of_particles[i]).astype(self.__dtype)
 
                 particle_coordinates.append((self.__y_coordinates, self.__x_coordinates))
 
@@ -395,7 +397,7 @@ class Particle:
                 particle_positions[i, 0, :, :] = seeded_array
 
                 # Generate diameters for all particles in the current image:
-                current_diameters = np.random.normal(self.diameter_per_image[i], self.diameter_std_per_image[i], self.n_of_particles[i])
+                current_diameters = self.__rng.normal(self.diameter_per_image[i], self.diameter_std_per_image[i], self.n_of_particles[i])
                 if self.n_of_particles[i] > 0:
                     particle_diameters.append(np.clip(current_diameters, min_diameter, np.max(current_diameters)))
                 else:
@@ -413,8 +415,8 @@ class Particle:
         elif seeding_mode == 'poisson':
 
             # Compute the seeding density for each image:
-            self.__particle_distance_per_image = np.random.rand(self.__n_images) * (self.__distances[1] - self.__distances[0]) + self.__distances[0]
-            self.__particle_density_per_image = np.random.rand(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
+            self.__particle_distance_per_image = self.__rng.random(self.__n_images) * (self.__distances[1] - self.__distances[0]) + self.__distances[0]
+            self.__particle_density_per_image = self.__rng.random(self.__n_images) * (self.__densities[1] - self.__densities[0]) + self.__densities[0]
 
             # Initialize particle coordinates, positions, and diameters on each of the ``n_image`` images:
             particle_coordinates = []
@@ -453,7 +455,7 @@ class Particle:
                 particle_positions[i, 0, :, :] = seeded_array
 
                 # Generate diameters for all particles in the current image:
-                particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std_per_image[i], n))
+                particle_diameters.append(self.__rng.normal(self.diameter_per_image[i], self.diameter_std_per_image[i], n))
 
             # Initialize the total number of particles:
             self.__n_of_particles = n_of_particles
@@ -695,7 +697,7 @@ class Particle:
             particle_positions[i, 0, :, :] = seeded_array
 
             # Generate diameters for all particles in the current image:
-            particle_diameters.append(np.random.normal(self.diameter_per_image[i], self.diameter_std_per_image[i], n_particles))
+            particle_diameters.append(self.__rng.normal(self.diameter_per_image[i], self.diameter_std_per_image[i], n_particles))
 
         # Initialize the total number of particles:
         self.__n_of_particles = n_of_particles
