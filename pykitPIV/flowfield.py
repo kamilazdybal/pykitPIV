@@ -270,7 +270,9 @@ class FlowField:
             if type(random_seed) != int:
                 raise ValueError("Parameter `random_seed` has to be of type 'int'.")
             else:
-                np.random.seed(seed=random_seed)
+                self.__rng = np.random.default_rng(random_seed)
+        else:
+            self.__rng = np.random.default_rng()
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -494,8 +496,8 @@ class FlowField:
         self.__velocity_field = np.ones((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
 
-        self.__u_magnitude_per_image = np.random.rand(self.__n_images) * (self.__u_magnitude[1] - self.__u_magnitude[0]) + self.__u_magnitude[0]
-        self.__v_magnitude_per_image = np.random.rand(self.__n_images) * (self.__v_magnitude[1] - self.__v_magnitude[0]) + self.__v_magnitude[0]
+        self.__u_magnitude_per_image = self.__rng.random(self.__n_images) * (self.__u_magnitude[1] - self.__u_magnitude[0]) + self.__u_magnitude[0]
+        self.__v_magnitude_per_image = self.__rng.random(self.__n_images) * (self.__v_magnitude[1] - self.__v_magnitude[0]) + self.__v_magnitude[0]
 
         for i in range(0, self.n_images):
 
@@ -581,8 +583,8 @@ class FlowField:
         self.__velocity_field = np.ones((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
 
-        self.__u_magnitude_per_image = np.random.rand(self.__n_images) * (self.__u_magnitude[1] - self.__u_magnitude[0]) + self.__u_magnitude[0]
-        self.__v_magnitude_per_image = np.random.rand(self.__n_images) * (self.__v_magnitude[1] - self.__v_magnitude[0]) + self.__v_magnitude[0]
+        self.__u_magnitude_per_image = self.__rng.random(self.__n_images) * (self.__u_magnitude[1] - self.__u_magnitude[0]) + self.__u_magnitude[0]
+        self.__v_magnitude_per_image = self.__rng.random(self.__n_images) * (self.__v_magnitude[1] - self.__v_magnitude[0]) + self.__v_magnitude[0]
 
         for i in range(0, self.n_images):
 
@@ -682,10 +684,10 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+        self.__displacement_per_image = self.__rng.random(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         self.__gaussian_filters = gaussian_filters
-        self.__gaussian_filter_per_image = np.random.rand(self.__n_images) * (self.__gaussian_filters[1] - self.__gaussian_filters[0]) + self.__gaussian_filters[0]
+        self.__gaussian_filter_per_image = self.__rng.random(self.__n_images) * (self.__gaussian_filters[1] - self.__gaussian_filters[0]) + self.__gaussian_filters[0]
 
         self.__n_gaussian_filter_iter = n_gaussian_filter_iter
 
@@ -694,8 +696,8 @@ class FlowField:
 
         for i in range(0, self.n_images):
 
-            velocity_field_u = np.random.rand(self.size_with_buffer[0], self.size_with_buffer[1])
-            velocity_field_v = np.random.rand(self.size_with_buffer[0], self.size_with_buffer[1])
+            velocity_field_u = self.__rng.random((self.size_with_buffer[0], self.size_with_buffer[1]))
+            velocity_field_v = self.__rng.random((self.size_with_buffer[0], self.size_with_buffer[1]))
 
             # Smooth out the random velocity field `n_gaussian_filter_iter` times:
             for _ in range(0, n_gaussian_filter_iter):
@@ -798,10 +800,10 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__amplitudes = amplitudes
-        self.__amplitudes_per_image = np.random.rand(self.__n_images) * (self.__amplitudes[1] - self.__amplitudes[0]) + self.__amplitudes[0]
+        self.__amplitudes_per_image = self.__rng.random(self.__n_images) * (self.__amplitudes[1] - self.__amplitudes[0]) + self.__amplitudes[0]
 
         self.__wavelengths = wavelengths
-        self.__wavelengths_per_image = np.random.rand(self.__n_images) * (self.__wavelengths[1] - self.__wavelengths[0]) + self.__wavelengths[0]
+        self.__wavelengths_per_image = self.__rng.random(self.__n_images) * (self.__wavelengths[1] - self.__wavelengths[0]) + self.__wavelengths[0]
 
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
@@ -921,7 +923,7 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+        self.__displacement_per_image = self.__rng.random(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
@@ -1029,7 +1031,7 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+        self.__displacement_per_image = self.__rng.random(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
@@ -1142,7 +1144,7 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+        self.__displacement_per_image = self.__rng.random(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
@@ -1255,7 +1257,7 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+        self.__displacement_per_image = self.__rng.random(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
@@ -1271,8 +1273,8 @@ class FlowField:
         for i in range(0, self.n_images):
 
             if imposed_origin is None:
-                origin_h = np.random.rand(1) * (self.size_with_buffer[0] - 1)
-                origin_w = np.random.rand(1) * (self.size_with_buffer[1] - 1)
+                origin_h = self.__rng.random(1) * (self.size_with_buffer[0] - 1)
+                origin_w = self.__rng.random(1) * (self.size_with_buffer[1] - 1)
 
             # Vector from source to each point:
             dx = grid_w - origin_w
@@ -1394,7 +1396,7 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+        self.__displacement_per_image = self.__rng.random(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
@@ -1410,8 +1412,8 @@ class FlowField:
         for i in range(0, self.n_images):
 
             if imposed_source_location is None:
-                source_h = np.random.rand(1) * (self.size_with_buffer[0] - 1)
-                source_w = np.random.rand(1) * (self.size_with_buffer[1] - 1)
+                source_h = self.__rng.random(1) * (self.size_with_buffer[0] - 1)
+                source_w = self.__rng.random(1) * (self.size_with_buffer[1] - 1)
 
             # Vector from source to each point:
             dx = grid_w - source_w
@@ -1512,7 +1514,7 @@ class FlowField:
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
         self.__displacement = displacement
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+        self.__displacement_per_image = self.__rng.random(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
 
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
@@ -1528,8 +1530,8 @@ class FlowField:
         for i in range(0, self.n_images):
 
             if imposed_origin is None:
-                origin_h = np.random.rand(1) * (self.size_with_buffer[0] - 1)
-                origin_w = np.random.rand(1) * (self.size_with_buffer[1] - 1)
+                origin_h = self.__rng.random(1) * (self.size_with_buffer[0] - 1)
+                origin_w = self.__rng.random(1) * (self.size_with_buffer[1] - 1)
 
             # Vector from source to each point:
             dx = grid_w - origin_w
@@ -1629,8 +1631,8 @@ class FlowField:
 
         self.__k = k
         self.__displacement = displacement
-        self.__displacement_per_image = np.random.rand(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
-        self.__k_per_image = np.random.rand(self.__n_images) * (self.__k[1] - self.__k[0]) + self.__k[0]
+        self.__displacement_per_image = self.__rng.random(self.__n_images) * (self.__displacement[1] - self.__displacement[0]) + self.__displacement[0]
+        self.__k_per_image = self.__rng.random(self.__n_images) * (self.__k[1] - self.__k[0]) + self.__k[0]
 
         self.__velocity_field = np.zeros((self.__n_images, 2, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
         self.__velocity_field_magnitude = np.zeros((self.__n_images, 1, self.size_with_buffer[0], self.size_with_buffer[1]), dtype=self.dtype)
@@ -1646,8 +1648,8 @@ class FlowField:
         for i in range(0, self.n_images):
 
             if imposed_origin is None:
-                origin_h = np.random.rand(1) * (self.size_with_buffer[0] - 1)
-                origin_w = np.random.rand(1) * (self.size_with_buffer[1] - 1)
+                origin_h = self.__rng.random(1) * (self.size_with_buffer[0] - 1)
+                origin_w = self.__rng.random(1) * (self.size_with_buffer[1] - 1)
 
             # Vector from source to each point:
             dx = grid_w - origin_w
@@ -1876,13 +1878,13 @@ class FlowField:
                 X_positions = X_positions + U_star * delta_t
 
                 # Update the u-component of velocity:
-                U_star = U_star - (U_star - U_star_mean) * delta_t / integral_time_scale + square_root_factor * np.random.randn(__n_stochastic_particles)
+                U_star = U_star - (U_star - U_star_mean) * delta_t / integral_time_scale + square_root_factor * self.__rng.standard_normal(__n_stochastic_particles)
 
                 # Update the y-coordinate of the stochastic particles:
                 Y_positions = Y_positions + V_star * delta_t
 
                 # Update the v-component of velocity:
-                V_star = V_star - (V_star - V_star_mean) * delta_t / integral_time_scale + square_root_factor * np.random.randn(__n_stochastic_particles)
+                V_star = V_star - (V_star - V_star_mean) * delta_t / integral_time_scale + square_root_factor * self.__rng.standard_normal(__n_stochastic_particles)
 
             # Average the velocity over the ensemble of stochastic particles in each pixel:
             velocity_field_u = np.zeros((self.__height_with_buffer, self.__width_with_buffer))
