@@ -95,7 +95,9 @@ class Postprocess:
             if type(random_seed) != int:
                 raise ValueError("Parameter `random_seed` has to be of type 'int'.")
             else:
-                np.random.seed(seed=random_seed)
+                self.__rng = np.random.default_rng(random_seed)
+        else:
+            self.__rng = np.random.default_rng()
 
         # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -387,18 +389,18 @@ class Postprocess:
 
         n_images = self.image_tensor.shape[0]
 
-        self.__scale_per_image = np.random.rand(n_images) * (__scales[1] - __scales[0]) + __scales[0]
+        self.__scale_per_image = self.__rng.random(n_images) * (__scales[1] - __scales[0]) + __scales[0]
 
         image_tensor_with_noise = np.zeros_like(self.image_tensor)
 
         for i in range(0, n_images):
 
             if self.__image_pair:
-                image_tensor_with_noise[i,:,:,:] = self.processed_image_tensor[i,:,:,:] + np.random.normal(loc=loc,
+                image_tensor_with_noise[i,:,:,:] = self.processed_image_tensor[i,:,:,:] + self.__rng.normal(loc=loc,
                                                                                                            scale=self.__scale_per_image[i],
                                                                                                            size=np.shape(self.image_tensor[i,:,:,:]))
             else:
-                image_tensor_with_noise[i,:,:] = self.processed_image_tensor[i,:,:] + np.random.normal(loc=loc,
+                image_tensor_with_noise[i,:,:] = self.processed_image_tensor[i,:,:] + self.__rng.normal(loc=loc,
                                                                                                        scale=self.__scale_per_image[i],
                                                                                                        size=np.shape(self.image_tensor[i,:,:]))
 
@@ -474,13 +476,13 @@ class Postprocess:
                 for h in range(0, height):
                     for w in range(0, width):
 
-                        image_tensor_with_noise[i,0,h,w] = strength * np.random.poisson(lam=np.abs(self.processed_image_tensor[i,0,h,w]))
+                        image_tensor_with_noise[i,0,h,w] = strength * self.__rng.poisson(lam=np.abs(self.processed_image_tensor[i,0,h,w]))
 
         else:
             for i in range(0, n_images):
                 for h in range(0, height):
                     for w in range(0, width):
-                        image_tensor_with_noise[i, h, w] = strength * np.random.poisson(lam=np.abs(self.processed_image_tensor[i,h,w]))
+                        image_tensor_with_noise[i, h, w] = strength * self.__rng.poisson(lam=np.abs(self.processed_image_tensor[i,h,w]))
 
         if clip is not None:
             image_tensor_with_noise = np.clip(image_tensor_with_noise, 0, clip)
